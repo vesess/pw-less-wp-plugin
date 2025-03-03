@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {},
+	"extensions": {
+		"recommendations": [
+			"bmewburn.vscode-intelephense-client",
+			"esbenp.prettier-vscode",
+			"wordpresstoolbox.wordpress-toolbox",
+			"devsense.phptools-vscode"
+		]
+	},
+}

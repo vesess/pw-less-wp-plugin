@@ -1,0 +1,45 @@
+/**
+ * Admin styles for Passwordless Authentication plugin
+ */
+.my-passwordless-auth-admin {
+    max-width: 800px;
+}
+
+.my-passwordless-auth-admin h1 {
+    margin-bottom: 20px;
+}
+
+.my-passwordless-auth-admin .form-table th {
+    width: 250px;
+}
+
+.my-passwordless-auth-admin .form-table td {
+    vertical-align: top;
+}
+
+.my-passwordless-auth-admin .form-table td p.description {
+    margin-top: 5px;
+    color: #666;
+    font-style: italic;
+}
+
+.my-passwordless-auth-admin .card {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.my-passwordless-auth-admin .notice {
+    margin-bottom: 15px;
+}
+
+.my-passwordless-auth-admin .form-table {
+    margin-top: 15px;
+}
+
+.my-passwordless-auth-admin .button-primary {
+    margin-top: 10px;
+}

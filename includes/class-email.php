@@ -1,0 +1,172 @@
+<?php
+/**
+ * Handles email functionality.
+ */
+class My_Passwordless_Auth_Email {
+    /**
+     * Send a login code via email.
+     *
+     * @param int $user_id The user ID.
+     * @param string $login_code The login code to send.
+     * @return bool Whether the email was sent successfully.
+     */
+    public function send_login_code($user_id, $login_code) {
+        $user = get_userdata($user_id);
+        if (!$user) {
+            return false;
+        }
+
+        $to = $user->user_email;
+        $subject = sprintf(__('[%s] Your Login Code', 'my-passwordless-auth'), get_bloginfo('name'));
+        
+        $message = sprintf(
+            __("Hello %s,\n\nYour login code is: %s\n\nThis code will expire in 15 minutes.\n\nBest regards,\n%s", 'my-passwordless-auth'),
+            $user->display_name,
+            $login_code,
+            get_bloginfo('name')
+        );
+        
+        $headers = array(
+            'Content-Type: text/plain; charset=UTF-8',
+            'From: ' . $this->get_from_name() . ' <' . $this->get_from_email() . '>',
+        );
+
+        return $this->send_email($to, $subject, $message, $headers, 'login_code');
+    }
+
+    /**
+     * Send a verification email to a newly registered user.
+     *
+     * @param int $user_id The user ID.
+     * @param string $verification_code The verification code.
+     * @return bool Whether the email was sent successfully.
+     */
+    public function send_verification_email($user_id, $verification_code) {
+        $user = get_userdata($user_id);
+        if (!$user) {
+            return false;
+        }
+
+        $verification_url = add_query_arg(
+            array(
+                'action' => 'verify_email',
+                'user_id' => $user_id,
+                'code' => $verification_code
+            ),
+            home_url()
+        );
+
+        $to = $user->user_email;
+        $subject = sprintf(__('[%s] Verify Your Email', 'my-passwordless-auth'), get_bloginfo('name'));
+        
+        $message = sprintf(
+            __("Hello %s,\n\nThank you for registering! Please verify your email address by clicking the link below:\n\n%s\n\nBest regards,\n%s", 'my-passwordless-auth'),
+            $user->display_name,
+            $verification_url,
+            get_bloginfo('name')
+        );
+        
+        $headers = array(
+            'Content-Type: text/plain; charset=UTF-8',
+            'From: ' . $this->get_from_name() . ' <' . $this->get_from_email() . '>',
+        );
+       
+        return $this->send_email($to, $subject, $message, $headers, 'verification');
+    }
+
+    /**
+     * Send account deletion confirmation code.
+     *
+     * @param int $user_id The user ID.
+     * @param string $confirmation_code The confirmation code.
+     * @return bool Whether the email was sent successfully.
+     */
+    public function send_deletion_confirmation($user_id, $confirmation_code) {
+        $user = get_userdata($user_id);
+        if (!$user) {
+            return false;
+        }
+
+        $to = $user->user_email;
+        $subject = sprintf(__('[%s] Confirm Account Deletion', 'my-passwordless-auth'), get_bloginfo('name'));
+        
+        $message = sprintf(
+            __("Hello %s,\n\nWe received a request to delete your account. To confirm, use the following code:\n\n%s\n\nIf you did not request this, please ignore this email.\n\nBest regards,\n%s", 'my-passwordless-auth'),
+            $user->display_name,
+            $confirmation_code,
+            get_bloginfo('name')
+        );
+        
+        $headers = array(
+            'Content-Type: text/plain; charset=UTF-8',
+            'From: ' . $this->get_from_name() . ' <' . $this->get_from_email() . '>',
+        );
+
+        return $this->send_email($to, $subject, $message, $headers, 'deletion');
+    }
+
+    /**
+     * Helper method to send emails with logging.
+     * 
+     * @param string $to Email recipient.
+     * @param string $subject Email subject.
+     * @param string $message Email message.
+     * @param array $headers Email headers.
+     * @param string $type Email type for logging.
+     * @return bool Whether the email was sent successfully.
+     */
+    private function send_email($to, $subject, $message, $headers, $type = 'general') {
+        // Log email attempt
+        $log_message = sprintf(
+            'Attempting to send %s email to %s via WP Mail SMTP (Gmail: sachithrapinnaduwa@gmail.com)',
+            $type,
+            $to
+        );
+        if (WP_DEBUG) {
+            error_log($log_message);
+        }
+        
+        // Send the email using wp_mail which will be handled by WP Mail SMTP
+        $result = wp_mail($to, $subject, $message, $headers);
+        
+        // Log the result
+        if (WP_DEBUG) {
+            error_log(sprintf(
+                'Email send %s for %s email to %s',
+                $result ? 'successful' : 'failed',
+                $type,
+                $to
+            ));
+            
+            if (!$result) {
+                // Try to get any error information
+                global $phpmailer;
+                if (isset($phpmailer) && $phpmailer->ErrorInfo) {
+                    error_log('Email error: ' . $phpmailer->ErrorInfo);
+                }
+            }
+        }
+        
+        return $result;
+    }
+
+    /**
+     * Get the "from" name for emails.
+     *
+     * @return string
+     */
+    private function get_from_name() {
+        $options = get_option('my_passwordless_auth_options');
+        return isset($options['email_from_name']) ? $options['email_from_name'] : get_bloginfo('name');
+    }
+
+    /**
+     * Get the "from" email address.
+     *
+     * @return string
+     */
+    private function get_from_email() {
+        $options = get_option('my_passwordless_auth_options');
+        return isset($options['email_from_address']) ? $options['email_from_address'] : get_bloginfo('admin_email');
+    }
+}

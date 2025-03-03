@@ -1,0 +1,22 @@
+# Ignore WordPress core files, only track your plugin
+/wp-admin/
+/wp-includes/
+# Ignore WordPress core content except your plugin folder
+/wp-content/*
+!/wp-content/plugins/your-plugin-folder-name/
+# Ignore temporary files
+*.log
+*.tmp
+*.bak
+
+# Plugin specific
+*.zip
+*.tar.gz
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Test Coverage reports
+/coverage/
