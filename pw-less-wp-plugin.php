@@ -1,0 +1,240 @@
+<?php
+/**
+ * Plugin Name: Passwordless Authentication
+ * Description: A plugin to enable passwordless authentication in WordPress.
+ * Version: 1.0
+ * Author: Your Name
+ * Author URI: https://yourwebsite.com
+ */
+
+// Include helper functions
+require_once plugin_dir_path(__FILE__) . 'includes/helpers.php';
+
+// ...existing code...
+
+/**
+ * Initialize the plugin and set up hooks
+ */
+function my_passwordless_auth_init() {
+    // Hook for processing email verification
+    add_action('template_redirect', 'my_passwordless_auth_handle_verification');
+}
+add_action('init', 'my_passwordless_auth_init');
+
+/**
+ * Handle the email verification process
+ */
+function my_passwordless_auth_handle_verification() {
+    if (isset($_GET['action']) && $_GET['action'] === 'verify_email') {
+        my_passwordless_auth_log('Email verification request detected', 'info');
+        
+        if (!isset($_GET['user_id']) || !isset($_GET['code'])) {
+            my_passwordless_auth_log('Missing required verification parameters', 'error', true);
+            wp_redirect(home_url('/login/?verification=invalid'));
+            exit;
+        }
+        
+        $user_id = intval($_GET['user_id']);
+        $user = get_user_by('id', $user_id);
+        
+        if (!$user) {
+            my_passwordless_auth_log("Invalid user ID: $user_id", 'error');
+            wp_redirect(home_url('/login/?verification=invalid_user'));
+            exit;
+        }
+        
+        // Process the verification
+        $verified = my_passwordless_auth_process_email_verification();
+        
+        // Redirect to appropriate page based on verification result
+        if ($verified) {
+            my_passwordless_auth_log("Email verified successfully for user: {$user->user_email}", 'info', true);
+            
+            // Force user login after verification if configured to do so
+            if (my_passwordless_auth_get_option('auto_login_after_verification', true)) {
+                wp_set_current_user($user_id);
+                wp_set_auth_cookie($user_id);
+                
+                // Redirect to dashboard or custom page
+                $redirect_url = my_passwordless_auth_get_option('verification_success_url', admin_url());
+                wp_redirect($redirect_url);
+                exit;
+            }
+            
+            // Otherwise redirect to login page with success message
+            $redirect_url = add_query_arg('verification', 'success', home_url('/login/'));
+            wp_redirect($redirect_url);
+            exit;
+        } else {
+            my_passwordless_auth_log("Email verification failed for user ID: $user_id", 'error', true);
+            $redirect_url = add_query_arg('verification', 'failed', home_url('/login/'));
+            wp_redirect($redirect_url);
+            exit;
+        }
+    }
+}
+
+/**
+ * Add a new admin page to view logs
+ */
+function my_passwordless_auth_add_admin_page() {
+    // Check if the current user has sufficient permissions
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+    
+    add_submenu_page(
+        'options-general.php',       // Parent slug (Settings menu)
+        'Passwordless Auth Logs',    // Page title
+        'Auth Logs',                 // Menu title
+        'manage_options',            // Capability required
+        'my-passwordless-auth-logs', // Menu slug
+        'my_passwordless_auth_logs_page' // Callback function
+    );
+}
+// Hook into the admin menu with the correct priority
+add_action('admin_menu', 'my_passwordless_auth_add_admin_page', 99);
+
+/**
+ * Render the logs admin page
+ */
+function my_passwordless_auth_logs_page() {
+    // Check if the required function exists
+    if (!function_exists('get_transient')) {
+        echo '<div class="error"><p>Error: WordPress core functions not available.</p></div>';
+        return;
+    }
+    
+    $logs = get_transient('my_passwordless_auth_logs') ?: [];
+    ?>
+    <div class="wrap">
+        <h1>Passwordless Authentication Logs</h1>
+        
+        <?php if (empty($logs)): ?>
+            <p>No logs found.</p>
+        <?php else: ?>
+            <table class="widefat">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Level</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach (array_reverse($logs) as $log): ?>
+                        <tr>
+                            <td><?php echo esc_html($log['time']); ?></td>
+                            <td><?php echo esc_html(ucfirst($log['level'])); ?></td>
+                            <td><?php echo esc_html($log['message']); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            
+            <form method="post">
+                <p>
+                    <button name="clear_logs" class="button button-secondary">Clear Logs</button>
+                </p>
+                <?php wp_nonce_field('clear_auth_logs', 'auth_logs_nonce'); ?>
+            </form>
+            
+            <?php
+            // Handle clearing logs
+            if (isset($_POST['clear_logs']) && isset($_POST['auth_logs_nonce']) && wp_verify_nonce($_POST['auth_logs_nonce'], 'clear_auth_logs')) {
+                delete_transient('my_passwordless_auth_logs');
+                echo '<div class="updated"><p>Logs cleared.</p></div>';
+                echo '<script>window.location.reload();</script>';
+            }
+            ?>
+        <?php endif; ?>
+    </div>
+    <?php
+}
+
+// Add script to display console logs on the frontend login page
+function my_passwordless_auth_add_login_debug() {
+    if (isset($_GET['verification'])) {
+        $status = sanitize_text_field($_GET['verification']);
+        
+        echo '<script>
+            console.group("Passwordless Auth - Verification Process");
+            console.log("Verification status: ' . esc_js($status) . '");
+            ' . ($status === 'success' ? 'console.log("Email successfully verified!");' : '') . '
+            ' . ($status === 'failed' ? 'console.error("Email verification failed. Invalid or expired code.");' : '') . '
+            ' . ($status === 'invalid' ? 'console.error("Invalid verification request.");' : '') . '
+            ' . ($status === 'invalid_user' ? 'console.error("User not found.");' : '') . '
+            console.groupEnd();
+        </script>';
+        
+        // Add visual feedback
+        if ($status === 'success') {
+            echo '<div class="my-passwordless-auth-notice my-passwordless-auth-notice-success">
+                Email successfully verified! You can now log in.
+            </div>';
+        } elseif ($status === 'failed' || $status === 'invalid' || $status === 'invalid_user') {
+            echo '<div class="my-passwordless-auth-notice my-passwordless-auth-notice-error">
+                Email verification failed. Please request a new verification link.
+            </div>';
+        }
+    }
+}
+add_action('login_footer', 'my_passwordless_auth_add_login_debug');
+add_action('wp_footer', 'my_passwordless_auth_add_login_debug');
+
+// Add admin notification for easier log access
+function my_passwordless_auth_admin_notices() {
+    $screen = get_current_screen();
+    if ($screen->id === 'settings_page_my-passwordless-auth-logs') {
+        return; // Don't show on the logs page itself
+    }
+    
+    // Check if there are any recent error logs
+    $logs = get_transient('my_passwordless_auth_logs') ?: [];
+    $error_count = 0;
+    
+    // Count errors from the last 24 hours
+    foreach ($logs as $log) {
+        if ($log['level'] === 'error' && strtotime($log['time']) > (time() - 86400)) {
+            $error_count++;
+        }
+    }
+    
+    if ($error_count > 0) {
+        ?>
+        <div class="notice notice-warning is-dismissible">
+            <p>
+                <?php echo sprintf(
+                    _n(
+                        'Passwordless Authentication: There is %d error log entry in the last 24 hours.',
+                        'Passwordless Authentication: There are %d error log entries in the last 24 hours.',
+                        $error_count
+                    ),
+                    $error_count
+                ); ?>
+                <a href="<?php echo admin_url('options-general.php?page=my-passwordless-auth-logs'); ?>">
+                    View logs
+                </a>
+            </p>
+        </div>
+        <?php
+    }
+}
+add_action('admin_notices', 'my_passwordless_auth_admin_notices');
+
+// Register activation hook to create initial options
+register_activation_hook(__FILE__, 'my_passwordless_auth_activate');
+function my_passwordless_auth_activate() {
+    // Create default options if they don't exist
+    if (!get_option('my_passwordless_auth_options')) {
+        add_option('my_passwordless_auth_options', [
+            'auto_login_after_verification' => true,
+            'verification_success_url' => admin_url(),
+        ]);
+    }
+    
+    // Create an initial log entry
+    my_passwordless_auth_log('Plugin activated', 'info');
+}
+
+// ...existing code...
