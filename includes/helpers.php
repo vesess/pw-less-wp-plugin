@@ -177,3 +177,205 @@ function my_passwordless_auth_log($message, $level = 'info', $display = false) {
         }
     }
 }
+
+/**
+ * Create a magic login link for a user
+ * 
+ * @param string $user_email The user's email address
+ * @return string|false Login link or false if user not found
+ */
+if (!function_exists('my_passwordless_auth_create_login_link')) {
+    function my_passwordless_auth_create_login_link($user_email) {
+        $user = get_user_by('email', $user_email);
+        
+        if (!$user) {
+            my_passwordless_auth_log("Failed to create login link: User with email $user_email not found", 'error');
+            return false;
+        }
+        
+        // Generate a secure token
+        $token = my_passwordless_auth_generate_login_token($user->ID);
+        
+        // Create a login URL with the token
+        $login_link = add_query_arg([
+            'action' => 'magic_login',
+            'user_id' => $user->ID,
+            'token' => $token,
+        ], home_url());
+        
+        my_passwordless_auth_log("Magic login link created for user ID: {$user->ID}");
+        return $login_link;
+    }
+}
+
+/**
+ * Generate a login token for a user
+ * 
+ * @param int $user_id The user ID
+ * @return string The generated token
+ */
+if (!function_exists('my_passwordless_auth_generate_login_token')) {
+    function my_passwordless_auth_generate_login_token($user_id) {
+        // Generate a random token
+        $token = bin2hex(random_bytes(32)); // Using 32 bytes (256 bits) for security
+        
+        // Store the token with an expiration time (15 minutes)
+        $expiration = time() + (15 * MINUTE_IN_SECONDS);
+        update_user_meta($user_id, 'passwordless_auth_login_token', [
+            'token' => $token,
+            'expiration' => $expiration
+        ]);
+        
+        return $token;
+    }
+}
+
+/**
+ * Send magic login link to a user
+ * 
+ * @param string $user_email The user's email address
+ * @param string|null $subject Optional custom email subject
+ * @param string|null $message Optional custom email message
+ * @return bool Whether the email was sent successfully
+ */
+if (!function_exists('my_passwordless_auth_send_magic_link')) {
+    function my_passwordless_auth_send_magic_link($user_email, $subject = null, $message = null) {
+        $user = get_user_by('email', $user_email);
+        
+        if (!$user) {
+            my_passwordless_auth_log("Failed to send magic link: User with email $user_email not found", 'error');
+            return false;
+        }
+        
+        $login_link = my_passwordless_auth_create_login_link($user_email);
+        
+        if (!$login_link) {
+            return false;
+        }
+        
+        // Default email subject
+        if (!$subject) {
+            $options = get_option('my_passwordless_auth_options', []);
+            $subject = isset($options['email_subject']) ? $options['email_subject'] : '';
+            
+            if (empty($subject)) {
+                $subject = sprintf(__('Login link for %s', 'my-passwordless-auth'), get_bloginfo('name'));
+            }
+        }
+        
+        // Default email message
+        if (!$message) {
+            $options = get_option('my_passwordless_auth_options', []);
+            $template = isset($options['email_template']) ? $options['email_template'] : '';
+            
+            if (empty($template)) {
+                $message = sprintf(
+                    __('Hello %s,
+
+Click the link below to log in:
+
+%s
+
+This link will expire in 15 minutes.
+
+If you did not request this login link, please ignore this email.
+
+Regards,
+%s', 'my-passwordless-auth'),
+                    $user->display_name,
+                    $login_link,
+                    get_bloginfo('name')
+                );
+            } else {
+                // Replace placeholders in the template
+                $message = str_replace(
+                    ['{display_name}', '{login_link}', '{site_name}'],
+                    [$user->display_name, $login_link, get_bloginfo('name')],
+                    $template
+                );
+            }
+        }
+        
+        // Convert line breaks to <br> for HTML emails
+        $message = nl2br($message);
+        
+        $headers = ['Content-Type: text/html; charset=UTF-8'];
+        
+        // Allow filtering of email content
+        $subject = apply_filters('my_passwordless_auth_email_subject', $subject, $user);
+        $message = apply_filters('my_passwordless_auth_email_message', $message, $user, $login_link);
+        $headers = apply_filters('my_passwordless_auth_email_headers', $headers, $user);
+        
+        $sent = wp_mail($user->user_email, $subject, $message, $headers);
+        
+        if ($sent) {
+            my_passwordless_auth_log("Magic login link sent to user ID: {$user->ID}");
+        } else {
+            my_passwordless_auth_log("Failed to send magic login link to user ID: {$user->ID}", 'error');
+        }
+        
+        return $sent;
+    }
+}
+
+/**
+ * Process magic login when a user clicks the login link
+ * 
+ * @return bool|WP_Error True if login was successful, WP_Error on failure
+ */
+if (!function_exists('my_passwordless_auth_process_magic_login')) {
+    function my_passwordless_auth_process_magic_login() {
+        // Check if this is a magic login request
+        if (!isset($_GET['action']) || $_GET['action'] !== 'magic_login' || 
+            !isset($_GET['user_id']) || !isset($_GET['token'])) {
+            return false;
+        }
+        
+        $user_id = intval($_GET['user_id']);
+        $token = sanitize_text_field($_GET['token']);
+        
+        // Get stored token data for this user
+        $stored_data = get_user_meta($user_id, 'passwordless_auth_login_token', true);
+        
+        // Verify the token is valid and not expired
+        if (empty($stored_data) || !is_array($stored_data) || 
+            !isset($stored_data['token']) || !isset($stored_data['expiration']) ||
+            $stored_data['token'] !== $token || time() > $stored_data['expiration']) {
+            
+            my_passwordless_auth_log("Magic login failed for user ID: $user_id - invalid or expired token", 'error');
+            return new WP_Error('invalid_token', __('Invalid or expired login link. Please request a new one.', 'my-passwordless-auth'));
+        }
+        
+        // Get the user
+        $user = get_user_by('id', $user_id);
+        if (!$user) {
+            my_passwordless_auth_log("Magic login failed - user ID $user_id not found", 'error');
+            return new WP_Error('invalid_user', __('User not found. Please try again.', 'my-passwordless-auth'));
+        }
+        
+        // Delete the token as it's no longer needed
+        delete_user_meta($user_id, 'passwordless_auth_login_token');
+        
+        // Log the user in
+        wp_clear_auth_cookie();
+        wp_set_current_user($user_id);
+        wp_set_auth_cookie($user_id);
+        
+        my_passwordless_auth_log("User ID: $user_id successfully logged in via magic link");
+        
+        // Fire action for other plugins
+        do_action('my_passwordless_auth_after_magic_login', $user);
+        
+        return true;
+    }
+}
+
+/**
+ * Validate email address format
+ * 
+ * @param string $email The email address to validate
+ * @return bool Whether the email is valid
+ */
+function my_passwordless_auth_is_valid_email($email) {
+    return (bool) is_email($email);
+}
