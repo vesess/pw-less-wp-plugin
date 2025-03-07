@@ -1,127 +1,131 @@
 <?php
 /**
- * Template for the passwordless login form
+ * Passwordless login form template
  */
-if (!defined('ABSPATH')) {
-    exit;
+
+// If this file is called directly, abort.
+if (!defined('WPINC')) {
+    die;
+}
+
+// Check if there are any error messages to display
+$error_message = '';
+if (isset($_GET['error']) && !empty($_GET['error'])) {
+    switch ($_GET['error']) {
+        case 'empty_email':
+            $error_message = __('Please enter your email address.', 'my-passwordless-auth');
+            break;
+        case 'invalid_email':
+            $error_message = __('Please enter a valid email address.', 'my-passwordless-auth');
+            break;
+        case 'user_not_found':
+            $error_message = __('No user found with that email address.', 'my-passwordless-auth');
+            break;
+        case 'email_failed':
+            $error_message = __('Failed to send the login link. Please try again later.', 'my-passwordless-auth');
+            break;
+        default:
+            $error_message = __('An unknown error occurred. Please try again.', 'my-passwordless-auth');
+            break;
+    }
+}
+
+// Check if a success message should be displayed
+$success_message = '';
+if (isset($_GET['sent']) && $_GET['sent'] === '1') {
+    $success_message = __('Login link sent! Please check your email.', 'my-passwordless-auth');
+}
+
+// Get form action URL (current page by default)
+$form_action = isset($form_action) ? $form_action : '';
+if (empty($form_action)) {
+    $form_action = esc_url(add_query_arg(null, null));
+}
+
+// Get redirect URL after successful login
+$redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : '';
+if (empty($redirect_to)) {
+    $redirect_to = home_url();
 }
 ?>
-<div class="my-passwordless-auth-container login-form-container">
-    <form id="my-passwordless-auth-login-form" class="my-passwordless-auth-form">
-        <h2><?php _e('Passwordless Login', 'my-passwordless-auth'); ?></h2>
-        
-        <div class="messages"></div>
-        
-        <div class="form-row">
-            <label for="email"><?php _e('Email Address', 'my-passwordless-auth'); ?></label>
-            <input type="email" name="email" id="email" required />
+
+<div class="passwordless-login-container">
+    <?php if (!empty($error_message)) : ?>
+        <div class="passwordless-error-message">
+            <?php echo esc_html($error_message); ?>
         </div>
-        
-        <div class="form-row button-row">
-            <button type="button" class="request-code-btn"><?php _e('Request Login Code', 'my-passwordless-auth'); ?></button>
+    <?php endif; ?>
+    
+    <?php if (!empty($success_message)) : ?>
+        <div class="passwordless-success-message">
+            <?php echo esc_html($success_message); ?>
         </div>
-        
-        <div class="form-row code-container" style="display: none;">
-            <label for="code"><?php _e('Enter Login Code', 'my-passwordless-auth'); ?></label>
-            <input type="text" name="code" id="code" placeholder="<?php esc_attr_e('Enter the code sent to your email', 'my-passwordless-auth'); ?>" />
-            <button type="button" class="verify-code-btn"><?php _e('Verify Code & Login', 'my-passwordless-auth'); ?></button>
-        </div>
-        
-        <?php if (!get_option('users_can_register')) : ?>
-            <p class="login-register-link">
-                <?php _e('New user?', 'my-passwordless-auth'); ?>
-                <?php _e('Registration is currently disabled.', 'my-passwordless-auth'); ?>
+    <?php else : ?>
+        <form id="passwordless-login-form" class="passwordless-login-form" method="post" action="<?php echo esc_url($form_action); ?>">
+            <p>
+                <label for="user_email"><?php _e('Email Address', 'my-passwordless-auth'); ?></label>
+                <input type="email" name="user_email" id="user_email" value="<?php echo esc_attr(isset($_POST['user_email']) ? $_POST['user_email'] : ''); ?>" class="input" required />
             </p>
-        <?php else : ?>
-            <p class="login-register-link">
-                <?php _e('New user?', 'my-passwordless-auth'); ?>
-                <a href="<?php echo esc_url(add_query_arg('action', 'register')); ?>"><?php _e('Register here', 'my-passwordless-auth'); ?></a>
+            
+            <p class="passwordless-submit">
+                <input type="hidden" name="redirect_to" value="<?php echo esc_attr($redirect_to); ?>" />
+                <input type="hidden" name="passwordless_login_nonce" value="<?php echo wp_create_nonce('passwordless-login-nonce'); ?>" />
+                <button type="submit" name="wp-submit" id="wp-submit" class="button button-primary">
+                    <?php _e('Send Login Link', 'my-passwordless-auth'); ?>
+                </button>
             </p>
-        <?php endif; ?>
-    </form>
+        </form>
+        
+        <p class="passwordless-info">
+            <?php _e('Enter your email address and we\'ll send you a link to log in.', 'my-passwordless-auth'); ?>
+        </p>
+    <?php endif; ?>
 </div>
 
 <style>
-    .my-passwordless-auth-container {
-        max-width: 500px;
+    .passwordless-login-container {
+        max-width: 400px;
         margin: 0 auto;
         padding: 20px;
+        background: #fff;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    
-    .my-passwordless-auth-form h2 {
-        margin-bottom: 20px;
-        text-align: center;
-    }
-    
-    .form-row {
-        margin-bottom: 15px;
-    }
-    
-    .form-row label {
+    .passwordless-login-form label {
         display: block;
         margin-bottom: 5px;
         font-weight: bold;
     }
-    
-    .form-row input[type="email"],
-    .form-row input[type="text"] {
+    .passwordless-login-form input[type="email"] {
         width: 100%;
         padding: 8px;
+        margin-bottom: 15px;
         border: 1px solid #ddd;
-        border-radius: 4px;
+        border-radius: 3px;
     }
-    
-    .button-row {
-        margin-top: 20px;
+    .passwordless-submit {
+        margin-top: 10px;
     }
-    
-    button {
-        background-color: #0073aa;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 15px;
-    }
-    
-    button:hover {
-        background-color: #005a87;
-    }
-    
-    button:disabled {
-        background-color: #cccccc;
-        cursor: not-allowed;
-    }
-    
-    .code-container {
-        margin-top: 20px;
-    }
-    
-    .login-register-link {
-        margin-top: 20px;
-        text-align: center;
-    }
-    
-    .messages {
-        margin-bottom: 20px;
-    }
-    
-    .message {
-        padding: 10px;
-        border-radius: 4px;
-        margin-bottom: 10px;
-    }
-    
-    .success-message {
-        background-color: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-    
-    .error-message {
+    .passwordless-error-message {
         background-color: #f8d7da;
         color: #721c24;
+        padding: 10px 15px;
+        margin-bottom: 20px;
+        border-radius: 3px;
         border: 1px solid #f5c6cb;
+    }
+    .passwordless-success-message {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 10px 15px;
+        margin-bottom: 20px;
+        border-radius: 3px;
+        border: 1px solid #c3e6cb;
+    }
+    .passwordless-info {
+        margin-top: 15px;
+        font-size: 0.9em;
+        color: #666;
+        text-align: center;
     }
 </style>
