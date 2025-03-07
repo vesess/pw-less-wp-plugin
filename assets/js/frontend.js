@@ -99,6 +99,7 @@
                         requestCodeBtn.textContent = 'Resend Code';
                     } else {
                         showMessage(response.data, 'error', messages);
+                        requestCodeBtn.disabled = true;
                     }
                 },
                 function() {
