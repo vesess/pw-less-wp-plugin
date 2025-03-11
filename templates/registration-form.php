@@ -41,7 +41,7 @@ if (!get_option('users_can_register')) {
         
         <p class="login-register-link">
             <?php _e('Already have an account?', 'my-passwordless-auth'); ?>
-            <a href="<?php echo esc_url(add_query_arg('action', 'login', get_permalink(get_page_by_path('passwordless_login')))); ?>"><?php _e('Login here', 'my-passwordless-auth'); ?></a>
+            <a href="<?php echo esc_url(home_url('/index.php/login-page/')); ?>"><?php _e('Login here', 'my-passwordless-auth'); ?></a>
         </p>
     </form>
 </div>
