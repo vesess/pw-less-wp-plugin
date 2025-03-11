@@ -24,9 +24,9 @@ if (!get_option('users_can_register')) {
         </div>
         
         <div class="form-row">
-            <label for="username"><?php _e('Username', 'my-passwordless-auth'); ?> <span class="required">*</span></label>
-            <input type="text" name="username" id="username" required />
-            <p class="description"><?php _e('Username cannot be changed later', 'my-passwordless-auth'); ?></p>
+            <label for="username"><?php _e('Username', 'my-passwordless-auth'); ?></label>
+            <input type="text" name="username" id="username" />
+            <p class="description"><?php _e('Leave empty to use your email address as username', 'my-passwordless-auth'); ?></p>
         </div>
         
         <div class="form-row">
@@ -41,10 +41,26 @@ if (!get_option('users_can_register')) {
         
         <p class="login-register-link">
             <?php _e('Already have an account?', 'my-passwordless-auth'); ?>
-            <a href="<?php echo esc_url(add_query_arg('action', 'login')); ?>"><?php _e('Login here', 'my-passwordless-auth'); ?></a>
+            <a href="<?php echo esc_url(home_url('/index.php/login-page/')); ?>"><?php _e('Login here', 'my-passwordless-auth'); ?></a>
         </p>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('my-passwordless-auth-registration-form');
+    
+    form.addEventListener('submit', function(e) {
+        const emailField = document.getElementById('email');
+        const usernameField = document.getElementById('username');
+        
+        if (!usernameField.value.trim()) {
+        
+            usernameField.value = emailField.value;
+        }
+    });
+});
+</script>
 
 <style>
     .my-passwordless-auth-container {

@@ -74,6 +74,11 @@ if (empty($redirect_to)) {
                     <?php _e('Send Login Link', 'my-passwordless-auth'); ?>
                 </button>
             </p>
+            
+            <p class="login-register-link">
+                <?php _e('First time user?', 'my-passwordless-auth'); ?>
+                <a href="<?php echo esc_url(home_url('/index.php/registration')); ?>"><?php _e('Register here', 'my-passwordless-auth'); ?></a>
+            </p>
         </form>
         
         <p class="passwordless-info">
