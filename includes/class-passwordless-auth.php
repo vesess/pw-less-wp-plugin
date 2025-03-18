@@ -242,22 +242,27 @@ class My_Passwordless_Auth {
             return;
         }
         
+        my_passwordless_auth_log("Magic login process initiated from class-passwordless-auth.php");
+        
         $result = my_passwordless_auth_process_magic_login();
         
         if ($result === true) {
             // Success! Redirect to requested page or default
             $redirect_to = isset($_GET['redirect_to']) ? $_GET['redirect_to'] : '';
             if (empty($redirect_to)) {
-                $redirect_to = my_passwordless_auth_get_option('login_redirect', admin_url());
+                $redirect_to = my_passwordless_auth_get_option('login_redirect', home_url());
             }
             
             $redirect_to = apply_filters('my_passwordless_auth_login_redirect', $redirect_to);
+            my_passwordless_auth_log("Redirecting to: $redirect_to after successful login");
             wp_redirect($redirect_to);
             exit;
         } elseif (is_wp_error($result)) {
             // Error occurred during login
+            $error_message = $result->get_error_message();
+            my_passwordless_auth_log("Magic login error: $error_message", 'error');
             wp_die(
-                $result->get_error_message(),
+                $error_message,
                 __('Login Failed', 'my-passwordless-auth'),
                 array(
                     'response' => 403,

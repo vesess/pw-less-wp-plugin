@@ -77,8 +77,6 @@ function my_passwordless_auth_init_magic_login_handler() {
     // Check for magic login request on init (early)
     add_action('init', 'my_passwordless_auth_check_for_magic_login', 10);
     
-    // We're removing this hook - no longer adding the form to the standard WordPress login
-    // add_action('login_form', 'my_passwordless_auth_login_form_hook');
     
     add_action('wp_login_failed', 'my_passwordless_auth_handle_failed_login', 10, 2);
     
@@ -110,14 +108,7 @@ function my_passwordless_auth_check_for_magic_login() {
     }
 }
 
-/**
- * Add custom fields to login form for magic login
- * 
- * This function is no longer hooked into login_form, but kept for future reference
- */
-function my_passwordless_auth_login_form_hook() {
-    // Function content kept for reference but not used on the WordPress login page
-}
+
 
 /**
  * Handle failed login attempts and offer magic link alternative

@@ -118,32 +118,31 @@ class My_Passwordless_Auth_Email {
     private function send_email($to, $subject, $message, $headers, $type = 'general') {
         // Log email attempt
         $log_message = sprintf(
-            'Attempting to send %s email to %s via WP Mail SMTP (Gmail: sachithrapinnaduwa@gmail.com)',
+            'Attempting to send %s email to %s via WP Mail SMTP',
             $type,
             $to
         );
-        if (WP_DEBUG) {
-            error_log($log_message);
-        }
         
-        // Send the email using wp_mail which will be handled by WP Mail SMTP
+        my_passwordless_auth_log($log_message);
+        
+        // Debugging: Log the full email content
+        my_passwordless_auth_log("Email headers: " . json_encode($headers));
+        my_passwordless_auth_log("Email subject: " . $subject);
+        my_passwordless_auth_log("Email message: " . substr($message, 0, 100) . "..."); // Log first 100 chars
+        
+        // Send the email using wp_mail
         $result = wp_mail($to, $subject, $message, $headers);
         
         // Log the result
-        if (WP_DEBUG) {
-            error_log(sprintf(
-                'Email send %s for %s email to %s',
-                $result ? 'successful' : 'failed',
-                $type,
-                $to
-            ));
+        if ($result) {
+            my_passwordless_auth_log(sprintf('Email send successful for %s email to %s', $type, $to));
+        } else {
+            my_passwordless_auth_log(sprintf('Email send failed for %s email to %s', $type, $to), 'error');
             
-            if (!$result) {
-                // Try to get any error information
-                global $phpmailer;
-                if (isset($phpmailer) && $phpmailer->ErrorInfo) {
-                    error_log('Email error: ' . $phpmailer->ErrorInfo);
-                }
+            // Try to get any error information
+            global $phpmailer;
+            if (isset($phpmailer) && $phpmailer->ErrorInfo) {
+                my_passwordless_auth_log('Email error: ' . $phpmailer->ErrorInfo, 'error');
             }
         }
         
