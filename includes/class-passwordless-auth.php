@@ -40,6 +40,7 @@ class My_Passwordless_Auth {
         $this->define_frontend_hooks();
         $this->define_admin_hooks();
         $this->define_email_hooks();
+        $this->define_url_blocker_hooks(); // Add URL blocker hooks
     }
 
     /**
@@ -61,6 +62,7 @@ class My_Passwordless_Auth {
         require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-frontend.php';
         require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-admin.php';
         require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-email.php';
+        require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-url-blocker.php'; // Include URL blocker class
         require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/helpers.php';
 
         $this->loader = new My_Passwordless_Auth_Loader();
@@ -121,6 +123,15 @@ class My_Passwordless_Auth {
      */
     private function define_email_hooks() {
         // No direct hooks needed for the email class as it's used by other classes
+    }
+
+    /**
+     * Register URL blocker related hooks.
+     */
+    private function define_url_blocker_hooks() {
+        $url_blocker = new My_Passwordless_Auth_URL_Blocker();
+        
+        $this->loader->add_action('init', $url_blocker, 'init');
     }
 
     /**
