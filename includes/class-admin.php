@@ -77,6 +77,8 @@ class My_Passwordless_Auth_Admin {
             'my-passwordless-auth',
             'my_passwordless_auth_main'
         );
+        
+        // Removed URL blocker section
     }
 
     /**
@@ -112,6 +114,8 @@ class My_Passwordless_Auth_Admin {
         $value = isset($options['code_expiration']) ? $options['code_expiration'] : 15;
         echo '<input type="number" name="my_passwordless_auth_options[code_expiration]" value="' . esc_attr($value) . '" min="1" max="60" step="1" class="small-text">';
     }
+    
+    // Removed blocked_urls_callback
 
     /**
      * Render the settings page.
