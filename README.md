@@ -20,7 +20,11 @@ My Passwordless Authentication offers a modern, secure way to log in to WordPres
 1. Upload the plugin files to the `/wp-content/plugins/my-passwordless-auth` directory, or install through the WordPress plugins screen
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Go to Settings → Passwordless Auth to configure the plugin
-4. Add the shortcodes to your pages:
+4. Create two pages in WordPress:
+   * Create a page named exactly "login" (e.g., `/login/`) and add the login form shortcode
+   * Create a page named exactly "registration" (e.g., `/registration/`) and add the registration form shortcode
+   * These specific page names are required for proper form redirections to work correctly
+5. Add the shortcodes to your pages:
 
 ### Available Shortcodes
 
@@ -97,4 +101,4 @@ This plugin is licensed under the GPL v2 or later.
 
 ## Credits
 
-Developed by [Your Name](https://example.com)
+Developed by [Vesess](https://www.vesess.com/)
