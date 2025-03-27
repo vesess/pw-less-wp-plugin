@@ -50,7 +50,7 @@ class My_Passwordless_Auth_Email {
         $verification_url = add_query_arg(
             array(
                 'action' => 'verify_email',
-                'user_id' => $user_id,
+                'user_id' => my_passwordless_auth_encrypt_user_id($user_id),
                 'code' => $verification_code
             ),
             home_url()

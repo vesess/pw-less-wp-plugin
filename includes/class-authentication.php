@@ -1,6 +1,7 @@
 <?php
 /**
- * Handles passwordless authentication functionality.
+ * Handles passwordless authentication functionality. This code is most likely not used ignore this.
+ * This work is done by helper functions
  */
 class My_Passwordless_Auth_Authentication {
     /**

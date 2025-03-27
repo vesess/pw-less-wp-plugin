@@ -34,12 +34,12 @@ function run_my_passwordless_auth() {
 }
 
 /**
- * Load plugin text domain.
+ * Load plugin text domain. This is commented out for now since languages folder is not included.
  */
-function my_passwordless_auth_load_textdomain() {
-    load_plugin_textdomain('my-passwordless-auth', false, dirname(plugin_basename(__FILE__)) . '/languages/');
-}
-add_action('plugins_loaded', 'my_passwordless_auth_load_textdomain');
+// function my_passwordless_auth_load_textdomain() {
+//     load_plugin_textdomain('my-passwordless-auth', false, dirname(plugin_basename(__FILE__)) . '/languages/');
+// }
+// add_action('plugins_loaded', 'my_passwordless_auth_load_textdomain');
 
 // Run the plugin
 run_my_passwordless_auth();
@@ -133,7 +133,7 @@ function my_passwordless_auth_enqueue_login_scripts() {
 }
 
 /**
- * Handle the email verification process
+ * Handle the email verification process - Centralized handler for all verification requests
  */
 function my_passwordless_auth_handle_verification() {
     if (isset($_GET['action']) && $_GET['action'] === 'verify_email') {
@@ -145,43 +145,57 @@ function my_passwordless_auth_handle_verification() {
             exit;
         }
         
-        $user_id = intval($_GET['user_id']);
+        $encrypted_user_id = sanitize_text_field($_GET['user_id']);
+        $code = sanitize_text_field($_GET['code']);
+        
+        // Decrypt the user ID
+        $user_id = my_passwordless_auth_decrypt_user_id($encrypted_user_id);
+        
+        if ($user_id === false) {
+            my_passwordless_auth_log("Failed to decrypt user ID: $encrypted_user_id", 'error', true);
+            wp_redirect(home_url('/login/?verification=invalid'));
+            exit;
+        }
+        
         $user = get_user_by('id', $user_id);
         
         if (!$user) {
-            my_passwordless_auth_log("Invalid user ID: $user_id", 'error');
+            my_passwordless_auth_log("Invalid user ID after decryption: $user_id", 'error');
             wp_redirect(home_url('/login/?verification=invalid_user'));
             exit;
         }
         
-        // Process the verification
-        $verified = my_passwordless_auth_process_email_verification();
+        // Get stored verification code
+        $stored_code = get_user_meta($user_id, 'email_verification_code', true);
         
-        // Redirect to appropriate page based on verification result
-        if ($verified) {
-            my_passwordless_auth_log("Email verified successfully for user: {$user->user_email}", 'info', true);
-            
-            // Force user login after verification if configured to do so
-            if (my_passwordless_auth_get_option('auto_login_after_verification', true)) {
-                wp_set_current_user($user_id);
-                wp_set_auth_cookie($user_id);
-                
-                // Redirect to dashboard or custom page
-                $redirect_url = my_passwordless_auth_get_option('verification_success_url', admin_url());
-                wp_redirect($redirect_url);
-                exit;
-            }
-            
-            // Otherwise redirect to login page with success message
-            $redirect_url = add_query_arg('verification', 'success', home_url('/login/'));
-            wp_redirect($redirect_url);
+        // Verify the code matches
+        if (empty($stored_code) || $stored_code !== $code) {
+            my_passwordless_auth_log("Invalid verification code for user ID: $user_id", 'error');
+            wp_redirect(home_url('/login/?verification=failed'));
             exit;
-        } else {
-            my_passwordless_auth_log("Email verification failed for user ID: $user_id", 'error', true);
-            $redirect_url = add_query_arg('verification', 'failed', home_url('/login/'));
+        }
+        
+        // Update the user as verified
+        update_user_meta($user_id, 'email_verified', true);
+        delete_user_meta($user_id, 'email_verification_code');
+        
+        my_passwordless_auth_log("Email verified successfully for user: {$user->user_email}", 'info', true);
+        
+        // Force user login after verification if configured to do so
+        if (my_passwordless_auth_get_option('auto_login_after_verification', true)) {
+            wp_set_current_user($user_id);
+            wp_set_auth_cookie($user_id);
+            
+            // Redirect to dashboard or custom page
+            $redirect_url = my_passwordless_auth_get_option('verification_success_url', admin_url());
             wp_redirect($redirect_url);
             exit;
         }
+        
+        // Otherwise redirect to login page with success message
+        $redirect_url = add_query_arg('verification', 'success', home_url('/login/'));
+        wp_redirect($redirect_url);
+        exit;
     }
 }
 
@@ -346,15 +360,6 @@ function my_passwordless_auth_activate() {
     
     // Create an initial log entry
     my_passwordless_auth_log('Plugin activated', 'info');
-}
-
-// Process email verification function (placeholder - implement this based on your needs)
-if (!function_exists('my_passwordless_auth_process_email_verification')) {
-    function my_passwordless_auth_process_email_verification() {
-        // Implementation would verify the code from $_GET['code'] against stored values
-        // Return true if verified, false otherwise
-        return true; // Replace with actual verification logic
-    }
 }
 
 // Helper function to get plugin options with defaults
