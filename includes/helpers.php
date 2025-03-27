@@ -52,25 +52,6 @@ function my_passwordless_auth_get_template_url($template, $args = [])
 }
 
 /**
- * Generate a verification URL for email confirmation.
- *
- * @param int $user_id The user ID to verify.
- * @param string $code The verification code.
- * @return string The verification URL.
- */
-function my_passwordless_auth_get_verification_url($user_id, $code)
-{
-    return add_query_arg(
-        [
-            'action' => 'verify_email',
-            'user_id' => $user_id,
-            'code' => $code
-        ],
-        home_url()
-    );
-}
-
-/**
  * Process email verification when a user clicks the verification link.
  * 
  * @return bool True if verification was successful, false otherwise.
@@ -82,10 +63,19 @@ function my_passwordless_auth_process_email_verification()
         isset($_GET['action']) && $_GET['action'] === 'verify_email' &&
         isset($_GET['user_id']) && isset($_GET['code'])
     ) {
-
-        $user_id = intval($_GET['user_id']);
+        $encrypted_user_id = sanitize_text_field($_GET['user_id']);
         $code = sanitize_text_field($_GET['code']);
+        
+        // Decrypt the user ID
+        $user_id = my_passwordless_auth_decrypt_user_id($encrypted_user_id);
+        
+        if ($user_id === false) {
+            my_passwordless_auth_log("Email verification failed - could not decrypt user ID: $encrypted_user_id", 'error');
+            return false;
+        }
 
+        my_passwordless_auth_log("Processing verification for user ID: $user_id with code: $code");
+        
         // Get stored verification code for this user
         $stored_code = get_user_meta($user_id, 'email_verification_code', true);
 
@@ -99,7 +89,7 @@ function my_passwordless_auth_process_email_verification()
             my_passwordless_auth_log("Email verified successfully for user ID: $user_id");
             return true;
         } else {
-            my_passwordless_auth_log("Email verification failed for user ID: $user_id - invalid code", 'error');
+            my_passwordless_auth_log("Email verification failed for user ID: $user_id - code mismatch. Expected: $stored_code, Got: $code", 'error');
             return false;
         }
     }

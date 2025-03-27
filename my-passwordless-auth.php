@@ -145,11 +145,22 @@ function my_passwordless_auth_handle_verification() {
             exit;
         }
         
-        $user_id = intval($_GET['user_id']);
+        $encrypted_user_id = sanitize_text_field($_GET['user_id']);
+        $code = sanitize_text_field($_GET['code']);
+        
+        // Decrypt the user ID
+        $user_id = my_passwordless_auth_decrypt_user_id($encrypted_user_id);
+        
+        if ($user_id === false) {
+            my_passwordless_auth_log("Failed to decrypt user ID: $encrypted_user_id", 'error', true);
+            wp_redirect(home_url('/login/?verification=invalid'));
+            exit;
+        }
+        
         $user = get_user_by('id', $user_id);
         
         if (!$user) {
-            my_passwordless_auth_log("Invalid user ID: $user_id", 'error');
+            my_passwordless_auth_log("Invalid user ID after decryption: $user_id", 'error');
             wp_redirect(home_url('/login/?verification=invalid_user'));
             exit;
         }
@@ -347,7 +358,7 @@ function my_passwordless_auth_activate() {
     // Create an initial log entry
     my_passwordless_auth_log('Plugin activated', 'info');
 }
-
+//planned for removal
 // Process email verification function (placeholder - implement this based on your needs)
 if (!function_exists('my_passwordless_auth_process_email_verification')) {
     function my_passwordless_auth_process_email_verification() {

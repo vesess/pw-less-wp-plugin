@@ -72,8 +72,15 @@ class My_Passwordless_Auth_Registration {
      * Verify a user's email address.
      */
     public function verify_email() {
-        $user_id = intval($_GET['user_id']);
+        $encrypted_user_id = sanitize_text_field($_GET['user_id']);
         $code = sanitize_text_field($_GET['code']);
+
+        // Decrypt the user ID
+        $user_id = my_passwordless_auth_decrypt_user_id($encrypted_user_id);
+        
+        if ($user_id === false) {
+            wp_die('Invalid verification link');
+        }
 
         $stored_code = get_user_meta($user_id, 'email_verification_code', true);
 
