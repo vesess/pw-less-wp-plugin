@@ -47,10 +47,42 @@ class My_Passwordless_Auth_Admin {
     public function register_settings() {
         register_setting('my_passwordless_auth_options', 'my_passwordless_auth_options');
         
+     
+        
+        add_settings_section(
+            'my_passwordless_auth_general',
+            __('General Settings', 'my-passwordless-auth'),
+            array($this, 'settings_section_callback_general'),
+            'my-passwordless-auth'
+        );
+        
+        add_settings_field(
+            'login_redirect',
+            __('Redirect After Login', 'my-passwordless-auth'),
+            array($this, 'render_login_redirect_field'),
+            'my-passwordless-auth',
+            'my_passwordless_auth_general'
+        );
+        
+        add_settings_field(
+            'email_subject',
+            __('Email Subject', 'my-passwordless-auth'),
+            array($this, 'render_email_subject_field'),
+            'my-passwordless-auth',
+            'my_passwordless_auth_general'
+        );
+        
+        add_settings_field(
+            'email_template',
+            __('Email Template', 'my-passwordless-auth'),
+            array($this, 'render_email_template_field'),
+            'my-passwordless-auth',
+            'my_passwordless_auth_general'
+        );
         add_settings_section(
             'my_passwordless_auth_main',
-            __('General Settings', 'my-passwordless-auth'),
-            array($this, 'settings_section_callback'),
+            __('Main Settings', 'my-passwordless-auth'),
+            array($this, 'settings_section_callback_main'),
             'my-passwordless-auth'
         );
         
@@ -77,17 +109,17 @@ class My_Passwordless_Auth_Admin {
             'my-passwordless-auth',
             'my_passwordless_auth_main'
         );
-        
-        // Removed URL blocker section
     }
 
     /**
      * Section description callback.
      */
-    public function settings_section_callback() {
+    public function settings_section_callback_general() {
         echo '<p>' . esc_html__('Configure your passwordless authentication settings.', 'my-passwordless-auth') . '</p>';
     }
-
+    public function settings_section_callback_main() {
+        echo '<p>' . esc_html__('Configure your passwordless authentication settings.', 'my-passwordless-auth') . '</p>';
+    }
     /**
      * Email From Name field callback.
      */
@@ -115,7 +147,7 @@ class My_Passwordless_Auth_Admin {
         echo '<input type="number" name="my_passwordless_auth_options[code_expiration]" value="' . esc_attr($value) . '" min="1" max="60" step="1" class="small-text">';
     }
     
-    // Removed blocked_urls_callback
+
 
     /**
      * Render the settings page.
@@ -134,7 +166,59 @@ class My_Passwordless_Auth_Admin {
                 submit_button();
                 ?>
             </form>
+            <hr>
+            
+            <h2><?php _e('How to Use', 'my-passwordless-auth'); ?></h2>
+            <p><?php _e('Add the login form to any page or post using this shortcode:', 'my-passwordless-auth'); ?></p>
+            <p><code>[passwordless_login_form]</code></p>
+            
+            <p><?php _e('To specify a custom redirect after login:', 'my-passwordless-auth'); ?></p>
+            <p><code>[passwordless_login_form redirect="/dashboard/"]</code></p>
         </div>
+        <?php
+    }
+
+  
+
+    /**
+     * Render login redirect field
+     */
+    public function render_login_redirect_field() {
+        $options = get_option('my_passwordless_auth_options');
+        $redirect = isset($options['login_redirect']) ? $options['login_redirect'] : admin_url();
+        ?>
+        <input type="text" name="my_passwordless_auth_options[login_redirect]" value="<?php echo esc_attr($redirect); ?>" class="regular-text" />
+        <p class="description"><?php _e('URL to redirect users after successful login.', 'my-passwordless-auth'); ?></p>
+        <?php
+    }
+
+    /**
+     * Render email subject field
+     */
+    public function render_email_subject_field() {
+        $options = get_option('my_passwordless_auth_options');
+        $subject = isset($options['email_subject']) ? $options['email_subject'] : sprintf(__('Login link for %s', 'my-passwordless-auth'), get_bloginfo('name'));
+        ?>
+        <input type="text" name="my_passwordless_auth_options[email_subject]" value="<?php echo esc_attr($subject); ?>" class="regular-text" />
+        <p class="description"><?php _e('Subject line for the login link email.', 'my-passwordless-auth'); ?></p>
+        <?php
+    }
+
+    /**
+     * Render email template field
+     */
+    public function render_email_template_field() {
+        $options = get_option('my_passwordless_auth_options');
+        $default_template = __("Hello {display_name},\n\nClick the link below to log in:\n\n{login_link}\n\nThis link will expire in 15 minutes.\n\nIf you did not request this login link, please ignore this email.\n\nRegards,\n{site_name}", 'my-passwordless-auth');
+        $template = isset($options['email_template']) ? $options['email_template'] : $default_template;
+        ?>
+        <textarea name="my_passwordless_auth_options[email_template]" rows="10" class="large-text code"><?php echo esc_textarea($template); ?></textarea>
+        <p class="description">
+            <?php _e('Available placeholders:', 'my-passwordless-auth'); ?><br>
+            <code>{display_name}</code> - <?php _e('User\'s display name', 'my-passwordless-auth'); ?><br>
+            <code>{login_link}</code> - <?php _e('The magic login link', 'my-passwordless-auth'); ?><br>
+            <code>{site_name}</code> - <?php _e('Your site name', 'my-passwordless-auth'); ?>
+        </p>
         <?php
     }
 }
