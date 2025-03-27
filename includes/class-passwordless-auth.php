@@ -151,10 +151,7 @@ class My_Passwordless_Auth {
         
         // Enqueue styles and scripts
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
-        
-        // Add plugin settings page
-        add_action('admin_menu', array($this, 'add_admin_menu'));
-        add_action('admin_init', array($this, 'register_settings'));
+
     }
 
     /**
@@ -290,136 +287,11 @@ class My_Passwordless_Auth {
         wp_enqueue_style('my-passwordless-auth-style', MY_PASSWORDLESS_AUTH_URL . 'assets/css/passwordless-auth.css', array(), MY_PASSWORDLESS_AUTH_VERSION);
     }
 
-    /**
-     * Add plugin settings page to admin
-     */
-    public function add_admin_menu() {
-        add_options_page(
-            __('Passwordless Authentication', 'my-passwordless-auth'),
-            __('Passwordless Auth', 'my-passwordless-auth'),
-            'manage_options',
-            'my-passwordless-auth',
-            array($this, 'render_settings_page')
-        );
-    }
 
-    /**
-     * Register plugin settings
-     */
-    public function register_settings() {
-        register_setting('my_passwordless_auth_options', 'my_passwordless_auth_options');
-        
-        add_settings_section(
-            'my_passwordless_auth_general',
-            __('General Settings', 'my-passwordless-auth'),
-            array($this, 'settings_section_callback'),
-            'my-passwordless-auth'
-        );
-        
-        add_settings_field(
-            'login_redirect',
-            __('Redirect After Login', 'my-passwordless-auth'),
-            array($this, 'render_login_redirect_field'),
-            'my-passwordless-auth',
-            'my_passwordless_auth_general'
-        );
-        
-        add_settings_field(
-            'email_subject',
-            __('Email Subject', 'my-passwordless-auth'),
-            array($this, 'render_email_subject_field'),
-            'my-passwordless-auth',
-            'my_passwordless_auth_general'
-        );
-        
-        add_settings_field(
-            'email_template',
-            __('Email Template', 'my-passwordless-auth'),
-            array($this, 'render_email_template_field'),
-            'my-passwordless-auth',
-            'my_passwordless_auth_general'
-        );
-    }
 
-    /**
-     * Settings section callback
-     */
-    public function settings_section_callback() {
-        echo '<p>' . __('Configure your passwordless authentication settings here.', 'my-passwordless-auth') . '</p>';
-    }
 
-    /**
-     * Render login redirect field
-     */
-    public function render_login_redirect_field() {
-        $options = get_option('my_passwordless_auth_options');
-        $redirect = isset($options['login_redirect']) ? $options['login_redirect'] : admin_url();
-        ?>
-        <input type="text" name="my_passwordless_auth_options[login_redirect]" value="<?php echo esc_attr($redirect); ?>" class="regular-text" />
-        <p class="description"><?php _e('URL to redirect users after successful login.', 'my-passwordless-auth'); ?></p>
-        <?php
-    }
 
-    /**
-     * Render email subject field
-     */
-    public function render_email_subject_field() {
-        $options = get_option('my_passwordless_auth_options');
-        $subject = isset($options['email_subject']) ? $options['email_subject'] : sprintf(__('Login link for %s', 'my-passwordless-auth'), get_bloginfo('name'));
-        ?>
-        <input type="text" name="my_passwordless_auth_options[email_subject]" value="<?php echo esc_attr($subject); ?>" class="regular-text" />
-        <p class="description"><?php _e('Subject line for the login link email.', 'my-passwordless-auth'); ?></p>
-        <?php
-    }
 
-    /**
-     * Render email template field
-     */
-    public function render_email_template_field() {
-        $options = get_option('my_passwordless_auth_options');
-        $default_template = __("Hello {display_name},\n\nClick the link below to log in:\n\n{login_link}\n\nThis link will expire in 15 minutes.\n\nIf you did not request this login link, please ignore this email.\n\nRegards,\n{site_name}", 'my-passwordless-auth');
-        $template = isset($options['email_template']) ? $options['email_template'] : $default_template;
-        ?>
-        <textarea name="my_passwordless_auth_options[email_template]" rows="10" class="large-text code"><?php echo esc_textarea($template); ?></textarea>
-        <p class="description">
-            <?php _e('Available placeholders:', 'my-passwordless-auth'); ?><br>
-            <code>{display_name}</code> - <?php _e('User\'s display name', 'my-passwordless-auth'); ?><br>
-            <code>{login_link}</code> - <?php _e('The magic login link', 'my-passwordless-auth'); ?><br>
-            <code>{site_name}</code> - <?php _e('Your site name', 'my-passwordless-auth'); ?>
-        </p>
-        <?php
-    }
-
-    /**
-     * Render settings page
-     */
-    public function render_settings_page() {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
-        
-        ?>
-        <div class="wrap">
-            <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
-            <form action="options.php" method="post">
-                <?php
-                settings_fields('my_passwordless_auth_options');
-                do_settings_sections('my-passwordless-auth');
-                submit_button();
-                ?>
-            </form>
-            
-            <hr>
-            
-            <h2><?php _e('How to Use', 'my-passwordless-auth'); ?></h2>
-            <p><?php _e('Add the login form to any page or post using this shortcode:', 'my-passwordless-auth'); ?></p>
-            <p><code>[passwordless_login_form]</code></p>
-            
-            <p><?php _e('To specify a custom redirect after login:', 'my-passwordless-auth'); ?></p>
-            <p><code>[passwordless_login_form redirect="/dashboard/"]</code></p>
-        </div>
-        <?php
-    }
 
     /**
      * The reference to the class that orchestrates the hooks with the plugin.
