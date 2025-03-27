@@ -34,12 +34,12 @@ function run_my_passwordless_auth() {
 }
 
 /**
- * Load plugin text domain.
+ * Load plugin text domain. This is commented out for now since languages folder is not included.
  */
-function my_passwordless_auth_load_textdomain() {
-    load_plugin_textdomain('my-passwordless-auth', false, dirname(plugin_basename(__FILE__)) . '/languages/');
-}
-add_action('plugins_loaded', 'my_passwordless_auth_load_textdomain');
+// function my_passwordless_auth_load_textdomain() {
+//     load_plugin_textdomain('my-passwordless-auth', false, dirname(plugin_basename(__FILE__)) . '/languages/');
+// }
+// add_action('plugins_loaded', 'my_passwordless_auth_load_textdomain');
 
 // Run the plugin
 run_my_passwordless_auth();

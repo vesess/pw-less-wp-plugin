@@ -237,9 +237,9 @@ if (!function_exists('my_passwordless_auth_generate_login_token')) {
             'token' => $token,
             'expiration' => $expiration
         ];
-        
+
         update_user_meta($user_id, 'passwordless_auth_login_token', $token_data);
-        
+
         my_passwordless_auth_log("Generated login token for user ID: $user_id, token: $token, expires: " . date('Y-m-d H:i:s', $expiration));
 
         return $token;
@@ -352,27 +352,27 @@ if (!function_exists('my_passwordless_auth_process_magic_login')) {
         }
 
         my_passwordless_auth_log("Processing magic login request with uid: " . sanitize_text_field($_GET['uid']));
-        
+
         $uid = sanitize_text_field($_GET['uid']);
         $token = sanitize_text_field($_GET['token']);
-        
+
         $user_id = my_passwordless_auth_decrypt_user_id($uid);
-        
+
         if ($user_id === false) {
             my_passwordless_auth_log("Magic login failed - could not decrypt user ID from: $uid", 'error');
             return new WP_Error('invalid_user', __('Invalid login link. Please request a new one.', 'my-passwordless-auth'));
         }
-        
+
         my_passwordless_auth_log("Successfully decrypted user ID: $user_id");
 
         // Get stored token data for this user
         $stored_data = get_user_meta($user_id, 'passwordless_auth_login_token', true);
-        
+
         if (empty($stored_data)) {
             my_passwordless_auth_log("Magic login failed - no token stored for user ID: $user_id", 'error');
             return new WP_Error('invalid_token', __('Invalid login link. Please request a new one.', 'my-passwordless-auth'));
         }
-        
+
         my_passwordless_auth_log("Stored token data: " . json_encode($stored_data));
 
         // Check if stored data has correct format
@@ -443,10 +443,10 @@ function my_passwordless_auth_encrypt_user_id($user_id)
     // Define a fixed encryption key and IV
     $encryption_key = 'PwLessWpAuthPluginSecretKey123!';
     $iv = 'PwLessWpAuthIv16';
-    
+
     // Salt the ID with just the user ID - keep it simple
     $data_to_encrypt = (string)$user_id;
-    
+
     // Log for debugging
     my_passwordless_auth_log("Encrypting user ID: " . $data_to_encrypt);
 
@@ -458,18 +458,18 @@ function my_passwordless_auth_encrypt_user_id($user_id)
         0,
         $iv
     );
-    
+
     if ($encrypted === false) {
         my_passwordless_auth_log("Encryption failed: " . openssl_error_string(), 'error');
         return false;
     }
-    
+
     // URL-safe base64 encoding
     $result = strtr(base64_encode($encrypted), '+/=', '-_,');
-    
+
     // Log for debugging
     my_passwordless_auth_log("Encryption result: " . $result);
-    
+
     return $result;
 }
 
@@ -484,18 +484,18 @@ function my_passwordless_auth_decrypt_user_id($encrypted_id)
     // Define the same fixed encryption key and IV used in encryption
     $encryption_key = 'PwLessWpAuthPluginSecretKey123!';
     $iv = 'PwLessWpAuthIv16';
-    
+
     try {
         // Log the input for debugging
         my_passwordless_auth_log("Attempting to decrypt: " . $encrypted_id);
-        
+
         // URL-safe base64 decoding
         $encrypted_data = base64_decode(strtr($encrypted_id, '-_,', '+/='));
         if ($encrypted_data === false) {
             my_passwordless_auth_log("Decryption failed: Invalid base64 encoding", 'error');
             return false;
         }
-        
+
         // Decrypt
         $decrypted = openssl_decrypt(
             $encrypted_data,
@@ -504,21 +504,21 @@ function my_passwordless_auth_decrypt_user_id($encrypted_id)
             0,
             $iv
         );
-        
+
         if ($decrypted === false) {
             my_passwordless_auth_log("Decryption failed: " . openssl_error_string(), 'error');
             return false;
         }
-        
+
         // Log decryption result for debugging
         my_passwordless_auth_log("Successfully decrypted to: " . $decrypted);
-        
+
         // Validate that we got a numeric result
         if (!is_numeric($decrypted)) {
             my_passwordless_auth_log("Decryption result is not numeric: " . $decrypted, 'error');
             return false;
         }
-        
+
         return (int)$decrypted;
     } catch (Exception $e) {
         my_passwordless_auth_log("Exception during decryption: " . $e->getMessage(), 'error');
