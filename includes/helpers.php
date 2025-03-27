@@ -52,52 +52,6 @@ function my_passwordless_auth_get_template_url($template, $args = [])
 }
 
 /**
- * Process email verification when a user clicks the verification link.
- * 
- * @return bool True if verification was successful, false otherwise.
- */
-function my_passwordless_auth_process_email_verification()
-{
-    // Check if this is a verification request
-    if (
-        isset($_GET['action']) && $_GET['action'] === 'verify_email' &&
-        isset($_GET['user_id']) && isset($_GET['code'])
-    ) {
-        $encrypted_user_id = sanitize_text_field($_GET['user_id']);
-        $code = sanitize_text_field($_GET['code']);
-        
-        // Decrypt the user ID
-        $user_id = my_passwordless_auth_decrypt_user_id($encrypted_user_id);
-        
-        if ($user_id === false) {
-            my_passwordless_auth_log("Email verification failed - could not decrypt user ID: $encrypted_user_id", 'error');
-            return false;
-        }
-
-        my_passwordless_auth_log("Processing verification for user ID: $user_id with code: $code");
-        
-        // Get stored verification code for this user
-        $stored_code = get_user_meta($user_id, 'email_verification_code', true);
-
-        // Verify the code matches
-        if ($stored_code && $stored_code === $code) {
-            // Update user meta to mark email as verified
-            update_user_meta($user_id, 'email_verified', true);
-            // Delete the verification code as it's no longer needed
-            delete_user_meta($user_id, 'email_verification_code');
-
-            my_passwordless_auth_log("Email verified successfully for user ID: $user_id");
-            return true;
-        } else {
-            my_passwordless_auth_log("Email verification failed for user ID: $user_id - code mismatch. Expected: $stored_code, Got: $code", 'error');
-            return false;
-        }
-    }
-
-    return false;
-}
-
-/**
  * Log authentication events for debugging.
  *
  * @param string $message The log message.
@@ -419,8 +373,6 @@ function my_passwordless_auth_is_valid_email($email)
 {
     return (bool) is_email($email);
 }
-
-
 
 /**
  * Encrypt user ID for use in magic links

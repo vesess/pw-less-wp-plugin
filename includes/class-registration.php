@@ -7,8 +7,8 @@ class My_Passwordless_Auth_Registration {
      * Initialize the class and set its hooks.
      */
     public function init() {
+        // Only register the AJAX handler for user registration
         add_action('wp_ajax_nopriv_register_new_user', array($this, 'register_new_user'));
-        add_action('wp_ajax_nopriv_verify_email', array($this, 'verify_email'));
     }
 
     /**
@@ -66,34 +66,5 @@ class My_Passwordless_Auth_Registration {
         } else {
             wp_send_json_error('Registration successful but failed to send verification email.');
         }
-    }
-
-    /**
-     * Verify a user's email address.
-     */
-    public function verify_email() {
-        $encrypted_user_id = sanitize_text_field($_GET['user_id']);
-        $code = sanitize_text_field($_GET['code']);
-
-        // Decrypt the user ID
-        $user_id = my_passwordless_auth_decrypt_user_id($encrypted_user_id);
-        
-        if ($user_id === false) {
-            wp_die('Invalid verification link');
-        }
-
-        $stored_code = get_user_meta($user_id, 'email_verification_code', true);
-
-        if (empty($stored_code) || $stored_code !== $code) {
-            wp_die('Invalid verification link');
-        }
-
-        // Update the user as verified
-        update_user_meta($user_id, 'email_verified', true);
-        delete_user_meta($user_id, 'email_verification_code');
-
-        // Redirect to login page with success message
-        wp_redirect(add_query_arg('verified', 'success', wp_login_url()));
-        exit;
     }
 }
