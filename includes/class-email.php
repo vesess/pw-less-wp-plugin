@@ -17,18 +17,18 @@ class My_Passwordless_Auth_Email {
         }
 
         $to = $user->user_email;
-        $subject = sprintf(__('[%s] Your Login Code', 'my-passwordless-auth'), get_bloginfo('name'));
+        $subject = sprintf(esc_html__('[%s] Your Login Code', 'my-passwordless-auth'), esc_html(get_bloginfo('name')));
         
         $message = sprintf(
-            __("Hello %s,\n\nYour login code is: %s\n\nThis code will expire in 15 minutes.\n\nBest regards,\n%s", 'my-passwordless-auth'),
-            $user->display_name,
-            $login_code,
-            get_bloginfo('name')
+            esc_html__("Hello %s,\n\nYour login code is: %s\n\nThis code will expire in 15 minutes.\n\nBest regards,\n%s", 'my-passwordless-auth'),
+            esc_html($user->display_name),
+            esc_html($login_code),
+            esc_html(get_bloginfo('name'))
         );
         
         $headers = array(
             'Content-Type: text/plain; charset=UTF-8',
-            'From: ' . $this->get_from_name() . ' <' . $this->get_from_email() . '>',
+            'From: ' . esc_html($this->get_from_name()) . ' <' . sanitize_email($this->get_from_email()) . '>',
         );
 
         return $this->send_email($to, $subject, $message, $headers, 'login_code');
@@ -47,28 +47,27 @@ class My_Passwordless_Auth_Email {
             return false;
         }
 
-        $verification_url = add_query_arg(
-            array(
-                'action' => 'verify_email',
-                'user_id' => my_passwordless_auth_encrypt_user_id($user_id),
-                'code' => $verification_code
-            ),
-            home_url()
+        // Fix the URL encoding issue by using a direct approach instead of add_query_arg
+        $base_url = home_url();
+        $verification_url = esc_url_raw(
+            $base_url . '?action=verify_email' . 
+            '&user_id=' . my_passwordless_auth_encrypt_user_id($user_id) . 
+            '&code=' . $verification_code
         );
 
         $to = $user->user_email;
-        $subject = sprintf(__('[%s] Verify Your Email', 'my-passwordless-auth'), get_bloginfo('name'));
+        $subject = sprintf(esc_html__('[%s] Verify Your Email', 'my-passwordless-auth'), esc_html(get_bloginfo('name')));
         
         $message = sprintf(
-            __("Hello %s,\n\nThank you for registering! Please verify your email address by clicking the link below:\n\n%s\n\nBest regards,\n%s", 'my-passwordless-auth'),
-            $user->display_name,
+            esc_html__("Hello %s,\n\nThank you for registering! Please verify your email address by clicking the link below:\n\n%s\n\nBest regards,\n%s", 'my-passwordless-auth'),
+            esc_html($user->display_name),
             $verification_url,
-            get_bloginfo('name')
+            esc_html(get_bloginfo('name'))
         );
         
         $headers = array(
             'Content-Type: text/plain; charset=UTF-8',
-            'From: ' . $this->get_from_name() . ' <' . $this->get_from_email() . '>',
+            'From: ' . esc_html($this->get_from_name()) . ' <' . sanitize_email($this->get_from_email()) . '>',
         );
        
         return $this->send_email($to, $subject, $message, $headers, 'verification');
@@ -88,18 +87,18 @@ class My_Passwordless_Auth_Email {
         }
 
         $to = $user->user_email;
-        $subject = sprintf(__('[%s] Confirm Account Deletion', 'my-passwordless-auth'), get_bloginfo('name'));
+        $subject = sprintf(esc_html__('[%s] Confirm Account Deletion', 'my-passwordless-auth'), esc_html(get_bloginfo('name')));
         
         $message = sprintf(
-            __("Hello %s,\n\nWe received a request to delete your account. To confirm, use the following code:\n\n%s\n\nIf you did not request this, please ignore this email.\n\nBest regards,\n%s", 'my-passwordless-auth'),
-            $user->display_name,
-            $confirmation_code,
-            get_bloginfo('name')
+            esc_html__("Hello %s,\n\nWe received a request to delete your account. To confirm, use the following code:\n\n%s\n\nIf you did not request this, please ignore this email.\n\nBest regards,\n%s", 'my-passwordless-auth'),
+            esc_html($user->display_name),
+            esc_html($confirmation_code),
+            esc_html(get_bloginfo('name'))
         );
         
         $headers = array(
             'Content-Type: text/plain; charset=UTF-8',
-            'From: ' . $this->get_from_name() . ' <' . $this->get_from_email() . '>',
+            'From: ' . esc_html($this->get_from_name()) . ' <' . sanitize_email($this->get_from_email()) . '>',
         );
 
         return $this->send_email($to, $subject, $message, $headers, 'deletion');

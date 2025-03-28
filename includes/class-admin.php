@@ -197,7 +197,8 @@ class My_Passwordless_Auth_Admin {
      */
     public function render_email_subject_field() {
         $options = get_option('my_passwordless_auth_options');
-        $subject = isset($options['email_subject']) ? $options['email_subject'] : sprintf(__('Login link for %s', 'my-passwordless-auth'), get_bloginfo('name'));
+        $default_subject = sprintf(esc_html__('Login link for %s', 'my-passwordless-auth'), esc_html(get_bloginfo('name')));
+        $subject = isset($options['email_subject']) ? sanitize_text_field($options['email_subject']) : $default_subject;
         ?>
         <input type="text" name="my_passwordless_auth_options[email_subject]" value="<?php echo esc_attr($subject); ?>" class="regular-text" />
         <p class="description"><?php _e('Subject line for the login link email.', 'my-passwordless-auth'); ?></p>
