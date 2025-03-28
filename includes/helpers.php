@@ -209,6 +209,12 @@ if (!function_exists('my_passwordless_auth_send_magic_link')) {
             return false;
         }
 
+        $email_verified = get_user_meta($user->ID, 'email_verified', true);
+        if (!$email_verified) {
+            my_passwordless_auth_log("Cannot send login link: Email not verified for user ID {$user->ID}", 'error');
+            return 'unverified';
+        }
+        
         $login_link = my_passwordless_auth_create_login_link($user_email);
 
         if (!$login_link) {
