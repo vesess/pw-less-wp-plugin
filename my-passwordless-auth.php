@@ -51,8 +51,7 @@ run_my_passwordless_auth();
 // Include helper functions
 require_once plugin_dir_path(__FILE__) . 'includes/helpers.php';
 
-// Include magic login handler
-require_once plugin_dir_path(__FILE__) . 'includes/magic-login-handler.php';
+
 
 /**
  * Initialize the plugin and set up hooks
