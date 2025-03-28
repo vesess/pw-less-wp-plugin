@@ -8,25 +8,6 @@ if (!defined('WPINC')) {
     die;
 }
 
-/**
- * Add a template page for the login form
- */
-function my_passwordless_auth_add_login_template() {
-    // Define the template path
-    $login_template = MY_PASSWORDLESS_AUTH_PATH . 'templates/page-login.php';
-    
-    // Create directory if it doesn't exist
-    if (!file_exists(dirname($login_template))) {
-        wp_mkdir_p(dirname($login_template));
-    }
-
-    // Create the template if it doesn't exist
-    if (!file_exists($login_template)) {
-        $template_content = file_get_contents(MY_PASSWORDLESS_AUTH_PATH . 'templates/page-login.php');
-        file_put_contents($login_template, $template_content);
-    }
-}
-add_action('init', 'my_passwordless_auth_add_login_template');
 
 /**
  * Add the page template to the templates list
