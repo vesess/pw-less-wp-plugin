@@ -329,16 +329,17 @@ function my_passwordless_auth_admin_notices() {
         ?>
         <div class="notice notice-warning is-dismissible">
             <p>
-                <?php echo sprintf(
+                <?php echo esc_html(sprintf(
                     _n(
                         'Passwordless Authentication: There is %d error log entry in the last 24 hours.',
                         'Passwordless Authentication: There are %d error log entries in the last 24 hours.',
-                        $error_count
+                        $error_count,
+                        'my-passwordless-auth'
                     ),
                     $error_count
-                ); ?>
-                <a href="<?php echo admin_url('options-general.php?page=my-passwordless-auth-logs'); ?>">
-                    View logs
+                )); ?>
+                <a href="<?php echo esc_url(admin_url('options-general.php?page=my-passwordless-auth-logs')); ?>">
+                    <?php esc_html_e('View logs', 'my-passwordless-auth'); ?>
                 </a>
             </p>
         </div>

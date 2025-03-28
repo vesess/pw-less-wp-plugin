@@ -151,12 +151,13 @@ if (!function_exists('my_passwordless_auth_create_login_link')) {
         // Generate a secure token
         $token = my_passwordless_auth_generate_login_token($user->ID);
 
-        // Create a login URL with the token
-        $login_link = add_query_arg([
-            'action' => 'magic_login',
-            'uid' => my_passwordless_auth_encrypt_user_id($user->ID),
-            'token' => $token,
-        ], home_url());
+        // Create a login URL directly to avoid encoding issues
+        $base_url = home_url();
+        $login_link = esc_url_raw(
+            $base_url . '?action=magic_login' .
+            '&uid=' . my_passwordless_auth_encrypt_user_id($user->ID) .
+            '&token=' . $token
+        );
 
         my_passwordless_auth_log("Magic login link created for user ID: {$user->ID}");
         return $login_link;
@@ -217,21 +218,21 @@ if (!function_exists('my_passwordless_auth_send_magic_link')) {
         // Default email subject
         if (!$subject) {
             $options = get_option('my_passwordless_auth_options', []);
-            $subject = isset($options['email_subject']) ? $options['email_subject'] : '';
+            $subject = isset($options['email_subject']) ? sanitize_text_field($options['email_subject']) : '';
 
             if (empty($subject)) {
-                $subject = sprintf(__('Login link for %s', 'my-passwordless-auth'), get_bloginfo('name'));
+                $subject = sprintf(esc_html__('Login link for %s', 'my-passwordless-auth'), esc_html(get_bloginfo('name')));
             }
         }
 
         // Default email message
         if (!$message) {
             $options = get_option('my_passwordless_auth_options', []);
-            $template = isset($options['email_template']) ? $options['email_template'] : '';
+            $template = isset($options['email_template']) ? sanitize_textarea_field($options['email_template']) : '';
 
             if (empty($template)) {
                 $message = sprintf(
-                    __('Hello %s,
+                    esc_html__('Hello %s,
 
 Click the link below to log in:
 
@@ -243,15 +244,15 @@ If you did not request this login link, please ignore this email.
 
 Regards,
 %s', 'my-passwordless-auth'),
-                    $user->display_name,
-                    $login_link,
-                    get_bloginfo('name')
+                    esc_html($user->display_name),
+                    esc_url($login_link),
+                    esc_html(get_bloginfo('name'))
                 );
             } else {
-                // Replace placeholders in the template
+                // Replace placeholders in the template with sanitized values
                 $message = str_replace(
                     ['{display_name}', '{login_link}', '{site_name}'],
-                    [$user->display_name, $login_link, get_bloginfo('name')],
+                    [esc_html($user->display_name), esc_url($login_link), esc_html(get_bloginfo('name'))],
                     $template
                 );
             }
