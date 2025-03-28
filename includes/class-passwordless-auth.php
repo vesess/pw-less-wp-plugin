@@ -242,12 +242,24 @@ class My_Passwordless_Auth
         // Generate and send magic login link
         $sent = my_passwordless_auth_send_magic_link($user_email);
 
-        if (!$sent) {
+        // Handle different error scenarios
+        if ($sent === false) {
+            // Email sending failed
+            my_passwordless_auth_log("Failed to send login link to user email: $user_email", 'error');
             wp_redirect(add_query_arg('error', 'email_failed', wp_get_referer()));
+            exit;
+        } elseif ($sent === 'unverified') {
+            // Email is not yet verified
+            wp_redirect(add_query_arg('error', 'email_unverified', wp_get_referer()));
+            exit;
+        } elseif ($sent !== true) {
+            // Any other error
+            wp_redirect(add_query_arg('error', 'unknown_error', wp_get_referer()));
             exit;
         }
 
         // Success! Redirect with success message
+        my_passwordless_auth_log("Login link successfully sent to user email: $user_email", 'info');
         $redirect_url = add_query_arg('sent', '1', wp_get_referer());
         if (!empty($redirect_to)) {
             $redirect_url = add_query_arg('redirect_to', urlencode($redirect_to), $redirect_url);

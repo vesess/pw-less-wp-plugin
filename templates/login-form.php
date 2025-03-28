@@ -22,10 +22,16 @@ if (isset($_GET['error']) && !empty($_GET['error'])) {
             $error_message = __('No user found with that email address.', 'my-passwordless-auth');
             break;
         case 'email_failed':
-            $error_message = __('Failed to send the login link. Please try again later.', 'my-passwordless-auth');
+            $error_message = __('Failed to send the login link. There might be an issue with the email server. Please try again later or contact support.', 'my-passwordless-auth');
+            break;
+        case 'email_unverified':
+            $error_message = __('Your email address has not been verified yet. Please check your inbox for a verification email or register again.', 'my-passwordless-auth');
+            break;
+        case 'unknown_error':
+            $error_message = __('An unknown error occurred while trying to send the login link. Please try again later.', 'my-passwordless-auth');
             break;
         default:
-            $error_message = __('An unknown error occurred. Please try again.', 'my-passwordless-auth');
+            $error_message = __('An error occurred. Please try again.', 'my-passwordless-auth');
             break;
     }
 }
