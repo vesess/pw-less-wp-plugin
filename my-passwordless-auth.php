@@ -80,14 +80,6 @@ function my_passwordless_auth_init() {
     // Hook for processing email verification
     add_action('template_redirect', 'my_passwordless_auth_handle_verification');
     
-    // Only enqueue on frontend pages, not the WordPress login page
-    if (!my_passwordless_auth_is_login_page()) {
-        // Enqueue styles for pages using the shortcode
-        add_action('wp_enqueue_scripts', 'my_passwordless_auth_enqueue_login_styles');
-        
-        // Enqueue scripts for pages using the shortcode
-        add_action('wp_enqueue_scripts', 'my_passwordless_auth_enqueue_login_scripts');
-    }
 }
 add_action('init', 'my_passwordless_auth_init');
 
@@ -98,58 +90,9 @@ function my_passwordless_auth_is_login_page() {
     return in_array($GLOBALS['pagenow'], array('wp-login.php', 'wp-register.php'));
 }
 
-/**
- * Enqueue styles for the login page
- */
-function my_passwordless_auth_enqueue_login_styles() {
-    wp_enqueue_style(
-        'my-passwordless-auth-login', 
-        MY_PASSWORDLESS_AUTH_URL . 'assets/css/passwordless-auth.css',
-        array(),
-        MY_PASSWORDLESS_AUTH_VERSION
-    );
-}
 
-/**
- * Enqueue scripts for the login page
- */
-function my_passwordless_auth_enqueue_login_scripts() {
-    // Enqueue jQuery if not already
-    wp_enqueue_script('jquery');
-    
-    // Create js directory if it doesn't exist
-    if (!file_exists(MY_PASSWORDLESS_AUTH_PATH . 'assets/js')) {
-        wp_mkdir_p(MY_PASSWORDLESS_AUTH_PATH . 'assets/js');
-    }
-    
-    // Create the JavaScript file if it doesn't exist
-    $js_file = MY_PASSWORDLESS_AUTH_PATH . 'assets/js/login-handler.js';
-    if (!file_exists($js_file)) {
-        // Copy from the provided JavaScript content
-        $js_content = file_get_contents(MY_PASSWORDLESS_AUTH_PATH . 'assets/js/login-handler.js');
-        file_put_contents($js_file, $js_content);
-    }
-    
-    // Enqueue the script
-    wp_enqueue_script(
-        'my-passwordless-auth-login-handler',
-        MY_PASSWORDLESS_AUTH_URL . 'assets/js/login-handler.js',
-        array('jquery'),
-        MY_PASSWORDLESS_AUTH_VERSION,
-        true
-    );
-    
-    // Localize script with needed data
-    wp_localize_script(
-        'my-passwordless-auth-login-handler',
-        'my_passwordless_auth',
-        array(
-            'ajaxurl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('my-passwordless-auth-magic-link'),
-            'login_url' => wp_login_url()
-        )
-    );
-}
+
+
 
 /**
  * Handle the email verification process - Centralized handler for all verification requests
@@ -409,101 +352,6 @@ if (!function_exists('my_passwordless_auth_log')) {
     }
 }
 
-// Make sure assets directory exists
-if (!file_exists(MY_PASSWORDLESS_AUTH_PATH . 'assets')) {
-    wp_mkdir_p(MY_PASSWORDLESS_AUTH_PATH . 'assets');
-}
-
-// Create styles directory if it doesn't exist
-if (!file_exists(MY_PASSWORDLESS_AUTH_PATH . 'assets/css')) {
-    wp_mkdir_p(MY_PASSWORDLESS_AUTH_PATH . 'assets/css');
-}
-
-// Create CSS file if it doesn't exist
-$css_file = MY_PASSWORDLESS_AUTH_PATH . 'assets/css/passwordless-auth.css';
-if (!file_exists($css_file)) {
-    $css_content = "
-/* Passwordless Auth Styles */
-.passwordless-login-container {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 20px;
-    background: #fff;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.passwordless-login-form label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.passwordless-login-form input[type=\"email\"] {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 3px;
-}
-
-.passwordless-submit {
-    margin-top: 10px;
-}
-
-.passwordless-error-message {
-    background-color: #f8d7da;
-    color: #721c24;
-    padding: 10px 15px;
-    margin-bottom: 20px;
-    border-radius: 3px;
-    border: 1px solid #f5c6cb;
-}
-
-.passwordless-success-message {
-    background-color: #d4edda;
-    color: #155724;
-    padding: 10px 15px;
-    margin-bottom: 20px;
-    border-radius: 3px;
-    border: 1px solid #c3e6cb;
-}
-
-.passwordless-info {
-    margin-top: 15px;
-    font-size: 0.9em;
-    color: #666;
-    text-align: center;
-}
-
-/* Button Styles */
-.passwordless-login-form .button.button-primary {
-    background-color: #0073aa;
-    border-color: #0073aa;
-    color: white;
-    text-decoration: none;
-    padding: 8px 12px;
-    border-radius: 3px;
-    cursor: pointer;
-    display: inline-block;
-    font-size: 13px;
-    line-height: 2.15384615;
-    min-height: 30px;
-    width: 100%;
-}
-
-.passwordless-login-form .button.button-primary:hover {
-    background-color: #006799;
-    border-color: #006799;
-}
-";
-    file_put_contents($css_file, $css_content);
-}
-
-// Create templates directory if it doesn't exist
-if (!file_exists(MY_PASSWORDLESS_AUTH_PATH . 'templates')) {
-    wp_mkdir_p(MY_PASSWORDLESS_AUTH_PATH . 'templates');
-}
 
 /**
  * Filter the navigation menu items based on user login status
