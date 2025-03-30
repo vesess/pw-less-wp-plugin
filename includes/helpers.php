@@ -191,23 +191,7 @@ if (!function_exists('my_passwordless_auth_generate_login_token')) {
     }
 }
 
-/**
- * Send magic login link to a user
- * 
- * @deprecated Use My_Passwordless_Auth_Email->send_magic_link() instead
- * @param string $user_email The user's email address
- * @param string|null $subject Optional custom email subject
- * @param string|null $message Optional custom email message
- * @return bool Whether the email was sent successfully
- */
-// if (!function_exists('my_passwordless_auth_send_magic_link')) {
-//     function my_passwordless_auth_send_magic_link($user_email, $subject = null, $message = null)
-//     {
-//         // Just call the new method in the Email class
-//         $email_class = new My_Passwordless_Auth_Email();
-//         return $email_class->send_magic_link($user_email);
-//     }
-// }
+
 
 /**
  * Process magic login when a user clicks the login link
