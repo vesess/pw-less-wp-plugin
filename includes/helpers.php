@@ -194,97 +194,20 @@ if (!function_exists('my_passwordless_auth_generate_login_token')) {
 /**
  * Send magic login link to a user
  * 
+ * @deprecated Use My_Passwordless_Auth_Email->send_magic_link() instead
  * @param string $user_email The user's email address
  * @param string|null $subject Optional custom email subject
  * @param string|null $message Optional custom email message
  * @return bool Whether the email was sent successfully
  */
-if (!function_exists('my_passwordless_auth_send_magic_link')) {
-    function my_passwordless_auth_send_magic_link($user_email, $subject = null, $message = null)
-    {
-        $user = get_user_by('email', $user_email);
-
-        if (!$user) {
-            my_passwordless_auth_log("Failed to send magic link: User with email $user_email not found", 'error');
-            return false;
-        }
-
-        $email_verified = get_user_meta($user->ID, 'email_verified', true);
-        if (!$email_verified) {
-            my_passwordless_auth_log("Cannot send login link: Email not verified for user ID {$user->ID}", 'error');
-            return 'unverified';
-        }
-        
-        $login_link = my_passwordless_auth_create_login_link($user_email);
-
-        if (!$login_link) {
-            return false;
-        }
-
-        // Default email subject
-        if (!$subject) {
-            $options = get_option('my_passwordless_auth_options', []);
-            $subject = isset($options['email_subject']) ? sanitize_text_field($options['email_subject']) : '';
-
-            if (empty($subject)) {
-                $subject = sprintf(esc_html__('Login link for %s', 'my-passwordless-auth'), esc_html(get_bloginfo('name')));
-            }
-        }
-
-        // Default email message
-        if (!$message) {
-            $options = get_option('my_passwordless_auth_options', []);
-            $template = isset($options['email_template']) ? sanitize_textarea_field($options['email_template']) : '';
-
-            if (empty($template)) {
-                $message = sprintf(
-                    esc_html__('Hello %s,
-
-Click the link below to log in:
-
-%s
-
-This link will expire in 15 minutes.
-
-If you did not request this login link, please ignore this email.
-
-Regards,
-%s', 'my-passwordless-auth'),
-                    esc_html($user->display_name),
-                    esc_url($login_link),
-                    esc_html(get_bloginfo('name'))
-                );
-            } else {
-                // Replace placeholders in the template with sanitized values
-                $message = str_replace(
-                    ['{display_name}', '{login_link}', '{site_name}'],
-                    [esc_html($user->display_name), esc_url($login_link), esc_html(get_bloginfo('name'))],
-                    $template
-                );
-            }
-        }
-
-        // Convert line breaks to <br> for HTML emails
-        $message = nl2br($message);
-
-        $headers = ['Content-Type: text/html; charset=UTF-8'];
-
-        // Allow filtering of email content
-        $subject = apply_filters('my_passwordless_auth_email_subject', $subject, $user);
-        $message = apply_filters('my_passwordless_auth_email_message', $message, $user, $login_link);
-        $headers = apply_filters('my_passwordless_auth_email_headers', $headers, $user);
-
-        $sent = wp_mail($user->user_email, $subject, $message, $headers);
-
-        if ($sent) {
-            my_passwordless_auth_log("Magic login link sent to user ID: {$user->ID}");
-        } else {
-            my_passwordless_auth_log("Failed to send magic login link to user ID: {$user->ID}", 'error');
-        }
-
-        return $sent;
-    }
-}
+// if (!function_exists('my_passwordless_auth_send_magic_link')) {
+//     function my_passwordless_auth_send_magic_link($user_email, $subject = null, $message = null)
+//     {
+//         // Just call the new method in the Email class
+//         $email_class = new My_Passwordless_Auth_Email();
+//         return $email_class->send_magic_link($user_email);
+//     }
+// }
 
 /**
  * Process magic login when a user clicks the login link
