@@ -176,8 +176,9 @@ if (!function_exists('my_passwordless_auth_generate_login_token')) {
         // Generate a random token
         $token = bin2hex(random_bytes(32));
 
-        // Store the token with an expiration time (15 minutes)
-        $expiration = time() + (15 * MINUTE_IN_SECONDS);
+        // Get the configured expiration time from settings
+        $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);
+        $expiration = time() + ($expiration_minutes * MINUTE_IN_SECONDS);
         $token_data = [
             'token' => $token,
             'expiration' => $expiration

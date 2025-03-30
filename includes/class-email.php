@@ -16,13 +16,17 @@ class My_Passwordless_Auth_Email {
             return false;
         }
 
+        // Get configured expiration time
+        $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);
+
         $to = $user->user_email;
         $subject = sprintf(esc_html__('[%s] Your Login Code', 'my-passwordless-auth'), esc_html(get_bloginfo('name')));
         
         $message = sprintf(
-            esc_html__("Hello %s,\n\nYour login code is: %s\n\nThis code will expire in 15 minutes.\n\nBest regards,\n%s", 'my-passwordless-auth'),
+            esc_html__("Hello %s,\n\nYour login code is: %s\n\nThis code will expire in %d minutes.\n\nBest regards,\n%s", 'my-passwordless-auth'),
             esc_html($user->display_name),
             esc_html($login_code),
+            $expiration_minutes,
             esc_html(get_bloginfo('name'))
         );
         
@@ -130,6 +134,9 @@ class My_Passwordless_Auth_Email {
             return false;
         }
 
+        // Get configured expiration time
+        $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);
+
         // Get email subject from options or use default
         $options = get_option('my_passwordless_auth_options', []);
         $subject = isset($options['email_subject']) ? sanitize_text_field($options['email_subject']) : '';
@@ -141,16 +148,22 @@ class My_Passwordless_Auth_Email {
         $template = isset($options['email_template']) ? sanitize_textarea_field($options['email_template']) : '';
         if (empty($template)) {
             $message = sprintf(
-                esc_html__("Hello %s,\n\nClick the link below to log in:\n\n%s\n\nThis link will expire in 15 minutes.\n\nIf you did not request this login link, please ignore this email.\n\nRegards,\n%s", 'my-passwordless-auth'),
+                esc_html__("Hello %s,\n\nClick the link below to log in:\n\n%s\n\nThis link will expire in %d minutes.\n\nIf you did not request this login link, please ignore this email.\n\nRegards,\n%s", 'my-passwordless-auth'),
                 esc_html($user->display_name),
                 esc_url($login_link),
+                $expiration_minutes,
                 esc_html(get_bloginfo('name'))
             );
         } else {
             // Replace placeholders in the template
             $message = str_replace(
-                ['{display_name}', '{login_link}', '{site_name}'],
-                [esc_html($user->display_name), esc_url($login_link), esc_html(get_bloginfo('name'))],
+                ['{display_name}', '{login_link}', '{site_name}', '{expiration_minutes}'],
+                [
+                    esc_html($user->display_name), 
+                    esc_url($login_link), 
+                    esc_html(get_bloginfo('name')),
+                    $expiration_minutes
+                ],
                 $template
             );
         }
