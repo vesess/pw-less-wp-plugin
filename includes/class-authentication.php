@@ -49,7 +49,7 @@ class My_Passwordless_Auth_Authentication {
         $code_length = apply_filters('my_passwordless_auth_code_length', 6);
         $login_code = wp_generate_password($code_length, false, false);
         
-        // Store the code with an expiration time
+        // Store the code with an expiration time from settings
         $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);
         $expiration_time = time() + ($expiration_minutes * 60);
         

@@ -94,13 +94,14 @@ class My_Passwordless_Auth_Admin {
             'my_passwordless_auth_main'
         );
         
-        add_settings_field(
-            'email_from_address',
-            __('Email From Address', 'my-passwordless-auth'),
-            array($this, 'email_from_address_callback'),
-            'my-passwordless-auth',
-            'my_passwordless_auth_main'
-        );
+        // To be added in the future
+        // add_settings_field(
+        //     'email_from_address',
+        //     __('Email From Address', 'my-passwordless-auth'),
+        //     array($this, 'email_from_address_callback'),
+        //     'my-passwordless-auth',
+        //     'my_passwordless_auth_main'
+        // );
         
         add_settings_field(
             'code_expiration',
@@ -131,6 +132,7 @@ class My_Passwordless_Auth_Admin {
 
     /**
      * Email From Address field callback.
+     *  To be added in the future
      */
     public function email_from_address_callback() {
         $options = get_option('my_passwordless_auth_options');
@@ -210,7 +212,11 @@ class My_Passwordless_Auth_Admin {
      */
     public function render_email_template_field() {
         $options = get_option('my_passwordless_auth_options');
-        $default_template = __("Hello {display_name},\n\nClick the link below to log in:\n\n{login_link}\n\nThis link will expire in 15 minutes.\n\nIf you did not request this login link, please ignore this email.\n\nRegards,\n{site_name}", 'my-passwordless-auth');
+        $expiration_minutes = isset($options['code_expiration']) ? (int)$options['code_expiration'] : 15;
+        $default_template = sprintf(
+            __("Hello {display_name},\n\nClick the link below to log in:\n\n{login_link}\n\nThis link will expire in {expiration_minutes} minutes.\n\nIf you did not request this login link, please ignore this email.\n\nRegards,\n{site_name}", 'my-passwordless-auth'),
+            $expiration_minutes
+        );
         $template = isset($options['email_template']) ? $options['email_template'] : $default_template;
         ?>
         <textarea name="my_passwordless_auth_options[email_template]" rows="10" class="large-text code"><?php echo esc_textarea($template); ?></textarea>
@@ -218,7 +224,8 @@ class My_Passwordless_Auth_Admin {
             <?php _e('Available placeholders:', 'my-passwordless-auth'); ?><br>
             <code>{display_name}</code> - <?php _e('User\'s display name', 'my-passwordless-auth'); ?><br>
             <code>{login_link}</code> - <?php _e('The magic login link', 'my-passwordless-auth'); ?><br>
-            <code>{site_name}</code> - <?php _e('Your site name', 'my-passwordless-auth'); ?>
+            <code>{site_name}</code> - <?php _e('Your site name', 'my-passwordless-auth'); ?><br>
+            <code>{expiration_minutes}</code> - <?php _e('Link expiration time in minutes (from settings)', 'my-passwordless-auth'); ?>
         </p>
         <?php
     }

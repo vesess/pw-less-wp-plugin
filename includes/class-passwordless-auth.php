@@ -239,8 +239,9 @@ class My_Passwordless_Auth
             exit;
         }
 
-        // Generate and send magic login link
-        $sent = my_passwordless_auth_send_magic_link($user_email);
+        // Generate and send magic login link using the Email class for consistent "From" headers
+        $email_class = new My_Passwordless_Auth_Email();
+        $sent = $email_class->send_magic_link($user_email);
 
         // Handle different error scenarios
         if ($sent === false) {
