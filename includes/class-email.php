@@ -105,6 +105,74 @@ class My_Passwordless_Auth_Email {
     }
 
     /**
+     * Send a magic login link to a user.
+     *
+     * @param string $user_email The user's email address.
+     * @return bool|string Whether the email was sent successfully.
+     */
+    public function send_magic_link($user_email) {
+        $user = get_user_by('email', $user_email);
+        if (!$user) {
+            my_passwordless_auth_log("Failed to send magic link: User with email $user_email not found", 'error');
+            return false;
+        }
+
+        // Check if email is verified
+        $email_verified = get_user_meta($user->ID, 'email_verified', true);
+        if (!$email_verified) {
+            my_passwordless_auth_log("Cannot send login link: Email not verified for user ID {$user->ID}", 'error');
+            return 'unverified';
+        }
+        
+        $login_link = my_passwordless_auth_create_login_link($user_email);
+
+        if (!$login_link) {
+            return false;
+        }
+
+        // Get email subject from options or use default
+        $options = get_option('my_passwordless_auth_options', []);
+        $subject = isset($options['email_subject']) ? sanitize_text_field($options['email_subject']) : '';
+        if (empty($subject)) {
+            $subject = sprintf(esc_html__('Login link for %s', 'my-passwordless-auth'), esc_html(get_bloginfo('name')));
+        }
+        
+        // Get email template from options or use default
+        $template = isset($options['email_template']) ? sanitize_textarea_field($options['email_template']) : '';
+        if (empty($template)) {
+            $message = sprintf(
+                esc_html__("Hello %s,\n\nClick the link below to log in:\n\n%s\n\nThis link will expire in 15 minutes.\n\nIf you did not request this login link, please ignore this email.\n\nRegards,\n%s", 'my-passwordless-auth'),
+                esc_html($user->display_name),
+                esc_url($login_link),
+                esc_html(get_bloginfo('name'))
+            );
+        } else {
+            // Replace placeholders in the template
+            $message = str_replace(
+                ['{display_name}', '{login_link}', '{site_name}'],
+                [esc_html($user->display_name), esc_url($login_link), esc_html(get_bloginfo('name'))],
+                $template
+            );
+        }
+        
+        $headers = array(
+            'Content-Type: text/html; charset=UTF-8',
+            'From: ' . esc_html($this->get_from_name()) . ' <' . sanitize_email($this->get_from_email()) . '>',
+        );
+        
+        // Apply filters to allow customization
+        $subject = apply_filters('my_passwordless_auth_email_subject', $subject, $user);
+        $message = apply_filters('my_passwordless_auth_email_message', $message, $user, $login_link);
+        $headers = apply_filters('my_passwordless_auth_email_headers', $headers, $user);
+        
+        // Convert line breaks to <br> for HTML emails
+        $message = nl2br($message);
+        
+        $to = $user->user_email;
+        return $this->send_email($to, $subject, $message, $headers, 'magic_link');
+    }
+
+    /**
      * Helper method to send emails with logging.
      * 
      * @param string $to Email recipient.
