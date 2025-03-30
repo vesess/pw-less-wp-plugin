@@ -281,32 +281,135 @@ class My_Passwordless_Auth
 
         my_passwordless_auth_log("Magic login process initiated from class-passwordless-auth.php");
 
-        $result = my_passwordless_auth_process_magic_login();
-
-        if ($result === true) {
-            // Success! Redirect to requested page or default
-            $redirect_to = isset($_GET['redirect_to']) ? $_GET['redirect_to'] : '';
-            if (empty($redirect_to)) {
-                $redirect_to = my_passwordless_auth_get_option('login_redirect', home_url());
-            }
-
-            $redirect_to = apply_filters('my_passwordless_auth_login_redirect', $redirect_to);
-            my_passwordless_auth_log("Redirecting to: $redirect_to after successful login");
-            wp_redirect($redirect_to);
-            exit;
-        } elseif (is_wp_error($result)) {
-            // Error occurred during login
-            $error_message = $result->get_error_message();
-            my_passwordless_auth_log("Magic login error: $error_message", 'error');
-            wp_die(
-                $error_message,
-                __('Login Failed', 'my-passwordless-auth'),
-                array(
-                    'response' => 403,
-                    'back_link' => true,
-                )
-            );
+        // Process the magic login directly instead of calling an external function
+        // Check if this is a magic login request
+        if (!isset($_GET['uid']) || !isset($_GET['token'])) {
+            return false;
         }
+
+        my_passwordless_auth_log("Processing magic login request with uid: " . sanitize_text_field($_GET['uid']));
+
+        $uid = sanitize_text_field($_GET['uid']);
+        $encrypted_token = sanitize_text_field($_GET['token']);
+
+        $user_id = my_passwordless_auth_decrypt_user_id($uid);
+
+        if ($user_id === false) {
+            my_passwordless_auth_log("Magic login failed - could not decrypt user ID from: $uid", 'error');
+            $error = new WP_Error('invalid_user', __('Invalid login link. Please request a new one.', 'my-passwordless-auth'));
+            wp_die(
+                $error->get_error_message(),
+                __('Login Failed', 'my-passwordless-auth'),
+                array('response' => 403, 'back_link' => true)
+            );
+            return;
+        }
+
+        my_passwordless_auth_log("Successfully decrypted user ID: $user_id");
+
+        // Get stored token data for this user
+        $stored_data = get_user_meta($user_id, 'passwordless_auth_login_token', true);
+
+        if (empty($stored_data)) {
+            my_passwordless_auth_log("Magic login failed - no token stored for user ID: $user_id", 'error');
+            $error = new WP_Error('invalid_token', __('Invalid login link. Please request a new one.', 'my-passwordless-auth'));
+            wp_die(
+                $error->get_error_message(),
+                __('Login Failed', 'my-passwordless-auth'),
+                array('response' => 403, 'back_link' => true)
+            );
+            return;
+        }
+
+        // Decrypt the token from the URL
+        $token = my_passwordless_auth_decrypt_token_from_url($encrypted_token);
+        if ($token === false) {
+            my_passwordless_auth_log("Magic login failed - could not decrypt token from URL", 'error');
+            $error = new WP_Error('invalid_token', __('Invalid login link. Please request a new one.', 'my-passwordless-auth'));
+            wp_die(
+                $error->get_error_message(),
+                __('Login Failed', 'my-passwordless-auth'),
+                array('response' => 403, 'back_link' => true)
+            );
+            return;
+        }
+
+        // Check if stored data has correct format
+        if (!is_array($stored_data) || !isset($stored_data['token']) || !isset($stored_data['expiration'])) {
+            my_passwordless_auth_log("Magic login failed - token data format invalid for user ID: $user_id", 'error');
+            $error = new WP_Error('invalid_token', __('Invalid login link. Please request a new one.', 'my-passwordless-auth'));
+            wp_die(
+                $error->get_error_message(),
+                __('Login Failed', 'my-passwordless-auth'),
+                array('response' => 403, 'back_link' => true)
+            );
+            return;
+        }
+
+        // Encrypt the decrypted URL token using the database encryption method for comparison
+        $encrypted_token_for_comparison = my_passwordless_auth_encrypt_token($token);
+
+        // Check if token matches the stored encrypted token
+        if ($stored_data['token'] !== $encrypted_token_for_comparison) {
+            my_passwordless_auth_log("Magic login failed - token mismatch for user ID: $user_id", 'error');
+            $error = new WP_Error('invalid_token', __('Invalid login link. Please request a new one.', 'my-passwordless-auth'));
+            wp_die(
+                $error->get_error_message(),
+                __('Login Failed', 'my-passwordless-auth'),
+                array('response' => 403, 'back_link' => true)
+            );
+            return;
+        }
+
+        // Check if token has expired
+        if (time() > $stored_data['expiration']) {
+            my_passwordless_auth_log("Magic login failed - token expired for user ID: $user_id", 'error');
+            delete_user_meta($user_id, 'passwordless_auth_login_token');
+            $error = new WP_Error('expired_token', __('This login link has expired. Please request a new one.', 'my-passwordless-auth'));
+            wp_die(
+                $error->get_error_message(),
+                __('Login Failed', 'my-passwordless-auth'),
+                array('response' => 403, 'back_link' => true)
+            );
+            return;
+        }
+
+        // Get the user
+        $user = get_user_by('id', $user_id);
+        if (!$user) {
+            my_passwordless_auth_log("Magic login failed - user ID $user_id not found", 'error');
+            $error = new WP_Error('invalid_user', __('User not found. Please try again.', 'my-passwordless-auth'));
+            wp_die(
+                $error->get_error_message(),
+                __('Login Failed', 'my-passwordless-auth'),
+                array('response' => 403, 'back_link' => true)
+            );
+            return;
+        }
+
+        // Delete the token as it's no longer needed
+        delete_user_meta($user_id, 'passwordless_auth_login_token');
+
+        // Log the user in
+        wp_clear_auth_cookie();
+        wp_set_current_user($user_id);
+        wp_set_auth_cookie($user_id);
+
+        my_passwordless_auth_log("User ID: $user_id successfully logged in via magic link");
+
+        // Fire action for other plugins
+        do_action('my_passwordless_auth_after_magic_login', $user);
+
+        // Success! Redirect to requested page or default
+        $redirect_to = isset($_GET['redirect_to']) ? $_GET['redirect_to'] : '';
+        if (empty($redirect_to)) {
+            $redirect_to = my_passwordless_auth_get_option('login_redirect', home_url());
+        }
+
+        $redirect_to = apply_filters('my_passwordless_auth_login_redirect', $redirect_to);
+        my_passwordless_auth_log("Redirecting to: $redirect_to after successful login");
+        wp_redirect($redirect_to);
+        exit;
     }
 
     /**
