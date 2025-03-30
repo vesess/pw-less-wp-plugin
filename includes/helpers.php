@@ -168,31 +168,113 @@ if (!function_exists('my_passwordless_auth_create_login_link')) {
  * Generate a login token for a user
  * 
  * @param int $user_id The user ID
- * @return string The generated token
+ * @return string The encrypted token to be used in magic links
  */
 if (!function_exists('my_passwordless_auth_generate_login_token')) {
     function my_passwordless_auth_generate_login_token($user_id)
     {
         // Generate a random token
         $token = bin2hex(random_bytes(32));
+        
+        // Encrypt the token for storage in database
+        $encrypted_token_for_storage = my_passwordless_auth_encrypt_token($token);
+        
+        // Encrypt the token differently for use in URLs
+        $encrypted_token_for_url = my_passwordless_auth_encrypt_token_for_url($token);
 
         // Get the configured expiration time from settings
         $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);
         $expiration = time() + ($expiration_minutes * MINUTE_IN_SECONDS);
         $token_data = [
-            'token' => $token,
+            'token' => $encrypted_token_for_storage, // Store encrypted token
             'expiration' => $expiration
         ];
 
         update_user_meta($user_id, 'passwordless_auth_login_token', $token_data);
 
-        my_passwordless_auth_log("Generated login token for user ID: $user_id, token: $token, expires: " . date('Y-m-d H:i:s', $expiration));
+        my_passwordless_auth_log("Generated login token for user ID: $user_id, expires: " . date('Y-m-d H:i:s', $expiration));
 
-        return $token;
+        return $encrypted_token_for_url; // Return token encrypted for URL use
     }
 }
 
+/**
+ * Encrypt a token for storage in the database
+ *
+ * @param string $token The plain text token
+ * @return string The encrypted token
+ */
+function my_passwordless_auth_encrypt_token($token) {
+    // Define encryption key - in production, use wp_salt() or similar
+    $encryption_key = 'PwLessWpAuthPluginSecretKey123!';
+    $iv = substr('PwLessWpAuthIv16----', 0, 16); // Ensure exactly 16 bytes
+    
+    // Encrypt the token
+    $encrypted = openssl_encrypt(
+        $token,
+        'AES-256-CBC',
+        $encryption_key,
+        0,
+        $iv
+    );
+    
+    return $encrypted;
+}
 
+/**
+ * Encrypt a token for use in URLs
+ *
+ * @param string $token The plain text token
+ * @return string URL-safe encrypted token
+ */
+function my_passwordless_auth_encrypt_token_for_url($token) {
+    // Use a different key for URL tokens to prevent token reuse
+    $encryption_key = 'UrlTokenEncryptionKey456!';
+    $iv = substr('UrlTokenIv16Val--', 0, 16); // Ensure exactly 16 bytes
+    
+    // Encrypt the token
+    $encrypted = openssl_encrypt(
+        $token,
+        'AES-256-CBC',
+        $encryption_key,
+        0,
+        $iv
+    );
+    
+    // Make URL safe
+    return strtr(base64_encode($encrypted), '+/=', '-_,');
+}
+
+/**
+ * Decrypt a token from URL format
+ *
+ * @param string $encrypted_token The encrypted token from URL
+ * @return string The original plain text token
+ */
+function my_passwordless_auth_decrypt_token_from_url($encrypted_token) {
+    // Use the same key as in encryption
+    $encryption_key = 'UrlTokenEncryptionKey456!';
+    $iv = substr('UrlTokenIv16Val--', 0, 16); // Ensure exactly 16 bytes - MUST match encryption
+    
+    try {
+        // Convert from URL-safe format
+        $encrypted_data = base64_decode(strtr($encrypted_token, '-_,', '+/='));
+        
+        // Decrypt
+        $decrypted = openssl_decrypt(
+            $encrypted_data,
+            'AES-256-CBC',
+            $encryption_key,
+            0,
+            $iv
+        );
+        
+        return $decrypted;
+    } catch (Exception $e) {
+        my_passwordless_auth_log("Exception during token decryption: " . $e->getMessage(), 'error');
+        return false;
+    }
+}
 
 /**
  * Process magic login when a user clicks the login link
@@ -213,7 +295,7 @@ if (!function_exists('my_passwordless_auth_process_magic_login')) {
         my_passwordless_auth_log("Processing magic login request with uid: " . sanitize_text_field($_GET['uid']));
 
         $uid = sanitize_text_field($_GET['uid']);
-        $token = sanitize_text_field($_GET['token']);
+        $encrypted_token = sanitize_text_field($_GET['token']);
 
         $user_id = my_passwordless_auth_decrypt_user_id($uid);
 
@@ -232,7 +314,12 @@ if (!function_exists('my_passwordless_auth_process_magic_login')) {
             return new WP_Error('invalid_token', __('Invalid login link. Please request a new one.', 'my-passwordless-auth'));
         }
 
-        my_passwordless_auth_log("Stored token data: " . json_encode($stored_data));
+        // Decrypt the token from the URL
+        $token = my_passwordless_auth_decrypt_token_from_url($encrypted_token);
+        if ($token === false) {
+            my_passwordless_auth_log("Magic login failed - could not decrypt token from URL", 'error');
+            return new WP_Error('invalid_token', __('Invalid login link. Please request a new one.', 'my-passwordless-auth'));
+        }
 
         // Check if stored data has correct format
         if (!is_array($stored_data) || !isset($stored_data['token']) || !isset($stored_data['expiration'])) {
@@ -240,10 +327,12 @@ if (!function_exists('my_passwordless_auth_process_magic_login')) {
             return new WP_Error('invalid_token', __('Invalid login link. Please request a new one.', 'my-passwordless-auth'));
         }
 
-        // Check if token matches
-        if ($stored_data['token'] !== $token) {
+        // Encrypt the decrypted URL token using the database encryption method for comparison
+        $encrypted_token_for_comparison = my_passwordless_auth_encrypt_token($token);
+
+        // Check if token matches the stored encrypted token
+        if ($stored_data['token'] !== $encrypted_token_for_comparison) {
             my_passwordless_auth_log("Magic login failed - token mismatch for user ID: $user_id", 'error');
-            my_passwordless_auth_log("Expected: {$stored_data['token']}, Got: {$token}", 'error');
             return new WP_Error('invalid_token', __('Invalid login link. Please request a new one.', 'my-passwordless-auth'));
         }
 
@@ -279,17 +368,6 @@ if (!function_exists('my_passwordless_auth_process_magic_login')) {
 }
 
 /**
- * Validate email address format
- * 
- * @param string $email The email address to validate
- * @return bool Whether the email is valid
- */
-function my_passwordless_auth_is_valid_email($email)
-{
-    return (bool) is_email($email);
-}
-
-/**
  * Encrypt user ID for use in magic links
  * 
  * @param int $user_id The user ID to encrypt
@@ -299,7 +377,7 @@ function my_passwordless_auth_encrypt_user_id($user_id)
 {
     // Define a fixed encryption key and IV
     $encryption_key = 'PwLessWpAuthPluginSecretKey123!';
-    $iv = 'PwLessWpAuthIv16';
+    $iv = substr('PwLessWpAuthIv16----', 0, 16); // Ensure exactly 16 bytes
 
     // Salt the ID with just the user ID - keep it simple
     $data_to_encrypt = (string)$user_id;
@@ -340,7 +418,7 @@ function my_passwordless_auth_decrypt_user_id($encrypted_id)
 {
     // Define the same fixed encryption key and IV used in encryption
     $encryption_key = 'PwLessWpAuthPluginSecretKey123!';
-    $iv = 'PwLessWpAuthIv16';
+    $iv = substr('PwLessWpAuthIv16----', 0, 16); // Ensure exactly 16 bytes
 
     try {
         // Log the input for debugging
