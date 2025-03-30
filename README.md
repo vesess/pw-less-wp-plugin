@@ -14,6 +14,7 @@ My Passwordless Authentication offers a modern, secure way to log in to WordPres
 * **Email Notifications**: Customizable email notifications for various user actions
 * **Shortcodes**: Easy implementation with ready-to-use shortcodes
 * **Developer Friendly**: Hooks and filters for extending functionality
+* **Enhanced Security**: Environment variable support for encryption keys
 
 ## Installation
 
@@ -24,7 +25,8 @@ My Passwordless Authentication offers a modern, secure way to log in to WordPres
    * Create a page named exactly "login" (e.g., `/login/`) and add the login form shortcode
    * Create a page named exactly "registration" (e.g., `/registration/`) and add the registration form shortcode
    * These specific page names are required for proper form redirections to work correctly
-5. Add the shortcodes to your pages:
+5. Add the shortcodes to your pages
+6. (Optional but recommended) Set up secure encryption keys using the .env file system (see Security section below)
 
 ### Available Shortcodes
 
@@ -40,6 +42,38 @@ Passwordless authentication eliminates many security issues related to password-
 * No risk of password reuse across multiple sites
 * Verification codes expire quickly after generation
 * Protection against credential stuffing attacks
+
+### Enhanced Security with Environment Variables
+
+For production use, this plugin supports storing encryption keys securely in an environment file:
+
+1. Copy the `.env.example` file to `.env` in one of these locations:
+   * WordPress root directory
+   * One level above WordPress root directory
+   * Plugin directory
+   * One level above plugin directory
+
+2. Replace the placeholder values with strong random strings:
+   * For each `KEY` entry, use a 32-character random string
+   * For each `IV` entry, use a 16-character random string
+   * You can use online secure random generators or command line tools:
+   ```bash
+   # On Linux/Mac:
+   openssl rand -base64 24 | cut -c1-32  # For 32-char keys
+   openssl rand -base64 12 | cut -c1-16  # For 16-char IVs
+   
+   # On Windows (PowerShell):
+   -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | ForEach-Object {[char]$_})  # For 32-char keys
+   -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 16 | ForEach-Object {[char]$_})  # For 16-char IVs
+   ```
+
+3. Each set of keys should be unique - don't reuse the same values.
+
+This approach provides several security benefits:
+* Encryption keys are kept outside your code repository
+* Keys are never visible in database or PHP files 
+* Keys can be different across development, staging, and production environments
+* If compromised, keys can be easily rotated without code changes
 
 ## How It Works
 

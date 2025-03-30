@@ -19,6 +19,31 @@ define('MY_PASSWORDLESS_AUTH_VERSION', '1.0.0');
 define('MY_PASSWORDLESS_AUTH_PATH', plugin_dir_path(__FILE__));
 define('MY_PASSWORDLESS_AUTH_URL', plugin_dir_url(__FILE__));
 
+// Initialize global environment variable array
+$GLOBALS['my_passwordless_env'] = array();
+
+// Include helper functions
+require_once plugin_dir_path(__FILE__) . 'includes/helpers.php';
+
+// Try to load environment variables - first from WordPress root directory
+$env_paths = array(
+    ABSPATH . '.env',                        // WordPress root
+    dirname(ABSPATH) . '/.env',              // One level above WordPress root
+    MY_PASSWORDLESS_AUTH_PATH . '.env',      // Plugin directory
+    dirname(MY_PASSWORDLESS_AUTH_PATH) . '/.env'  // One level above plugin directory
+);
+
+// Try each path until we find a .env file
+foreach ($env_paths as $path) {
+    if (my_passwordless_auth_load_env($path)) {
+        // Log successful loading of .env file if debugging is enabled
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("Passwordless Auth: Loaded environment variables from $path");
+        }
+        break;
+    }
+}
+
 /**
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
@@ -47,11 +72,6 @@ run_my_passwordless_auth();
 /**
  * Core functionality for Passwordless Authentication plugin
  */
-
-// Include helper functions
-require_once plugin_dir_path(__FILE__) . 'includes/helpers.php';
-
-
 
 /**
  * Initialize the plugin and set up hooks
