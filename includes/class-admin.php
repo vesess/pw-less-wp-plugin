@@ -94,13 +94,14 @@ class My_Passwordless_Auth_Admin {
             'my_passwordless_auth_main'
         );
         
-        add_settings_field(
-            'email_from_address',
-            __('Email From Address', 'my-passwordless-auth'),
-            array($this, 'email_from_address_callback'),
-            'my-passwordless-auth',
-            'my_passwordless_auth_main'
-        );
+        // To be added in the future
+        // add_settings_field(
+        //     'email_from_address',
+        //     __('Email From Address', 'my-passwordless-auth'),
+        //     array($this, 'email_from_address_callback'),
+        //     'my-passwordless-auth',
+        //     'my_passwordless_auth_main'
+        // );
         
         add_settings_field(
             'code_expiration',
@@ -131,6 +132,7 @@ class My_Passwordless_Auth_Admin {
 
     /**
      * Email From Address field callback.
+     *  To be added in the future
      */
     public function email_from_address_callback() {
         $options = get_option('my_passwordless_auth_options');
