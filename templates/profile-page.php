@@ -318,25 +318,36 @@ jQuery(document).ready(function($) {
         });
     });
     
-    // Delete account form handling
-    $('.request-code-btn').on('click', function() {
+    // Delete account form handling - completely separated functionality
+    var codeRequested = false; // Track if a code has already been requested
+    
+    // Function to request a deletion code
+    function requestDeletionCode() {
         const messagesContainer = $('#my-passwordless-auth-delete-account-form').find('.messages');
         
         // Clear previous messages
         messagesContainer.empty();
         
+        if (codeRequested) {
+            messagesContainer.html('<div class="message success-message">A confirmation code has already been sent to your email.</div>');
+            $('.code-container').show();
+            return;
+        }
+        
         $.ajax({
             url: passwordless_auth.ajax_url,
             type: 'POST',
             data: {
-                action: 'delete_account',
-                confirmation_code: '',
+                action: 'request_deletion_code', // New separate action
                 nonce: passwordless_auth.delete_account_nonce
             },
             success: function(response) {
                 if (response.success) {
+                    codeRequested = true;
                     messagesContainer.html('<div class="message success-message">' + response.data + '</div>');
                     $('.code-container').show();
+                    // Disable the request button once code is sent
+                    $('.request-code-btn').prop('disabled', true);
                 } else {
                     messagesContainer.html('<div class="message error-message">' + response.data + '</div>');
                 }
@@ -345,10 +356,10 @@ jQuery(document).ready(function($) {
                 messagesContainer.html('<div class="message error-message">An error occurred. Please try again.</div>');
             }
         });
-    });
+    }
     
-    $('.delete-btn').on('click', function() {
-        const confirmationCode = $('#confirmation_code').val();
+    // Function to delete account
+    function deleteAccount(confirmationCode) {
         const messagesContainer = $('#my-passwordless-auth-delete-account-form').find('.messages');
         
         // Clear previous messages
@@ -382,6 +393,15 @@ jQuery(document).ready(function($) {
                 messagesContainer.html('<div class="message error-message">An error occurred. Please try again.</div>');
             }
         });
+    }
+    
+    // Attach event listeners to buttons
+    $('.request-code-btn').on('click', function() {
+        requestDeletionCode();
     });
-});
-</script>
+    
+    $('.delete-btn').on('click', function() {
+        const confirmationCode = $('#confirmation_code').val();
+        deleteAccount(confirmationCode);
+    });
+});</script>
