@@ -125,11 +125,12 @@ class My_Passwordless_Auth_Email {
         // Get configured expiration time
         $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);
 
-        $to = $new_email; // Send to the new email address
+        // Send to the current email address, not the new one
+        $to = $user->user_email;
         $subject = sprintf(esc_html__('[%s] Verify Your Email Change', 'my-passwordless-auth'), esc_html(get_bloginfo('name')));
         
         $message = sprintf(
-            esc_html__("Hello %s,\n\nWe received a request to change your email address on %s from %s to %s.\n\nTo verify this email address, please use the following verification code:\n\n%s\n\nThis code will expire in %d minutes.\n\nIf you did not request this change, please ignore this email.\n\nBest regards,\n%s", 'my-passwordless-auth'),
+            esc_html__("Hello %s,\n\nWe received a request to change your email address on %s from %s to %s.\n\nTo verify this change, please use the following verification code:\n\n%s\n\nThis code will expire in %d minutes.\n\nIf you did not request this change, please ignore this email or contact support.\n\nBest regards,\n%s", 'my-passwordless-auth'),
             esc_html($user->display_name),
             esc_html(get_bloginfo('name')),
             esc_html($user->user_email),

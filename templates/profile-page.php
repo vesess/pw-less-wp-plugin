@@ -220,14 +220,24 @@ if (!($current_user instanceof WP_User)) {
 
 <script>
 jQuery(document).ready(function($) {
-    // Enable/disable email verification button based on email input
-    $('#new_email').on('input', function() {
-        if ($(this).val().trim() !== '') {
+    // Function to check email input and update UI accordingly
+    function checkEmailInput() {
+        const newEmail = $('#new_email').val().trim();
+        if (newEmail !== '') {
             $('.request-email-code-btn').prop('disabled', false);
         } else {
             $('.request-email-code-btn').prop('disabled', true);
+            $('.email-code-container').hide();
+            $('#email_verification_code').val('');
         }
-    });
+    }
+    
+  
+    
+    // Set up constant asynchronous checking (every 500ms)
+    setInterval(function() {
+        checkEmailInput();
+    }, 500);
     
     // Profile form submission
     $('#my-passwordless-auth-profile-form').on('submit', function(e) {
@@ -257,7 +267,8 @@ jQuery(document).ready(function($) {
                     
                     // If email was updated, update the displayed email and reset the form
                     if (newEmail && emailVerificationCode) {
-                        $('.form-row strong:contains("' + $('#current_email').text() + '")').text(newEmail);
+                        // Update only the first strong tag which contains the current email address
+                        $('.form-row:first-of-type p strong').text(newEmail);
                         $('#new_email').val('');
                         $('#email_verification_code').val('');
                         $('.email-code-container').hide();
