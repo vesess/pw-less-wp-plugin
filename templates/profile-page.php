@@ -346,6 +346,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clear previous messages
         messagesContainer.innerHTML = '';
         
+        // Change button text and disable it
+        requestCodeBtn.textContent = 'Sending...';
+        requestCodeBtn.disabled = true;
+        
         const xhr = new XMLHttpRequest();
         xhr.open('POST', passwordless_auth.ajax_url);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -356,23 +360,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.success) {
                     messagesContainer.innerHTML = '<div class="message success-message">' + response.data + '</div>';
                     codeContainer.style.display = 'block';
-                    // Disable the request button once code is sent to prevent multiple requests
-                    requestCodeBtn.disabled = true;
                     
-                    // Re-enable the button after 30 seconds to allow requesting a new code if needed
-                    setTimeout(function() {
-                        requestCodeBtn.disabled = false;
-                    }, 30000);
+                    // Change button text to indicate waiting period
+                    requestCodeBtn.textContent = 'Request Again (30s)';
+                    
+                    // Start a countdown
+                    let secondsLeft = 30;
+                    const countdownInterval = setInterval(function() {
+                        secondsLeft--;
+                        if (secondsLeft > 0) {
+                            requestCodeBtn.textContent = `Request Again (${secondsLeft}s)`;
+                        } else {
+                            requestCodeBtn.textContent = 'Request Deletion Code';
+                            requestCodeBtn.disabled = false;
+                            clearInterval(countdownInterval);
+                        }
+                    }, 1000);
+                    
                 } else {
                     messagesContainer.innerHTML = '<div class="message error-message">' + response.data + '</div>';
+                    // Restore button state in case of error
+                    requestCodeBtn.textContent = 'Request Deletion Code';
+                    requestCodeBtn.disabled = false;
                 }
             } else {
                 messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
+                // Restore button state in case of error
+                requestCodeBtn.textContent = 'Request Deletion Code';
+                requestCodeBtn.disabled = false;
             }
         };
         
         xhr.onerror = function() {
             messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
+            // Restore button state in case of error
+            requestCodeBtn.textContent = 'Request Deletion Code';
+            requestCodeBtn.disabled = false;
         };
         
         const data = 'action=request_deletion_code' +
