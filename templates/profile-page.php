@@ -253,43 +253,47 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clear previous messages
         messagesContainer.innerHTML = '';
         
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', passwordless_auth.ajax_url);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        const data = new URLSearchParams({
+            'action': 'update_profile',
+            'display_name': displayName,
+            'new_email': newEmail,
+            'email_verification_code': emailVerificationCode,
+            'nonce': passwordless_auth.profile_nonce
+        }).toString();
         
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                if (response.success) {
-                    messagesContainer.innerHTML = '<div class="message success-message">' + response.data + '</div>';
-                    
-                    // If email was updated, update the displayed email and reset the form
-                    if (newEmail && emailVerificationCode) {
-                        // Update only the first strong tag which contains the current email address
-                        document.querySelector('.form-row:first-of-type p strong').textContent = newEmail;
-                        document.getElementById('new_email').value = '';
-                        document.getElementById('email_verification_code').value = '';
-                        document.querySelector('.email-code-container').style.display = 'none';
-                    }
-                } else {
-                    messagesContainer.innerHTML = '<div class="message error-message">' + response.data + '</div>';
+        fetch(passwordless_auth.ajax_url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: data
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(response => {
+            if (response.success) {
+                messagesContainer.innerHTML = '<div class="message success-message">' + response.data + '</div>';
+                
+                // If email was updated, update the displayed email and reset the form
+                if (newEmail && emailVerificationCode) {
+                    // Update only the first strong tag which contains the current email address
+                    document.querySelector('.form-row:first-of-type p strong').textContent = newEmail;
+                    document.getElementById('new_email').value = '';
+                    document.getElementById('email_verification_code').value = '';
+                    document.querySelector('.email-code-container').style.display = 'none';
                 }
             } else {
-                messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
+                messagesContainer.innerHTML = '<div class="message error-message">' + response.data + '</div>';
             }
-        };
-        
-        xhr.onerror = function() {
+        })
+        .catch(error => {
+            console.error('Error:', error);
             messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
-        };
-        
-        const data = 'action=update_profile' +
-                    '&display_name=' + encodeURIComponent(displayName) +
-                    '&new_email=' + encodeURIComponent(newEmail) +
-                    '&email_verification_code=' + encodeURIComponent(emailVerificationCode) +
-                    '&nonce=' + encodeURIComponent(passwordless_auth.profile_nonce);
-        
-        xhr.send(data);
+        });
     });
     
     // Request email verification code
@@ -306,33 +310,37 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', passwordless_auth.ajax_url);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        const data = new URLSearchParams({
+            'action': 'request_email_verification',
+            'new_email': newEmail,
+            'nonce': passwordless_auth.profile_nonce
+        }).toString();
         
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                if (response.success) {
-                    messagesContainer.innerHTML = '<div class="message success-message">' + response.data + '</div>';
-                    emailCodeContainer.style.display = 'block';
-                } else {
-                    messagesContainer.innerHTML = '<div class="message error-message">' + response.data + '</div>';
-                }
-            } else {
-                messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
+        fetch(passwordless_auth.ajax_url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: data
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
-        };
-        
-        xhr.onerror = function() {
+            return response.json();
+        })
+        .then(response => {
+            if (response.success) {
+                messagesContainer.innerHTML = '<div class="message success-message">' + response.data + '</div>';
+                emailCodeContainer.style.display = 'block';
+            } else {
+                messagesContainer.innerHTML = '<div class="message error-message">' + response.data + '</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
             messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
-        };
-        
-        const data = 'action=request_email_verification' +
-                    '&new_email=' + encodeURIComponent(newEmail) +
-                    '&nonce=' + encodeURIComponent(passwordless_auth.profile_nonce);
-        
-        xhr.send(data);
+        });
     });
     
     // Delete account form handling - completely separated functionality
@@ -350,58 +358,58 @@ document.addEventListener('DOMContentLoaded', function() {
         requestCodeBtn.textContent = 'Sending...';
         requestCodeBtn.disabled = true;
         
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', passwordless_auth.ajax_url);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        const data = new URLSearchParams({
+            'action': 'request_deletion_code',
+            'nonce': passwordless_auth.delete_account_nonce
+        }).toString();
         
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                if (response.success) {
-                    messagesContainer.innerHTML = '<div class="message success-message">' + response.data + '</div>';
-                    codeContainer.style.display = 'block';
-                    
-                    // Change button text to indicate waiting period
-                    requestCodeBtn.textContent = 'Request Again (30s)';
-                    
-                    // Start a countdown
-                    let secondsLeft = 30;
-                    const countdownInterval = setInterval(function() {
-                        secondsLeft--;
-                        if (secondsLeft > 0) {
-                            requestCodeBtn.textContent = `Request Again (${secondsLeft}s)`;
-                        } else {
-                            requestCodeBtn.textContent = 'Request Deletion Code';
-                            requestCodeBtn.disabled = false;
-                            clearInterval(countdownInterval);
-                        }
-                    }, 1000);
-                    
-                } else {
-                    messagesContainer.innerHTML = '<div class="message error-message">' + response.data + '</div>';
-                    // Restore button state in case of error
-                    requestCodeBtn.textContent = 'Request Deletion Code';
-                    requestCodeBtn.disabled = false;
-                }
+        fetch(passwordless_auth.ajax_url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: data
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(response => {
+            if (response.success) {
+                messagesContainer.innerHTML = '<div class="message success-message">' + response.data + '</div>';
+                codeContainer.style.display = 'block';
+                
+                // Change button text to indicate waiting period
+                requestCodeBtn.textContent = 'Request Again (30s)';
+                
+                // Start a countdown
+                let secondsLeft = 30;
+                const countdownInterval = setInterval(function() {
+                    secondsLeft--;
+                    if (secondsLeft > 0) {
+                        requestCodeBtn.textContent = `Request Again (${secondsLeft}s)`;
+                    } else {
+                        requestCodeBtn.textContent = 'Request Deletion Code';
+                        requestCodeBtn.disabled = false;
+                        clearInterval(countdownInterval);
+                    }
+                }, 1000);
             } else {
-                messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
+                messagesContainer.innerHTML = '<div class="message error-message">' + response.data + '</div>';
                 // Restore button state in case of error
                 requestCodeBtn.textContent = 'Request Deletion Code';
                 requestCodeBtn.disabled = false;
             }
-        };
-        
-        xhr.onerror = function() {
+        })
+        .catch(error => {
+            console.error('Error:', error);
             messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
             // Restore button state in case of error
             requestCodeBtn.textContent = 'Request Deletion Code';
             requestCodeBtn.disabled = false;
-        };
-        
-        const data = 'action=request_deletion_code' +
-                    '&nonce=' + encodeURIComponent(passwordless_auth.delete_account_nonce);
-        
-        xhr.send(data);
+        });
     }
     
     // Function to delete account
@@ -416,36 +424,40 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', passwordless_auth.ajax_url);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        const data = new URLSearchParams({
+            'action': 'delete_account',
+            'confirmation_code': confirmationCode,
+            'nonce': passwordless_auth.delete_account_nonce
+        }).toString();
         
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                if (response.success) {
-                    messagesContainer.innerHTML = '<div class="message success-message">' + response.data + '</div>';
-                    // Redirect to home page after successful account deletion
-                    setTimeout(function() {
-                        window.location.href = '/';
-                    }, 2000);
-                } else {
-                    messagesContainer.innerHTML = '<div class="message error-message">' + response.data + '</div>';
-                }
-            } else {
-                messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
+        fetch(passwordless_auth.ajax_url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: data
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
-        };
-        
-        xhr.onerror = function() {
+            return response.json();
+        })
+        .then(response => {
+            if (response.success) {
+                messagesContainer.innerHTML = '<div class="message success-message">' + response.data + '</div>';
+                // Redirect to home page after successful account deletion
+                setTimeout(function() {
+                    window.location.href = '/';
+                }, 2000);
+            } else {
+                messagesContainer.innerHTML = '<div class="message error-message">' + response.data + '</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
             messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
-        };
-        
-        const data = 'action=delete_account' +
-                    '&confirmation_code=' + encodeURIComponent(confirmationCode) +
-                    '&nonce=' + encodeURIComponent(passwordless_auth.delete_account_nonce);
-        
-        xhr.send(data);
+        });
     }
     
     // Attach event listeners to buttons
