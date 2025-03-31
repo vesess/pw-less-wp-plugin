@@ -103,7 +103,7 @@ function my_passwordless_auth_handle_verification() {
         
         if (!isset($_GET['user_id']) || !isset($_GET['code'])) {
             my_passwordless_auth_log('Missing required verification parameters', 'error', true);
-            wp_redirect(home_url('/login/?verification=invalid'));
+            wp_safe_redirect(home_url('/login/?verification=invalid'));
             exit;
         }
         
@@ -115,7 +115,7 @@ function my_passwordless_auth_handle_verification() {
         
         if ($user_id === false) {
             my_passwordless_auth_log("Failed to decrypt user ID: $encrypted_user_id", 'error', true);
-            wp_redirect(home_url('/login/?verification=invalid'));
+            wp_safe_redirect(home_url('/login/?verification=invalid'));
             exit;
         }
         
@@ -123,7 +123,7 @@ function my_passwordless_auth_handle_verification() {
         
         if (!$user) {
             my_passwordless_auth_log("Invalid user ID after decryption: $user_id", 'error');
-            wp_redirect(home_url('/login/?verification=invalid_user'));
+            wp_safe_redirect(home_url('/login/?verification=invalid_user'));
             exit;
         }
         
@@ -133,7 +133,7 @@ function my_passwordless_auth_handle_verification() {
         // Verify the code matches
         if (empty($stored_code) || $stored_code !== $code) {
             my_passwordless_auth_log("Invalid verification code for user ID: $user_id", 'error');
-            wp_redirect(home_url('/login/?verification=failed'));
+            wp_safe_redirect(home_url('/login/?verification=failed'));
             exit;
         }
         
@@ -150,13 +150,13 @@ function my_passwordless_auth_handle_verification() {
             
             // Redirect to dashboard or custom page
             $redirect_url = my_passwordless_auth_get_option('verification_success_url', admin_url());
-            wp_redirect($redirect_url);
+            wp_safe_redirect($redirect_url);
             exit;
         }
         
         // Otherwise redirect to login page with success message
         $redirect_url = add_query_arg('verification', 'success', home_url('/login/'));
-        wp_redirect($redirect_url);
+        wp_safe_redirect($redirect_url);
         exit;
     }
 }

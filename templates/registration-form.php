@@ -43,6 +43,8 @@ if (!get_option('users_can_register')) {
             <?php _e('Already have an account?', 'my-passwordless-auth'); ?>
             <a href="<?php echo esc_url(home_url('/index.php/login/')); ?>"><?php _e('Login here', 'my-passwordless-auth'); ?></a>
         </p>
+        <input type="hidden" name="action" value="register_new_user" />
+        <?php wp_nonce_field('registration_nonce', 'nonce'); ?>
     </form>
 </div>
 
@@ -63,6 +65,9 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
+     .wp-block-post-title {
+    display: none;
+}
     .my-passwordless-auth-container {
         max-width: 500px;
         margin: 0 auto;
