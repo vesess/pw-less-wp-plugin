@@ -16,7 +16,7 @@ class My_Passwordless_Auth_Registration {
      */
     public function register_new_user() {
         // Check nonce
-        if (!wp_verify_nonce($_POST['nonce'], 'registration_nonce')) {
+        if (!check_ajax_referer('registration_nonce', 'nonce', false)) {
             wp_send_json_error('Security check failed');
         }
 
