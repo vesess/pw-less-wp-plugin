@@ -109,6 +109,46 @@ class My_Passwordless_Auth_Email {
     }
 
     /**
+     * Send email change verification code.
+     *
+     * @param int $user_id The user ID.
+     * @param string $new_email The new email address.
+     * @param string $verification_code The verification code.
+     * @return bool Whether the email was sent successfully.
+     */
+    public function send_email_change_verification($user_id, $new_email, $verification_code) {
+        $user = get_userdata($user_id);
+        if (!$user) {
+            return false;
+        }
+
+        // Get configured expiration time
+        $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);
+
+        // Send to the current email address, not the new one
+        $to = $user->user_email;
+        $subject = sprintf(esc_html__('[%s] Verify Your Email Change', 'my-passwordless-auth'), esc_html(get_bloginfo('name')));
+        
+        $message = sprintf(
+            esc_html__("Hello %s,\n\nWe received a request to change your email address on %s from %s to %s.\n\nTo verify this change, please use the following verification code:\n\n%s\n\nThis code will expire in %d minutes.\n\nIf you did not request this change, please ignore this email or contact support.\n\nBest regards,\n%s", 'my-passwordless-auth'),
+            esc_html($user->display_name),
+            esc_html(get_bloginfo('name')),
+            esc_html($user->user_email),
+            esc_html($new_email),
+            esc_html($verification_code),
+            $expiration_minutes,
+            esc_html(get_bloginfo('name'))
+        );
+        
+        $headers = array(
+            'Content-Type: text/plain; charset=UTF-8',
+            'From: ' . esc_html($this->get_from_name()) . ' <' . sanitize_email($this->get_from_email()) . '>',
+        );
+        
+        return $this->send_email($to, $subject, $message, $headers, 'email_change_verification');
+    }
+
+    /**
      * Send a magic login link to a user.
      *
      * @param string $user_email The user's email address.
