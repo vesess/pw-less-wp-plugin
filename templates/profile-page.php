@@ -219,20 +219,22 @@ if (!($current_user instanceof WP_User)) {
 </style>
 
 <script>
-jQuery(document).ready(function($) {
+document.addEventListener('DOMContentLoaded', function() {
     // Function to check email input and update UI accordingly
     function checkEmailInput() {
-        const newEmail = $('#new_email').val().trim();
+        const newEmail = document.getElementById('new_email').value.trim();
+        const requestEmailCodeBtn = document.querySelector('.request-email-code-btn');
+        const emailCodeContainer = document.querySelector('.email-code-container');
+        const emailVerificationCodeInput = document.getElementById('email_verification_code');
+        
         if (newEmail !== '') {
-            $('.request-email-code-btn').prop('disabled', false);
+            requestEmailCodeBtn.disabled = false;
         } else {
-            $('.request-email-code-btn').prop('disabled', true);
-            $('.email-code-container').hide();
-            $('#email_verification_code').val('');
+            requestEmailCodeBtn.disabled = true;
+            emailCodeContainer.style.display = 'none';
+            emailVerificationCodeInput.value = '';
         }
     }
-    
-  
     
     // Set up constant asynchronous checking (every 500ms)
     setInterval(function() {
@@ -240,168 +242,196 @@ jQuery(document).ready(function($) {
     }, 500);
     
     // Profile form submission
-    $('#my-passwordless-auth-profile-form').on('submit', function(e) {
+    document.getElementById('my-passwordless-auth-profile-form').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const displayName = $('#display_name').val();
-        const newEmail = $('#new_email').val();
-        const emailVerificationCode = $('#email_verification_code').val();
-        const messagesContainer = $(this).find('.messages');
+        const displayName = document.getElementById('display_name').value;
+        const newEmail = document.getElementById('new_email').value;
+        const emailVerificationCode = document.getElementById('email_verification_code').value;
+        const messagesContainer = this.querySelector('.messages');
         
         // Clear previous messages
-        messagesContainer.empty();
+        messagesContainer.innerHTML = '';
         
-        $.ajax({
-            url: passwordless_auth.ajax_url,
-            type: 'POST',
-            data: {
-                action: 'update_profile',
-                display_name: displayName,
-                new_email: newEmail,
-                email_verification_code: emailVerificationCode,
-                nonce: passwordless_auth.profile_nonce
-            },
-            success: function(response) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', passwordless_auth.ajax_url);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
                 if (response.success) {
-                    messagesContainer.html('<div class="message success-message">' + response.data + '</div>');
+                    messagesContainer.innerHTML = '<div class="message success-message">' + response.data + '</div>';
                     
                     // If email was updated, update the displayed email and reset the form
                     if (newEmail && emailVerificationCode) {
                         // Update only the first strong tag which contains the current email address
-                        $('.form-row:first-of-type p strong').text(newEmail);
-                        $('#new_email').val('');
-                        $('#email_verification_code').val('');
-                        $('.email-code-container').hide();
+                        document.querySelector('.form-row:first-of-type p strong').textContent = newEmail;
+                        document.getElementById('new_email').value = '';
+                        document.getElementById('email_verification_code').value = '';
+                        document.querySelector('.email-code-container').style.display = 'none';
                     }
                 } else {
-                    messagesContainer.html('<div class="message error-message">' + response.data + '</div>');
+                    messagesContainer.innerHTML = '<div class="message error-message">' + response.data + '</div>';
                 }
-            },
-            error: function() {
-                messagesContainer.html('<div class="message error-message">An error occurred. Please try again.</div>');
+            } else {
+                messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
             }
-        });
+        };
+        
+        xhr.onerror = function() {
+            messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
+        };
+        
+        const data = 'action=update_profile' +
+                    '&display_name=' + encodeURIComponent(displayName) +
+                    '&new_email=' + encodeURIComponent(newEmail) +
+                    '&email_verification_code=' + encodeURIComponent(emailVerificationCode) +
+                    '&nonce=' + encodeURIComponent(passwordless_auth.profile_nonce);
+        
+        xhr.send(data);
     });
     
     // Request email verification code
-    $('.request-email-code-btn').on('click', function() {
-        const newEmail = $('#new_email').val();
-        const messagesContainer = $('#my-passwordless-auth-profile-form').find('.messages');
+    document.querySelector('.request-email-code-btn').addEventListener('click', function() {
+        const newEmail = document.getElementById('new_email').value;
+        const messagesContainer = document.getElementById('my-passwordless-auth-profile-form').querySelector('.messages');
+        const emailCodeContainer = document.querySelector('.email-code-container');
         
         // Clear previous messages
-        messagesContainer.empty();
+        messagesContainer.innerHTML = '';
         
         if (!newEmail) {
-            messagesContainer.html('<div class="message error-message">Please enter a new email address.</div>');
+            messagesContainer.innerHTML = '<div class="message error-message">Please enter a new email address.</div>';
             return;
         }
         
-        $.ajax({
-            url: passwordless_auth.ajax_url,
-            type: 'POST',
-            data: {
-                action: 'request_email_verification',
-                new_email: newEmail,
-                nonce: passwordless_auth.profile_nonce
-            },
-            success: function(response) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', passwordless_auth.ajax_url);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
                 if (response.success) {
-                    messagesContainer.html('<div class="message success-message">' + response.data + '</div>');
-                    $('.email-code-container').show();
+                    messagesContainer.innerHTML = '<div class="message success-message">' + response.data + '</div>';
+                    emailCodeContainer.style.display = 'block';
                 } else {
-                    messagesContainer.html('<div class="message error-message">' + response.data + '</div>');
+                    messagesContainer.innerHTML = '<div class="message error-message">' + response.data + '</div>';
                 }
-            },
-            error: function() {
-                messagesContainer.html('<div class="message error-message">An error occurred. Please try again.</div>');
+            } else {
+                messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
             }
-        });
+        };
+        
+        xhr.onerror = function() {
+            messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
+        };
+        
+        const data = 'action=request_email_verification' +
+                    '&new_email=' + encodeURIComponent(newEmail) +
+                    '&nonce=' + encodeURIComponent(passwordless_auth.profile_nonce);
+        
+        xhr.send(data);
     });
     
     // Delete account form handling - completely separated functionality
-    var codeRequested = false; // Track if a code has already been requested
     
     // Function to request a deletion code
     function requestDeletionCode() {
-        const messagesContainer = $('#my-passwordless-auth-delete-account-form').find('.messages');
+        const messagesContainer = document.getElementById('my-passwordless-auth-delete-account-form').querySelector('.messages');
+        const codeContainer = document.querySelector('.code-container');
+        const requestCodeBtn = document.querySelector('.request-code-btn');
         
         // Clear previous messages
-        messagesContainer.empty();
+        messagesContainer.innerHTML = '';
         
-        if (codeRequested) {
-            messagesContainer.html('<div class="message success-message">A confirmation code has already been sent to your email.</div>');
-            $('.code-container').show();
-            return;
-        }
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', passwordless_auth.ajax_url);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         
-        $.ajax({
-            url: passwordless_auth.ajax_url,
-            type: 'POST',
-            data: {
-                action: 'request_deletion_code', // New separate action
-                nonce: passwordless_auth.delete_account_nonce
-            },
-            success: function(response) {
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
                 if (response.success) {
-                    codeRequested = true;
-                    messagesContainer.html('<div class="message success-message">' + response.data + '</div>');
-                    $('.code-container').show();
-                    // Disable the request button once code is sent
-                    $('.request-code-btn').prop('disabled', true);
+                    messagesContainer.innerHTML = '<div class="message success-message">' + response.data + '</div>';
+                    codeContainer.style.display = 'block';
+                    // Disable the request button once code is sent to prevent multiple requests
+                    requestCodeBtn.disabled = true;
+                    
+                    // Re-enable the button after 30 seconds to allow requesting a new code if needed
+                    setTimeout(function() {
+                        requestCodeBtn.disabled = false;
+                    }, 30000);
                 } else {
-                    messagesContainer.html('<div class="message error-message">' + response.data + '</div>');
+                    messagesContainer.innerHTML = '<div class="message error-message">' + response.data + '</div>';
                 }
-            },
-            error: function() {
-                messagesContainer.html('<div class="message error-message">An error occurred. Please try again.</div>');
+            } else {
+                messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
             }
-        });
+        };
+        
+        xhr.onerror = function() {
+            messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
+        };
+        
+        const data = 'action=request_deletion_code' +
+                    '&nonce=' + encodeURIComponent(passwordless_auth.delete_account_nonce);
+        
+        xhr.send(data);
     }
     
     // Function to delete account
     function deleteAccount(confirmationCode) {
-        const messagesContainer = $('#my-passwordless-auth-delete-account-form').find('.messages');
+        const messagesContainer = document.getElementById('my-passwordless-auth-delete-account-form').querySelector('.messages');
         
         // Clear previous messages
-        messagesContainer.empty();
+        messagesContainer.innerHTML = '';
         
         if (!confirmationCode) {
-            messagesContainer.html('<div class="message error-message">Please enter the confirmation code.</div>');
+            messagesContainer.innerHTML = '<div class="message error-message">Please enter the confirmation code.</div>';
             return;
         }
         
-        $.ajax({
-            url: passwordless_auth.ajax_url,
-            type: 'POST',
-            data: {
-                action: 'delete_account',
-                confirmation_code: confirmationCode,
-                nonce: passwordless_auth.delete_account_nonce
-            },
-            success: function(response) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', passwordless_auth.ajax_url);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
                 if (response.success) {
-                    messagesContainer.html('<div class="message success-message">' + response.data + '</div>');
+                    messagesContainer.innerHTML = '<div class="message success-message">' + response.data + '</div>';
                     // Redirect to home page after successful account deletion
                     setTimeout(function() {
                         window.location.href = '/';
                     }, 2000);
                 } else {
-                    messagesContainer.html('<div class="message error-message">' + response.data + '</div>');
+                    messagesContainer.innerHTML = '<div class="message error-message">' + response.data + '</div>';
                 }
-            },
-            error: function() {
-                messagesContainer.html('<div class="message error-message">An error occurred. Please try again.</div>');
+            } else {
+                messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
             }
-        });
+        };
+        
+        xhr.onerror = function() {
+            messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
+        };
+        
+        const data = 'action=delete_account' +
+                    '&confirmation_code=' + encodeURIComponent(confirmationCode) +
+                    '&nonce=' + encodeURIComponent(passwordless_auth.delete_account_nonce);
+        
+        xhr.send(data);
     }
     
     // Attach event listeners to buttons
-    $('.request-code-btn').on('click', function() {
+    document.querySelector('.request-code-btn').addEventListener('click', function() {
         requestDeletionCode();
     });
     
-    $('.delete-btn').on('click', function() {
-        const confirmationCode = $('#confirmation_code').val();
+    document.querySelector('.delete-btn').addEventListener('click', function() {
+        const confirmationCode = document.getElementById('confirmation_code').value;
         deleteAccount(confirmationCode);
     });
 });</script>
