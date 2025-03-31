@@ -31,7 +31,7 @@ if (!($current_user instanceof WP_User)) {
             </div>
             
             <div class="form-row button-row email-buttons">
-                <button type="button" class="request-email-code-btn"><?php _e('Request Verification Code', 'my-passwordless-auth'); ?></button>
+                <button type="button" class="request-email-code-btn" disabled><?php _e('Request Verification Code', 'my-passwordless-auth'); ?></button>
             </div>
             
             <div class="form-row email-code-container" style="display: none;">
@@ -220,6 +220,15 @@ if (!($current_user instanceof WP_User)) {
 
 <script>
 jQuery(document).ready(function($) {
+    // Enable/disable email verification button based on email input
+    $('#new_email').on('input', function() {
+        if ($(this).val().trim() !== '') {
+            $('.request-email-code-btn').prop('disabled', false);
+        } else {
+            $('.request-email-code-btn').prop('disabled', true);
+        }
+    });
+    
     // Profile form submission
     $('#my-passwordless-auth-profile-form').on('submit', function(e) {
         e.preventDefault();
