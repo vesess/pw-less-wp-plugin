@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clear previous messages
         messagesContainer.innerHTML = '';
         
-        // Change button text and disable it
+        // Change button text and disable it while sending
         requestCodeBtn.textContent = 'Sending...';
         requestCodeBtn.disabled = true;
         
@@ -380,24 +380,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.success) {
                 messagesContainer.innerHTML = '<div class="message success-message">' + response.data + '</div>';
                 codeContainer.style.display = 'block';
-                
-                // Change button text to indicate waiting period
-                requestCodeBtn.textContent = 'Request Again (30s)';
-                
-                // Start a countdown
-                let secondsLeft = 30;
-                const countdownInterval = setInterval(function() {
-                    secondsLeft--;
-                    if (secondsLeft > 0) {
-                        requestCodeBtn.textContent = `Request Again (${secondsLeft}s)`;
-                    } else {
-                        requestCodeBtn.textContent = 'Request Deletion Code';
-                        requestCodeBtn.disabled = false;
-                        clearInterval(countdownInterval);
-                    }
-                }, 1000);
+                console.log('Code sent successfully!');
+                // Restore the button immediately instead of showing countdown
+                requestCodeBtn.textContent = 'Request Deletion Code';
+                requestCodeBtn.disabled = false;
             } else {
                 messagesContainer.innerHTML = '<div class="message error-message">' + response.data + '</div>';
+                console.log('Error sending code:', response.data);
                 // Restore button state in case of error
                 requestCodeBtn.textContent = 'Request Deletion Code';
                 requestCodeBtn.disabled = false;
@@ -406,6 +395,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Error:', error);
             messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
+            console.log('Error:', error);
             // Restore button state in case of error
             requestCodeBtn.textContent = 'Request Deletion Code';
             requestCodeBtn.disabled = false;
@@ -415,6 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to delete account
     function deleteAccount(confirmationCode) {
         const messagesContainer = document.getElementById('my-passwordless-auth-delete-account-form').querySelector('.messages');
+        console.log('Confirmation code:', confirmationCode);
         
         // Clear previous messages
         messagesContainer.innerHTML = '';
