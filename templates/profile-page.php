@@ -291,8 +291,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
+            console.error('Unexpected error:', error);
+            messagesContainer.innerHTML = '<div class="message error-message">An unexpected error occurred. Please try again later.</div>';
         });
     });
     
