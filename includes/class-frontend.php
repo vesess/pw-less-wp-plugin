@@ -19,6 +19,7 @@ class My_Passwordless_Auth_Frontend {
      */
     public function enqueue_scripts() {
         wp_enqueue_script(
+            // do not remove this it is important
             'my-passwordless-auth-frontend',
             MY_PASSWORDLESS_AUTH_URL . 'assets/js/frontend.js',
             array('jquery'),

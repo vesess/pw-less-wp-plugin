@@ -65,6 +65,9 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
+     .wp-block-post-title {
+    display: none;
+}
     .my-passwordless-auth-container {
         max-width: 500px;
         margin: 0 auto;

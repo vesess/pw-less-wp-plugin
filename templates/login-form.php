@@ -92,8 +92,31 @@ if (empty($redirect_to)) {
         </p>
     <?php endif; ?>
 </div>
-
 <style>
+      /* Remove this .wp-block-post-title if it interfere with other styles */
+    .wp-block-post-title {
+    display: none;
+}
+    .button-primary {
+        background-color: #0073aa;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 15px;
+        width: 100%;
+    }
+    
+    .button-primary:hover {
+        background-color: #005a87;
+    }
+    
+    .button-primary:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+    }
+    
     .passwordless-login-container {
         max-width: 400px;
         margin: 0 auto;
@@ -102,6 +125,13 @@ if (empty($redirect_to)) {
         border-radius: 5px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
+    
+
+    .passwordless-submit {
+        margin-top: 20px;
+    }
+    
+   
     .passwordless-login-form label {
         display: block;
         margin-bottom: 5px;
@@ -113,9 +143,6 @@ if (empty($redirect_to)) {
         margin-bottom: 15px;
         border: 1px solid #ddd;
         border-radius: 3px;
-    }
-    .passwordless-submit {
-        margin-top: 10px;
     }
     .passwordless-error-message {
         background-color: #f8d7da;

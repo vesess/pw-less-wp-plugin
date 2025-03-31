@@ -88,6 +88,9 @@ if (!($current_user instanceof WP_User)) {
 </div>
 
 <style>
+     .wp-block-post-title {
+    display: none;
+}
     .my-passwordless-auth-container {
         max-width: 600px;
         margin: 0 auto;
