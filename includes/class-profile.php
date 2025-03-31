@@ -10,6 +10,7 @@ class My_Passwordless_Auth_Profile {
         add_action('wp_ajax_update_profile', array($this, 'update_profile'));
         add_action('wp_ajax_delete_account', array($this, 'delete_account'));
         add_action('wp_ajax_request_email_verification', array($this, 'request_email_verification'));
+        add_action('wp_ajax_request_deletion_code', array($this, 'request_deletion_code'));
     }
 
     /**
@@ -159,31 +160,54 @@ class My_Passwordless_Auth_Profile {
         $stored_code = get_user_meta($user_id, 'account_deletion_code', true);
 
         if (empty($stored_code)) {
-            // Generate a code and send it if one doesn't exist
-            $confirmation_code = wp_generate_password(8, false);
-            update_user_meta($user_id, 'account_deletion_code', $confirmation_code);
-            
-            $email_class = new My_Passwordless_Auth_Email();
-            $email_sent = $email_class->send_deletion_confirmation($user_id, $confirmation_code);
-            
-            if ($email_sent) {
-                wp_send_json_success('Confirmation code sent to your email');
-            } else {
-                wp_send_json_error('Failed to send confirmation code');
-            }
-        } else if ($stored_code === $confirmation_code) {
-            // Process account deletion
-            require_once(ABSPATH . 'wp-admin/includes/user.php');
-            $deleted = wp_delete_user($user_id);
-            
-            if ($deleted) {
-                wp_logout();
-                wp_send_json_success('Account deleted successfully');
-            } else {
-                wp_send_json_error('Failed to delete account');
-            }
-        } else {
+            wp_send_json_error('No deletion code found. Please request a code first.');
+            return;
+        }
+
+        if ($stored_code !== $confirmation_code) {
             wp_send_json_error('Invalid confirmation code');
+            return;
+        }
+        
+        // Process account deletion
+        require_once(ABSPATH . 'wp-admin/includes/user.php');
+        $deleted = wp_delete_user($user_id);
+        
+        if ($deleted) {
+            // Clean up the code
+            delete_user_meta($user_id, 'account_deletion_code');
+            wp_logout();
+            wp_send_json_success('Account deleted successfully');
+        } else {
+            wp_send_json_error('Failed to delete account');
+        }
+    }
+
+    /**
+     * Request deletion code
+     */
+    public function request_deletion_code() {
+        // Check nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'delete_account_nonce')) {
+            wp_send_json_error('Security check failed');
+        }
+
+        $user_id = get_current_user_id();
+        if (!$user_id) {
+            wp_send_json_error('User not logged in');
+        }
+
+        // Generate a code and send it
+        $confirmation_code = wp_generate_password(8, false);
+        update_user_meta($user_id, 'account_deletion_code', $confirmation_code);
+        
+        $email_class = new My_Passwordless_Auth_Email();
+        $email_sent = $email_class->send_deletion_confirmation($user_id, $confirmation_code);
+        
+        if ($email_sent) {
+            wp_send_json_success('Confirmation code sent to your email');
+        } else {
+            wp_send_json_error('Failed to send confirmation code');
         }
     }
 }
