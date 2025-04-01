@@ -18,22 +18,24 @@ class My_Passwordless_Auth_Frontend {
      * Enqueue frontend scripts and styles.
      */
     public function enqueue_scripts() {
-        wp_enqueue_script(
-            // do not remove this it is important
-            'my-passwordless-auth-frontend',
-            MY_PASSWORDLESS_AUTH_URL . 'assets/js/frontend.js',
-            array('jquery'),
-            MY_PASSWORDLESS_AUTH_VERSION,
-            true
-        );
-        
-        wp_localize_script('my-passwordless-auth-frontend', 'passwordless_auth', array(
+        // Ensure jQuery is enqueued
+        wp_enqueue_script('jquery');
+    
+        // Define the localized data
+        $localized_data = array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'login_nonce' => wp_create_nonce('passwordless_login_nonce'),
             'registration_nonce' => wp_create_nonce('registration_nonce'),
             'profile_nonce' => wp_create_nonce('profile_nonce'),
-            'delete_account_nonce' => wp_create_nonce('delete_account_nonce')
-        ));
+            'delete_account_nonce' => wp_create_nonce('delete_account_nonce'),
+        );
+    
+        // Output the localized data as an inline script
+        wp_add_inline_script(
+            'jquery', // Attach to jQuery, which is already enqueued
+            'var passwordless_auth = ' . json_encode($localized_data) . ';',
+            'before'
+        );
     }
 
     /**

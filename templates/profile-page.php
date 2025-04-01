@@ -22,7 +22,7 @@ if (!($current_user instanceof WP_User)) {
             
             <div class="form-row">
                 <label for="current_email"><?php _e('Current Email Address', 'my-passwordless-auth'); ?></label>
-                <p><strong><?php echo esc_html($current_user->user_email); ?></strong></p>
+                <p><strong class="current_email_custom"><?php echo esc_html($current_user->user_email); ?></strong></p>
             </div>
             
             <div class="form-row">
@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // If email was updated, update the displayed email and reset the form
                 if (newEmail && emailVerificationCode) {
                     // Update only the first strong tag which contains the current email address
-                    document.querySelector('.form-row:first-of-type p strong').textContent = newEmail;
+                    document.querySelector('.current_email_custom').textContent = newEmail;
                     document.getElementById('new_email').value = '';
                     document.getElementById('email_verification_code').value = '';
                     document.querySelector('.email-code-container').style.display = 'none';
