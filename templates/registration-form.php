@@ -53,13 +53,64 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('my-passwordless-auth-registration-form');
     
     form.addEventListener('submit', function(e) {
+        e.preventDefault(); 
+
         const emailField = document.getElementById('email');
         const usernameField = document.getElementById('username');
+        const displayNameField = document.getElementById('display_name');
+        const messagesContainer = form.querySelector('.messages');
         
         if (!usernameField.value.trim()) {
-        
             usernameField.value = emailField.value;
         }
+        
+        // Clear previous messages
+        messagesContainer.innerHTML = '';
+        
+        // Disable submit button during submission
+        const submitBtn = form.querySelector('.submit-btn');
+        submitBtn.value = 'Registering...';
+        submitBtn.disabled = true;
+        
+        // Send AJAX request
+        const formData = new FormData(form);
+        const data = new URLSearchParams();
+        for (const pair of formData) {
+            data.append(pair[0], pair[1]);
+        }
+        
+        fetch(passwordless_auth.ajax_url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: data
+        })
+        .then(response => response.json())
+        .then(response => {
+            // Re-enable submit button
+            submitBtn.value = 'Register';
+            submitBtn.disabled = false;
+            
+            if (response.success) {
+                // Show success message
+                messagesContainer.innerHTML = '<div class="message success-message">' + response.data + '</div>';
+                // Clear form inputs
+                form.reset();
+            } else {
+                // Show error message
+                messagesContainer.innerHTML = '<div class="message error-message">' + response.data + '</div>';
+            }
+        })
+        .catch(error => {
+            // Re-enable submit button
+            submitBtn.value = 'Register';
+            submitBtn.disabled = false;
+            
+            // Show error message
+            messagesContainer.innerHTML = '<div class="message error-message">An unexpected error occurred. Please try again later.</div>';
+            console.error('Registration error:', error);
+        });
     });
 });
 </script>
