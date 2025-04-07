@@ -3,8 +3,9 @@
  * Handles global security functionality.
  */
 class My_Passwordless_Auth_Security {
-    const MAX_LOGIN_ATTEMPTS = 3; // Maximum login attempts per time window
+    const MAX_LOGIN_ATTEMPTS = 5; // Maximum login attempts per time window
     const MAX_REGISTRATION_ATTEMPTS = 3; // Maximum registration attempts per time window
+    const MAX_LOGIN_REQUESTS = 3; // Maximum login link requests per time window
     const LOCKOUT_DURATION = 1800; // 30 minutes in seconds
     const ATTEMPT_WINDOW = 900; // 15 minutes in seconds for counting attempts
 
@@ -96,6 +97,51 @@ class My_Passwordless_Auth_Security {
     }
 
     /**
+     * Record a login link request
+     *
+     * @param string $ip_address The IP address making the request
+     * @param string $email The email address being used
+     * @return bool|int Returns false if allowed to continue, or seconds remaining if blocked
+     */
+    public function record_login_request($ip_address, $email) {
+        // Check if IP is already blocked
+        $block_time = $this->is_ip_blocked($ip_address);
+        if ($block_time !== false) {
+            return $block_time;
+        }
+
+        $requests = get_transient('passwordless_auth_login_requests');
+        if (!$requests) {
+            $requests = array();
+        }
+
+        if (!isset($requests[$ip_address])) {
+            $requests[$ip_address] = array(
+                'count' => 0,
+                'first_request' => time(),
+                'email_requests' => array()
+            );
+        }
+
+        // Add this request
+        $requests[$ip_address]['count']++;
+        if (!isset($requests[$ip_address]['email_requests'][$email])) {
+            $requests[$ip_address]['email_requests'][$email] = 0;
+        }
+        $requests[$ip_address]['email_requests'][$email]++;
+
+        // Check if we should block this IP
+        if ($requests[$ip_address]['count'] >= self::MAX_LOGIN_REQUESTS) {
+            $this->block_ip($ip_address);
+            return self::LOCKOUT_DURATION;
+        }
+
+        // Save requests
+        set_transient('passwordless_auth_login_requests', $requests, self::ATTEMPT_WINDOW);
+        return false;
+    }
+
+    /**
      * Record a registration attempt
      *
      * @param string $ip_address The IP address making the attempt
@@ -166,6 +212,17 @@ class My_Passwordless_Auth_Security {
                 }
             }
             set_transient('passwordless_auth_login_attempts', $attempts, self::ATTEMPT_WINDOW);
+        }
+
+        // Clean up login requests
+        $requests = get_transient('passwordless_auth_login_requests');
+        if ($requests) {
+            foreach ($requests as $ip => $data) {
+                if ($data['first_request'] < $cutoff_time) {
+                    unset($requests[$ip]);
+                }
+            }
+            set_transient('passwordless_auth_login_requests', $requests, self::ATTEMPT_WINDOW);
         }
 
         // Clean up registration attempts

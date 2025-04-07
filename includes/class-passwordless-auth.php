@@ -226,19 +226,19 @@ class My_Passwordless_Auth
             return;
         }
 
-        // Check rate limiting
+        $user_email = isset($_POST['user_email']) ? sanitize_email($_POST['user_email']) : '';
+        $redirect_to = isset($_POST['redirect_to']) ? $_POST['redirect_to'] : '';
+
+        // Check rate limiting for login requests
         $security = new My_Passwordless_Auth_Security();
         $ip_address = My_Passwordless_Auth_Security::get_client_ip();
-        $user_email = isset($_POST['user_email']) ? sanitize_email($_POST['user_email']) : '';
-        $block_time = $security->record_login_attempt($ip_address, $user_email);
+        $block_time = $security->record_login_request($ip_address, $user_email);
         
         if ($block_time !== false) {
             $minutes = ceil($block_time / 60);
-            wp_redirect(add_query_arg('error', 'too_many_attempts', wp_get_referer()));
+            wp_redirect(add_query_arg('error', 'too_many_requests', wp_get_referer()));
             exit;
         }
-
-        $redirect_to = isset($_POST['redirect_to']) ? $_POST['redirect_to'] : '';
 
         // Check for empty email
         if (empty($user_email)) {
