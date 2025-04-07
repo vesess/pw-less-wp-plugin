@@ -30,6 +30,9 @@ if (isset($_GET['error']) && !empty($_GET['error'])) {
         case 'unknown_error':
             $error_message = __('An unknown error occurred while trying to send the login link. Please try again later.', 'my-passwordless-auth');
             break;
+        case 'too_many_attempts':
+            $error_message = __('Too many login attempts. Please try again later.', 'my-passwordless-auth');
+            break;
         default:
             $error_message = __('An error occurred. Please try again.', 'my-passwordless-auth');
             break;

@@ -37,8 +37,7 @@ class My_Passwordless_Auth
     {
         $this->version = MY_PASSWORDLESS_AUTH_VERSION;
         $this->load_dependencies();
-        // This is commented out since this seems to be legacy code and not used in the current context.
-        // $this->define_authentication_hooks();
+        $this->define_security_hooks();
         $this->define_registration_hooks();
         $this->define_profile_hooks();
         $this->define_frontend_hooks();
@@ -70,6 +69,7 @@ class My_Passwordless_Auth
         require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-email.php';
         require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-url-blocker.php'; // Include URL blocker class
         require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/helpers.php';
+        require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-security.php'; // Include Security class
 
         $this->loader = new My_Passwordless_Auth_Loader();
     }
@@ -82,6 +82,15 @@ class My_Passwordless_Auth
         $authentication = new My_Passwordless_Auth_Authentication();
 
         $this->loader->add_action('init', $authentication, 'init');
+    }
+
+    /**
+     * Register security related hooks.
+     */
+    private function define_security_hooks()
+    {
+        $security = new My_Passwordless_Auth_Security();
+        $this->loader->add_action('init', $security, 'init');
     }
 
     /**
@@ -217,8 +226,19 @@ class My_Passwordless_Auth
             return;
         }
 
-        $redirect_to = isset($_POST['redirect_to']) ? $_POST['redirect_to'] : '';
+        // Check rate limiting
+        $security = new My_Passwordless_Auth_Security();
+        $ip_address = My_Passwordless_Auth_Security::get_client_ip();
         $user_email = isset($_POST['user_email']) ? sanitize_email($_POST['user_email']) : '';
+        $block_time = $security->record_login_attempt($ip_address, $user_email);
+        
+        if ($block_time !== false) {
+            $minutes = ceil($block_time / 60);
+            wp_redirect(add_query_arg('error', 'too_many_attempts', wp_get_referer()));
+            exit;
+        }
+
+        $redirect_to = isset($_POST['redirect_to']) ? $_POST['redirect_to'] : '';
 
         // Check for empty email
         if (empty($user_email)) {
@@ -281,8 +301,23 @@ class My_Passwordless_Auth
 
         my_passwordless_auth_log("Magic login process initiated from class-passwordless-auth.php");
 
+        // Check rate limiting for magic login attempts
+        $security = new My_Passwordless_Auth_Security();
+        $ip_address = My_Passwordless_Auth_Security::get_client_ip();
+        $block_time = $security->is_ip_blocked($ip_address);
+        
+        if ($block_time !== false) {
+            $minutes = ceil($block_time / 60);
+            $error = new WP_Error('too_many_attempts', sprintf(__('Too many login attempts. Please try again in %d minutes.', 'my-passwordless-auth'), $minutes));
+            wp_die(
+                $error->get_error_message(),
+                __('Login Failed', 'my-passwordless-auth'),
+                array('response' => 429, 'back_link' => true)
+            );
+            return;
+        }
+
         // Process the magic login directly instead of calling an external function
-        // Check if this is a magic login request
         if (!isset($_GET['uid']) || !isset($_GET['token'])) {
             return false;
         }

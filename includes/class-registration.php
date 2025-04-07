@@ -20,6 +20,17 @@ class My_Passwordless_Auth_Registration {
             wp_send_json_error('Security check failed');
         }
 
+        // Check rate limiting
+        $security = new My_Passwordless_Auth_Security();
+        $ip_address = My_Passwordless_Auth_Security::get_client_ip();
+        $block_time = $security->record_registration_attempt($ip_address);
+        
+        if ($block_time !== false) {
+            $minutes = ceil($block_time / 60);
+            wp_send_json_error(sprintf('Too many registration attempts. Please try again in %d minutes.', $minutes));
+            return;
+        }
+
         $email = sanitize_email($_POST['email']);
         $username = sanitize_user($_POST['username']);
         $display_name = sanitize_text_field($_POST['display_name']);
