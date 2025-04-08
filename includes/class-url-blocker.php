@@ -3,49 +3,56 @@
  * Handles URL blocking functionality.
  */
 
-// If this file is called directly, abort.
-if (!defined('WPINC')) {
-    die;
+// Exit if accessed directly
+if (!defined('ABSPATH')) {
+    exit;
 }
 
 class My_Passwordless_Auth_URL_Blocker {
     
-    // Hardcoded list of blocked URLs
     private $blocked_urls = array(
         'http://localhost/wordpress/sample-page/',
         'http://localhost/wordpress/category/*',
         '*/private/*',
         'http://localhost/wordpress/index.php/login/',
         'http://localhost/wordpress/index.php/registration/',
-        // Add more URLs to block here
+        'http://localhost/wordpress/login/',
+        'http://localhost/wordpress/registration/',
     );
     
-    // Specific redirect URL
-    private $redirect_url = 'http://localhost/wordpress';
-    
+    private $options;
+    private $redirect_url = 'http://localhost/wordpress/not-found/';
+
     /**
-     * Initialize the class and set its hooks.
+     * Initialize the URL blocker
      */
     public function init() {
-        // Log initialization
-        my_passwordless_auth_log("URL Blocker initialized", 'info');
-        
-        // Execute the check directly during init
-        $this->check_blocked_urls();
+        if (!function_exists('add_action')) {
+            return;
+        }
+        add_action('template_redirect', array($this, 'check_blocked_urls'));
     }
 
     /**
      * Check if the current URL is in the blocked list
      */
     public function check_blocked_urls() {
+        // Load options only when needed
+        if (function_exists('get_option')) {
+            $this->options = get_option('my_passwordless_auth_options');
+            if (!empty($this->options['login_redirect'])) {
+                $this->redirect_url = $this->options['login_redirect'];
+            }
+        }
+
         // Don't block admin pages
-        if (is_admin()) {
+        if (function_exists('is_admin') && is_admin()) {
             my_passwordless_auth_log("Admin page detected, not checking URL blocking", 'info');
             return;
         }
         
         // Only block URLs when the user is logged in
-        if (!is_user_logged_in()) {
+        if (!function_exists('is_user_logged_in') || !is_user_logged_in()) {
             my_passwordless_auth_log("User not logged in, skipping URL blocking", 'info');
             return;
         }
@@ -72,7 +79,6 @@ class My_Passwordless_Auth_URL_Blocker {
             if (preg_match($pattern, $current_url)) {
                 my_passwordless_auth_log("Blocked access to: " . $current_url . " (matched pattern: " . $blocked_url . ") for logged-in user", 'warning');
                 
-                // Use the hardcoded redirect URL instead of home_url()
                 if (function_exists('wp_redirect')) {
                     wp_redirect($this->redirect_url);
                     exit;
@@ -105,7 +111,7 @@ class My_Passwordless_Auth_URL_Blocker {
      * Get the current URL
      */
     private function get_current_url() {
-        $protocol = (is_ssl()) ? 'https://' : 'http://';
+        $protocol = function_exists('is_ssl') && is_ssl() ? 'https://' : 'http://';
         $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
         $uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
         
