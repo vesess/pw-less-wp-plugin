@@ -41,7 +41,8 @@ if (!get_option('users_can_register')) {
         
         <p class="login-register-link">
             <?php _e('Already have an account?', 'my-passwordless-auth'); ?>
-            <a href="<?php echo esc_url(home_url('/index.php/login/')); ?>"><?php _e('Login here', 'my-passwordless-auth'); ?></a>
+            <!-- change the url if it is broken to /index.php/ -->
+            <a href="<?php echo esc_url(home_url('/login')); ?>"><?php _e('Login here', 'my-passwordless-auth'); ?></a>
         </p>
         <input type="hidden" name="action" value="register_new_user" />
         <?php wp_nonce_field('registration_nonce', 'nonce'); ?>

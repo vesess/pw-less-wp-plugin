@@ -47,8 +47,6 @@ class My_Passwordless_Auth_Admin {
     public function register_settings() {
         register_setting('my_passwordless_auth_options', 'my_passwordless_auth_options');
         
-     
-        
         add_settings_section(
             'my_passwordless_auth_general',
             __('General Settings', 'my-passwordless-auth'),
@@ -60,6 +58,14 @@ class My_Passwordless_Auth_Admin {
             'login_redirect',
             __('Redirect After Login', 'my-passwordless-auth'),
             array($this, 'render_login_redirect_field'),
+            'my-passwordless-auth',
+            'my_passwordless_auth_general'
+        );
+
+        add_settings_field(
+            'user_home_url',
+            __('User Home URL', 'my-passwordless-auth'),
+            array($this, 'render_user_home_url_field'),
             'my-passwordless-auth',
             'my_passwordless_auth_general'
         );
@@ -149,8 +155,6 @@ class My_Passwordless_Auth_Admin {
         echo '<input type="number" name="my_passwordless_auth_options[code_expiration]" value="' . esc_attr($value) . '" min="1" max="60" step="1" class="small-text">';
     }
     
-
-
     /**
      * Render the settings page.
      */
@@ -180,8 +184,6 @@ class My_Passwordless_Auth_Admin {
         <?php
     }
 
-  
-
     /**
      * Render login redirect field
      */
@@ -191,6 +193,18 @@ class My_Passwordless_Auth_Admin {
         ?>
         <input type="text" name="my_passwordless_auth_options[login_redirect]" value="<?php echo esc_attr($redirect); ?>" class="regular-text" />
         <p class="description"><?php _e('URL to redirect users after successful login.', 'my-passwordless-auth'); ?></p>
+        <?php
+    }
+
+    /**
+     * Render user home URL field
+     */
+    public function render_user_home_url_field() {
+        $options = get_option('my_passwordless_auth_options');
+        $home_url = isset($options['user_home_url']) ? $options['user_home_url'] : home_url();
+        ?>
+        <input type="text" name="my_passwordless_auth_options[user_home_url]" value="<?php echo esc_attr($home_url); ?>" class="regular-text" />
+        <p class="description"><?php _e('URL for the user\'s home page.', 'my-passwordless-auth'); ?></p>
         <?php
     }
 

@@ -89,7 +89,8 @@ if (empty($redirect_to)) {
             
             <p class="login-register-link">
                 <?php _e('First time user?', 'my-passwordless-auth'); ?>
-                <a href="<?php echo esc_url(home_url('/index.php/registration')); ?>"><?php _e('Register here', 'my-passwordless-auth'); ?></a>
+                <!-- change the url if it is broken to /index.php/ -->
+                <a href="<?php echo esc_url(home_url('/registration')); ?>"><?php _e('Register here', 'my-passwordless-auth'); ?></a>
             </p>
         </form>
         

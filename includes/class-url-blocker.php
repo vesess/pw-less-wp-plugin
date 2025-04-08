@@ -10,18 +10,10 @@ if (!defined('ABSPATH')) {
 
 class My_Passwordless_Auth_URL_Blocker {
     
-    private $blocked_urls = array(
-        'http://localhost/wordpress/sample-page/',
-        'http://localhost/wordpress/category/*',
-        '*/private/*',
-        'http://localhost/wordpress/index.php/login/',
-        'http://localhost/wordpress/index.php/registration/',
-        'http://localhost/wordpress/login/',
-        'http://localhost/wordpress/registration/',
-    );
+    private $blocked_urls = array();
     
     private $options;
-    private $redirect_url = 'http://localhost/wordpress/not-found/';
+    private $redirect_url;
 
     /**
      * Initialize the URL blocker
@@ -31,29 +23,60 @@ class My_Passwordless_Auth_URL_Blocker {
             return;
         }
         add_action('template_redirect', array($this, 'check_blocked_urls'));
+        $this->setup_blocked_urls();
+    }
+
+    /**
+     * Set up blocked URLs and redirect URL
+     */
+    public function setup_blocked_urls() {
+        if (!function_exists('home_url')) {
+            //my_passwordless_auth_log("home_url function not available", 'error');
+            return;
+        }
+
+        // Load options and get user_home_url
+        if (function_exists('get_option')) {
+            $this->options = get_option('my_passwordless_auth_options');
+            $base_url = isset($this->options['user_home_url']) ? $this->options['user_home_url'] : home_url();
+            //my_passwordless_auth_log("Using base URL for blocked URLs: " . $base_url, 'info');
+        } else {
+            $base_url = home_url();
+            //my_passwordless_auth_log("Fallback to home_url(): " . $base_url, 'info');
+        }
+
+        $this->blocked_urls = array(
+            $base_url . '/sample-page',
+            $base_url . '/category/*',
+            '*/private/*',
+            $base_url . '/index.php/login',
+            $base_url . '/index.php/registration',
+            $base_url . '/login',
+            $base_url . '/registration',
+        );
+
+        // Set default redirect URL
+        $this->redirect_url = isset($this->options['login_redirect']) ? 
+            $this->options['login_redirect'] : 
+            $base_url . '/not-found';
+        
+        ////my_passwordless_auth_log("Blocked URLs set up: " . print_r($this->blocked_urls, true), 'info');
+        ////my_passwordless_auth_log("Redirect URL set to: " . $this->redirect_url, 'info');
     }
 
     /**
      * Check if the current URL is in the blocked list
      */
     public function check_blocked_urls() {
-        // Load options only when needed
-        if (function_exists('get_option')) {
-            $this->options = get_option('my_passwordless_auth_options');
-            if (!empty($this->options['login_redirect'])) {
-                $this->redirect_url = $this->options['login_redirect'];
-            }
-        }
-
         // Don't block admin pages
         if (function_exists('is_admin') && is_admin()) {
-            my_passwordless_auth_log("Admin page detected, not checking URL blocking", 'info');
+            //my_passwordless_auth_log("Admin page detected, not checking URL blocking", 'info');
             return;
         }
         
         // Only block URLs when the user is logged in
         if (!function_exists('is_user_logged_in') || !is_user_logged_in()) {
-            my_passwordless_auth_log("User not logged in, skipping URL blocking", 'info');
+            //my_passwordless_auth_log("User not logged in, skipping URL blocking", 'info');
             return;
         }
         
@@ -61,7 +84,7 @@ class My_Passwordless_Auth_URL_Blocker {
         $current_url = $this->get_current_url();
         
         // Log current URL for debugging
-        my_passwordless_auth_log("Current URL being checked: " . $current_url, 'info');
+        //my_passwordless_auth_log("Current URL being checked: " . $current_url, 'info');
         
         // Check if current URL matches any blocked URL (considering wildcards)
         foreach ($this->blocked_urls as $blocked_url) {
@@ -74,10 +97,10 @@ class My_Passwordless_Auth_URL_Blocker {
             $pattern = $this->convert_wildcard_to_regex($blocked_url);
             
             // Log the pattern for debugging
-            my_passwordless_auth_log("Checking URL against pattern: " . $pattern, 'info');
+            //my_passwordless_auth_log("Checking URL against pattern: " . $pattern, 'info');
             
             if (preg_match($pattern, $current_url)) {
-                my_passwordless_auth_log("Blocked access to: " . $current_url . " (matched pattern: " . $blocked_url . ") for logged-in user", 'warning');
+                //my_passwordless_auth_log("Blocked access to: " . $current_url . " (matched pattern: " . $blocked_url . ") for logged-in user", 'warning');
                 
                 if (function_exists('wp_redirect')) {
                     wp_redirect($this->redirect_url);
@@ -89,7 +112,7 @@ class My_Passwordless_Auth_URL_Blocker {
             }
         }
         
-        my_passwordless_auth_log("URL not blocked: " . $current_url, 'info');
+        //my_passwordless_auth_log("URL not blocked: " . $current_url, 'info');
     }
 
     /**
