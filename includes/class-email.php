@@ -159,11 +159,8 @@ class My_Passwordless_Auth_Email {
         if (!$user) {
             my_passwordless_auth_log("Failed to send magic link: User with email $user_email not found", 'error');
             return false;
-        }
-
-        // Check if email is verified
-        $email_verified = get_user_meta($user->ID, 'email_verified', true);
-        if (!$email_verified) {
+        }        // Check if email is verified (use the helper function to respect admin bypass)
+        if (!my_passwordless_auth_is_email_verified($user->ID)) {
             my_passwordless_auth_log("Cannot send login link: Email not verified for user ID {$user->ID}", 'error');
             return 'unverified';
         }
