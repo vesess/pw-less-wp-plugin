@@ -21,10 +21,17 @@ function my_passwordless_auth_get_option($key, $default = '')
  * Check if a user's email is verified.
  *
  * @param int $user_id The user ID.
- * @return bool Whether the email is verified.
+ * @return bool Whether the email is verified or user is an admin (admins bypass verification).
  */
 function my_passwordless_auth_is_email_verified($user_id)
 {
+    // Check if user is an admin, if so, bypass verification check
+    $user = get_user_by('id', $user_id);
+    if ($user && user_can($user, 'administrator')) {
+        return true;
+    }
+    
+    // Regular verification check for non-admin users
     return (bool) get_user_meta($user_id, 'email_verified', true);
 }
 

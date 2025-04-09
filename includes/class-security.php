@@ -6,7 +6,7 @@ class My_Passwordless_Auth_Security {
     const MAX_LOGIN_ATTEMPTS = 5; // Maximum login attempts per time window
     const MAX_REGISTRATION_ATTEMPTS = 3; // Maximum registration attempts per time window
     const MAX_LOGIN_REQUESTS = 3; // Maximum login link requests per time window
-    const LOCKOUT_DURATION = 1800; // 30 minutes in seconds
+    const LOCKOUT_DURATION = 300; // 30 minutes in seconds
     const ATTEMPT_WINDOW = 900; // 15 minutes in seconds for counting attempts
 
     /**
