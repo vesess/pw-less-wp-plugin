@@ -67,23 +67,11 @@ if (empty($redirect_to)) {
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
-    const error = urlParams.get('error');
+    const errorMessage = urlParams.get('error_message');
     const errorDiv = document.getElementById('error-message');
     
-    if (error) {
-        const errorMessages = {
-            'empty_email': 'Please enter your email address.',
-            'invalid_email': 'Please enter a valid email address.',
-            'user_not_found': 'No user found with that email address.',
-            'email_failed': 'Failed to send the login link. There might be an issue with the email server. Please try again later or contact support.',
-            'email_unverified': 'Your email address has not been verified yet. Please check your inbox for a verification email or register again.',
-            'unknown_error': 'An unknown error occurred while trying to send the login link. Please try again later.',
-            'too_many_requests': 'Too many login link requests. Please try again later.',
-            'too_many_attempts': 'Too many login attempts. Please try again later.'
-        };
-        
-        const message = errorMessages[error] || 'An error occurred. Please try again.';
-        errorDiv.textContent = message;
+    if (errorMessage) {
+        errorDiv.textContent = decodeURIComponent(errorMessage);
         errorDiv.style.display = 'block';
     }
 });

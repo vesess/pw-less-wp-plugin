@@ -227,55 +227,56 @@ class My_Passwordless_Auth
         }
 
         $user_email = isset($_POST['user_email']) ? sanitize_email($_POST['user_email']) : '';
-        $redirect_to = isset($_POST['redirect_to']) ? $_POST['redirect_to'] : '';
-
-        // Check rate limiting for login requests
+        $redirect_to = isset($_POST['redirect_to']) ? $_POST['redirect_to'] : '';        // Check rate limiting for login requests
         $security = new My_Passwordless_Auth_Security();
         $ip_address = My_Passwordless_Auth_Security::get_client_ip();
         $block_time = $security->record_login_request($ip_address, $user_email);
         
         if ($block_time !== false) {
             $minutes = ceil($block_time / 60);
-            wp_redirect(add_query_arg('error', 'too_many_requests', wp_get_referer()));
+            $error_message = sprintf('Too many login link requests. Please try again in %d minutes.', $minutes);
+            wp_redirect(add_query_arg('error_message', urlencode($error_message), wp_get_referer()));
             exit;
-        }
-
-        // Check for empty email
+        }        // Check for empty email
         if (empty($user_email)) {
-            wp_redirect(add_query_arg('error', 'empty_email', wp_get_referer()));
+            $error_message = 'Please enter your email address.';
+            wp_redirect(add_query_arg('error_message', urlencode($error_message), wp_get_referer()));
             exit;
         }
 
         // Validate email format
         if (!is_email($user_email)) {
-            wp_redirect(add_query_arg('error', 'invalid_email', wp_get_referer()));
+            $error_message = 'Please enter a valid email address.';
+            wp_redirect(add_query_arg('error_message', urlencode($error_message), wp_get_referer()));
             exit;
         }
 
         // Check if user exists
         $user = get_user_by('email', $user_email);
         if (!$user) {
-            wp_redirect(add_query_arg('error', 'user_not_found', wp_get_referer()));
+            $error_message = 'No user found with that email address.';
+            wp_redirect(add_query_arg('error_message', urlencode($error_message), wp_get_referer()));
             exit;
         }
 
         // Generate and send magic login link using the Email class for consistent "From" headers
         $email_class = new My_Passwordless_Auth_Email();
-        $sent = $email_class->send_magic_link($user_email);
-
-        // Handle different error scenarios
+        $sent = $email_class->send_magic_link($user_email);        // Handle different error scenarios
         if ($sent === false) {
             // Email sending failed
             my_passwordless_auth_log("Failed to send login link to user email: $user_email", 'error');
-            wp_redirect(add_query_arg('error', 'email_failed', wp_get_referer()));
+            $error_message = 'Failed to send the login link. There might be an issue with the email server. Please try again later or contact support.';
+            wp_redirect(add_query_arg('error_message', urlencode($error_message), wp_get_referer()));
             exit;
         } elseif ($sent === 'unverified') {
             // Email is not yet verified
-            wp_redirect(add_query_arg('error', 'email_unverified', wp_get_referer()));
+            $error_message = 'Your email address has not been verified yet. Please check your inbox for a verification email or register again.';
+            wp_redirect(add_query_arg('error_message', urlencode($error_message), wp_get_referer()));
             exit;
         } elseif ($sent !== true) {
             // Any other error
-            wp_redirect(add_query_arg('error', 'unknown_error', wp_get_referer()));
+            $error_message = 'An unknown error occurred while trying to send the login link. Please try again later.';
+            wp_redirect(add_query_arg('error_message', urlencode($error_message), wp_get_referer()));
             exit;
         }
 
@@ -305,12 +306,11 @@ class My_Passwordless_Auth
         $security = new My_Passwordless_Auth_Security();
         $ip_address = My_Passwordless_Auth_Security::get_client_ip();
         $block_time = $security->is_ip_blocked($ip_address);
-        
-        if ($block_time !== false) {
+          if ($block_time !== false) {
             $minutes = ceil($block_time / 60);
-            $error = new WP_Error('too_many_attempts', sprintf(__('Too many login attempts. Please try again in %d minutes.', 'my-passwordless-auth'), $minutes));
+            $error_message = sprintf(__('Too many login attempts. Please try again in %d minutes.', 'my-passwordless-auth'), $minutes);
             wp_die(
-                $error->get_error_message(),
+                $error_message,
                 __('Login Failed', 'my-passwordless-auth'),
                 array('response' => 429, 'back_link' => true)
             );
