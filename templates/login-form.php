@@ -8,39 +8,7 @@ if (!defined('WPINC')) {
     die;
 }
 
-// Check if there are any error messages to display
-$error_message = '';
-if (isset($_GET['error']) && !empty($_GET['error'])) {
-    switch ($_GET['error']) {
-        case 'empty_email':
-            $error_message = __('Please enter your email address.', 'my-passwordless-auth');
-            break;
-        case 'invalid_email':
-            $error_message = __('Please enter a valid email address.', 'my-passwordless-auth');
-            break;
-        case 'user_not_found':
-            $error_message = __('No user found with that email address.', 'my-passwordless-auth');
-            break;
-        case 'email_failed':
-            $error_message = __('Failed to send the login link. There might be an issue with the email server. Please try again later or contact support.', 'my-passwordless-auth');
-            break;
-        case 'email_unverified':
-            $error_message = __('Your email address has not been verified yet. Please check your inbox for a verification email or register again.', 'my-passwordless-auth');
-            break;
-        case 'unknown_error':
-            $error_message = __('An unknown error occurred while trying to send the login link. Please try again later.', 'my-passwordless-auth');
-            break;
-        case 'too_many_requests':
-            $error_message = __('Too many login link requests. Please try again later.', 'my-passwordless-auth');
-            break;
-        case 'too_many_attempts':
-            $error_message = __('Too many login attempts. Please try again later.', 'my-passwordless-auth');
-            break;
-        default:
-            $error_message = __('An error occurred. Please try again.', 'my-passwordless-auth');
-            break;
-    }
-}
+// Error messages will be handled by JavaScript
 
 // Check if a success message should be displayed
 $success_message = '';
@@ -62,11 +30,7 @@ if (empty($redirect_to)) {
 ?>
 
 <div class="passwordless-login-container">
-    <?php if (!empty($error_message)) : ?>
-        <div class="passwordless-error-message">
-            <?php echo esc_html($error_message); ?>
-        </div>
-    <?php endif; ?>
+    <div id="error-message" class="passwordless-error-message" style="display: none;"></div>
     
     <?php if (!empty($success_message)) : ?>
         <div class="passwordless-success-message">
@@ -89,7 +53,8 @@ if (empty($redirect_to)) {
             
             <p class="login-register-link">
                 <?php _e('First time user?', 'my-passwordless-auth'); ?>
-                <a href="<?php echo esc_url(home_url('/index.php/registration')); ?>"><?php _e('Register here', 'my-passwordless-auth'); ?></a>
+                <!-- change the url if it is broken to /index.php/ -->
+                <a href="<?php echo esc_url(home_url('/registration')); ?>"><?php _e('Register here', 'my-passwordless-auth'); ?></a>
             </p>
         </form>
         
@@ -98,78 +63,107 @@ if (empty($redirect_to)) {
         </p>
     <?php endif; ?>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    const errorDiv = document.getElementById('error-message');
+    
+    if (error) {
+        const errorMessages = {
+            'empty_email': 'Please enter your email address.',
+            'invalid_email': 'Please enter a valid email address.',
+            'user_not_found': 'No user found with that email address.',
+            'email_failed': 'Failed to send the login link. There might be an issue with the email server. Please try again later or contact support.',
+            'email_unverified': 'Your email address has not been verified yet. Please check your inbox for a verification email or register again.',
+            'unknown_error': 'An unknown error occurred while trying to send the login link. Please try again later.',
+            'too_many_requests': 'Too many login link requests. Please try again later.',
+            'too_many_attempts': 'Too many login attempts. Please try again later.'
+        };
+        
+        const message = errorMessages[error] || 'An error occurred. Please try again.';
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+    }
+});
+</script>
+
 <style>
-      /* Remove this .wp-block-post-title if it interfere with other styles */
-    .wp-block-post-title {
+/* Remove this .wp-block-post-title if it interfere with other styles */
+.wp-block-post-title {
     display: none;
 }
-    .button-primary {
-        background-color: #0073aa;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 15px;
-        width: 100%;
-    }
-    
-    .button-primary:hover {
-        background-color: #005a87;
-    }
-    
-    .button-primary:disabled {
-        background-color: #cccccc;
-        cursor: not-allowed;
-    }
-    
-    .passwordless-login-container {
-        max-width: 400px;
-        margin: 0 auto;
-        padding: 20px;
-        background: #fff;
-        border-radius: 5px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    
 
-    .passwordless-submit {
-        margin-top: 20px;
-    }
-    
-   
-    .passwordless-login-form label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-    }
-    .passwordless-login-form input[type="email"] {
-        width: 100%;
-        padding: 8px;
-        margin-bottom: 15px;
-        border: 1px solid #ddd;
-        border-radius: 3px;
-    }
-    .passwordless-error-message {
-        background-color: #f8d7da;
-        color: #721c24;
-        padding: 10px 15px;
-        margin-bottom: 20px;
-        border-radius: 3px;
-        border: 1px solid #f5c6cb;
-    }
-    .passwordless-success-message {
-        background-color: #d4edda;
-        color: #155724;
-        padding: 10px 15px;
-        margin-bottom: 20px;
-        border-radius: 3px;
-        border: 1px solid #c3e6cb;
-    }
-    .passwordless-info {
-        margin-top: 15px;
-        font-size: 0.9em;
-        color: #666;
-        text-align: center;
-    }
+.passwordless-login-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.button-primary {
+    background-color: #0073aa;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 15px;
+    width: 100%;
+}
+
+.button-primary:hover {
+    background-color: #005a87;
+}
+
+.button-primary:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.passwordless-submit {
+    margin-top: 20px;
+}
+
+.passwordless-login-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.passwordless-login-form input[type="email"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.passwordless-error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border-radius: 3px;
+    border: 1px solid #f5c6cb;
+}
+
+.passwordless-success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border-radius: 3px;
+    border: 1px solid #c3e6cb;
+}
+
+.passwordless-info {
+    margin-top: 15px;
+    font-size: 0.9em;
+    color: #666;
+    text-align: center;
+}
 </style>
