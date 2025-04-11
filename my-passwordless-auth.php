@@ -66,6 +66,21 @@ function run_my_passwordless_auth() {
 // }
 // add_action('plugins_loaded', 'my_passwordless_auth_load_textdomain');
 
+/**
+ * Add action links to the Plugins page
+ */
+function my_passwordless_auth_plugin_action_links($links) {
+    $settings_link = '<a href="' . admin_url('options-general.php?page=my-passwordless-auth') . '">' . __('Settings', 'my-passwordless-auth') . '</a>';
+    $docs_link = '<a href="https://vesess.com" target="_blank">' . __('Documentation', 'my-passwordless-auth') . '</a>';
+    $support_link = '<a href="https://vesess.com" target="_blank">' . __('Support', 'my-passwordless-auth') . '</a>';
+    
+    // Add links to the beginning of the actions list
+    array_unshift($links, $settings_link, $docs_link, $support_link);
+    
+    return $links;
+}
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'my_passwordless_auth_plugin_action_links');
+
 // Run the plugin
 run_my_passwordless_auth();
 
