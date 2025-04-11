@@ -255,19 +255,19 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Clear previous messages
         messagesContainer.innerHTML = '';
-        
-        const data = new URLSearchParams({
+          const data = new URLSearchParams({
             'action': 'update_profile',
             'display_name': displayName,
             'new_email': newEmail,
             'email_verification_code': emailVerificationCode,
-            'nonce': passwordless_auth.profile_nonce
+            'nonce': '<?php echo esc_attr($profile_nonce); ?>'
         }).toString();
         
-        fetch(passwordless_auth.ajax_url, {
+        fetch('<?php echo esc_url($ajax_url); ?>', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-WP-Nonce': '<?php echo esc_attr($nonce); ?>'
             },
             body: data
         })
@@ -312,17 +312,17 @@ document.addEventListener('DOMContentLoaded', function() {
             messagesContainer.innerHTML = '<div class="message error-message">Please enter a new email address.</div>';
             return;
         }
-        
-        const data = new URLSearchParams({
+          const data = new URLSearchParams({
             'action': 'request_email_verification',
             'new_email': newEmail,
-            'nonce': passwordless_auth.profile_nonce
+            'nonce': '<?php echo esc_attr($profile_nonce); ?>'
         }).toString();
         
-        fetch(passwordless_auth.ajax_url, {
+        fetch('<?php echo esc_url($ajax_url); ?>', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-WP-Nonce': '<?php echo esc_attr($nonce); ?>'
             },
             body: data
         })
@@ -360,16 +360,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // Change button text and disable it while sending
         requestCodeBtn.textContent = 'Sending...';
         requestCodeBtn.disabled = true;
-        
-        const data = new URLSearchParams({
+          const data = new URLSearchParams({
             'action': 'request_deletion_code',
-            'nonce': passwordless_auth.delete_account_nonce
+            'nonce': '<?php echo esc_attr($profile_nonce); ?>'
         }).toString();
         
-        fetch(passwordless_auth.ajax_url, {
+        fetch('<?php echo esc_url($ajax_url); ?>', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-WP-Nonce': '<?php echo esc_attr($nonce); ?>'
             },
             body: data
         })

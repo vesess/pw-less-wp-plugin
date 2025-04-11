@@ -31,7 +31,6 @@ My Passwordless Authentication offers a modern, secure way to log in to WordPres
 5. Go to Settings → Permalinks to configure the URLs:
    * Set "Permalink structure" structure to "Post name".
 6. Add the shortcodes to your pages
-7. (Optional but recommended) Set up secure encryption keys using the .env file system (see Security section below)
 
 ### Available Shortcodes
 
@@ -47,38 +46,6 @@ Passwordless authentication eliminates many security issues related to password-
 * No risk of password reuse across multiple sites
 * Verification codes expire quickly after generation
 * Protection against credential stuffing attacks
-
-### Enhanced Security with Environment Variables
-
-For production use, this plugin supports storing encryption keys securely in an environment file:
-
-1. Copy the `.env.example` file to `.env` in one of these locations:
-   * WordPress root directory
-   * One level above WordPress root directory
-   * Plugin directory
-   * One level above plugin directory
-
-2. Replace the placeholder values with strong random strings:
-   * For each `KEY` entry, use a 32-character random string
-   * For each `IV` entry, use a 16-character random string
-   * You can use online secure random generators or command line tools:
-   ```bash
-   # On Linux/Mac:
-   openssl rand -base64 24 | cut -c1-32  # For 32-char keys
-   openssl rand -base64 12 | cut -c1-16  # For 16-char IVs
-   
-   # On Windows (PowerShell):
-   -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | ForEach-Object {[char]$_})  # For 32-char keys
-   -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 16 | ForEach-Object {[char]$_})  # For 16-char IVs
-   ```
-
-3. Each set of keys should be unique - don't reuse the same values.
-
-This approach provides several security benefits:
-* Encryption keys are kept outside your code repository
-* Keys are never visible in database or PHP files 
-* Keys can be different across development, staging, and production environments
-* If compromised, keys can be easily rotated without code changes
 
 ## How It Works
 
@@ -106,27 +73,6 @@ For advanced customization, you can override the template files by copying them 
 your-theme/my-passwordless-auth/login-form.php
 your-theme/my-passwordless-auth/registration-form.php
 your-theme/my-passwordless-auth/profile-page.php
-```
-
-### Developer Hooks
-
-The plugin provides various action and filter hooks for developers:
-
-```php
-// Customize login redirect URL
-add_filter('my_passwordless_auth_login_redirect', function($redirect_url, $user_id) {
-    return home_url('/dashboard/');
-}, 10, 2);
-
-// Do something after successful login
-add_action('my_passwordless_auth_after_login', function($user_id, $ip_address) {
-    // Custom code here
-}, 10, 2);
-
-// Modify verification code length (default: 6)
-add_filter('my_passwordless_auth_code_length', function($length) {
-    return 8; // Use 8-character codes instead of 6
-});
 ```
 
 ## Requirements

@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: My Passwordless Authentication
- * Plugin URI: https://example.com/my-passwordless-auth
+ * Plugin URI: https://vesess.com
  * Description: A WordPress plugin for passwordless authentication.
  * Version: 1.0.0
  * Author: Vesess
- * Author URI: https://example.com
+ * Author URI: https://vesess.com
  * Text Domain: my-passwordless-auth
  * Domain Path: /languages
  */
@@ -65,6 +65,21 @@ function run_my_passwordless_auth() {
 //     load_plugin_textdomain('my-passwordless-auth', false, dirname(plugin_basename(__FILE__)) . '/languages/');
 // }
 // add_action('plugins_loaded', 'my_passwordless_auth_load_textdomain');
+
+/**
+ * Add action links to the Plugins page
+ */
+function my_passwordless_auth_plugin_action_links($links) {
+    $settings_link = '<a href="' . admin_url('options-general.php?page=my-passwordless-auth') . '">' . __('Settings', 'my-passwordless-auth') . '</a>';
+    $docs_link = '<a href="https://vesess.com" target="_blank">' . __('Documentation', 'my-passwordless-auth') . '</a>';
+    $support_link = '<a href="https://vesess.com" target="_blank">' . __('Support', 'my-passwordless-auth') . '</a>';
+    
+    // Add links to the beginning of the actions list
+    array_unshift($links, $settings_link, $docs_link, $support_link);
+    
+    return $links;
+}
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'my_passwordless_auth_plugin_action_links');
 
 // Run the plugin
 run_my_passwordless_auth();
