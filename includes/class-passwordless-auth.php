@@ -166,8 +166,9 @@ class My_Passwordless_Auth
         // Add shortcode for the login form
         add_shortcode('passwordless_login_form', array($this, 'render_login_form'));
 
-        // Handle form submission for passwordless login
-        add_action('init', array($this, 'process_login_form'));
+        // Handle AJAX form submission for passwordless login
+        add_action('wp_ajax_nopriv_process_login', array($this, 'handle_ajax_login'));
+        add_action('wp_ajax_process_login', array($this, 'handle_ajax_login'));
 
         // Handle magic login links
         add_action('init', array($this, 'process_magic_login'));
@@ -177,118 +178,52 @@ class My_Passwordless_Auth
     }
 
     /**
-     * Render the login form
+     * Handle AJAX login form submission
      */
-    public function render_login_form($atts)
+    public function handle_ajax_login() 
     {
-        $args = shortcode_atts(array(
-            'redirect' => '',
-        ), $atts);
-
-        // Set redirect URL if provided
-        if (!empty($args['redirect'])) {
-            $_REQUEST['redirect_to'] = $args['redirect'];
-        }
-
-        // Enqueue the necessary scripts and styles specifically for this form
-        wp_enqueue_style('my-passwordless-auth-style', MY_PASSWORDLESS_AUTH_URL . 'assets/css/passwordless-auth.css', array(), MY_PASSWORDLESS_AUTH_VERSION);
-        wp_enqueue_script('jquery');
-        wp_enqueue_script(
-            'my-passwordless-auth-login-handler',
-            MY_PASSWORDLESS_AUTH_URL . 'assets/js/login-handler.js',
-            array('jquery'),
-            MY_PASSWORDLESS_AUTH_VERSION,
-            true
-        );
-
-        wp_localize_script(
-            'my-passwordless-auth-login-handler',
-            'my_passwordless_auth',
-            array(
-                'ajaxurl' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('my-passwordless-auth-magic-link'),
-                'login_url' => wp_login_url()
-            )
-        );
-
-        ob_start();
-        include MY_PASSWORDLESS_AUTH_PATH . 'templates/login-form.php';
-        return ob_get_clean();
-    }
-
-    /**
-     * Process the login form submission
-     */
-    public function process_login_form()
-    {
-        // Check if this is our form submission
-        if (!isset($_POST['passwordless_login_nonce']) || !wp_verify_nonce($_POST['passwordless_login_nonce'], 'passwordless-login-nonce')) {
-            return;
-        }
+        check_ajax_referer('passwordless-login-nonce', 'passwordless_login_nonce');
 
         $user_email = isset($_POST['user_email']) ? sanitize_email($_POST['user_email']) : '';
-        $redirect_to = isset($_POST['redirect_to']) ? $_POST['redirect_to'] : '';        // Check rate limiting for login requests
+        
+        // Check rate limiting for login requests
         $security = new My_Passwordless_Auth_Security();
         $ip_address = My_Passwordless_Auth_Security::get_client_ip();
         $block_time = $security->record_login_request($ip_address, $user_email);
         
         if ($block_time !== false) {
             $minutes = ceil($block_time / 60);
-            $error_message = sprintf('Too many login link requests. Please try again in %d minutes.', $minutes);
-            wp_redirect(add_query_arg('error_message', urlencode($error_message), wp_get_referer()));
-            exit;
-        }        // Check for empty email
+            wp_send_json_error(sprintf('Too many login link requests. Please try again in %d minutes.', $minutes));
+        }
+
         if (empty($user_email)) {
-            $error_message = 'Please enter your email address.';
-            wp_redirect(add_query_arg('error_message', urlencode($error_message), wp_get_referer()));
-            exit;
+            wp_send_json_error('Please enter your email address.');
         }
 
-        // Validate email format
         if (!is_email($user_email)) {
-            $error_message = 'Please enter a valid email address.';
-            wp_redirect(add_query_arg('error_message', urlencode($error_message), wp_get_referer()));
-            exit;
+            wp_send_json_error('Please enter a valid email address.');
         }
 
-        // Check if user exists
         $user = get_user_by('email', $user_email);
         if (!$user) {
-            $error_message = 'No user found with that email address.';
-            wp_redirect(add_query_arg('error_message', urlencode($error_message), wp_get_referer()));
-            exit;
+            wp_send_json_error('No user found with that email address.');
         }
 
-        // Generate and send magic login link using the Email class for consistent "From" headers
+        // Generate and send magic login link
         $email_class = new My_Passwordless_Auth_Email();
-        $sent = $email_class->send_magic_link($user_email);        // Handle different error scenarios
+        $sent = $email_class->send_magic_link($user_email);
+
         if ($sent === false) {
-            // Email sending failed
             my_passwordless_auth_log("Failed to send login link to user email: $user_email", 'error');
-            $error_message = 'Failed to send the login link. There might be an issue with the email server. Please try again later or contact support.';
-            wp_redirect(add_query_arg('error_message', urlencode($error_message), wp_get_referer()));
-            exit;
+            wp_send_json_error('Failed to send the login link. Please try again later.');
         } elseif ($sent === 'unverified') {
-            // Email is not yet verified
-            $error_message = 'Your email address has not been verified yet. Please check your inbox for a verification email or register again.';
-            wp_redirect(add_query_arg('error_message', urlencode($error_message), wp_get_referer()));
-            exit;
+            wp_send_json_error('Your email address has not been verified yet. Please check your inbox for a verification email or register again.');
         } elseif ($sent !== true) {
-            // Any other error
-            $error_message = 'An unknown error occurred while trying to send the login link. Please try again later.';
-            wp_redirect(add_query_arg('error_message', urlencode($error_message), wp_get_referer()));
-            exit;
+            wp_send_json_error('An unknown error occurred while trying to send the login link. Please try again later.');
         }
 
-        // Success! Redirect with success message
         my_passwordless_auth_log("Login link successfully sent to user email: $user_email", 'info');
-        $redirect_url = add_query_arg('sent', '1', wp_get_referer());
-        if (!empty($redirect_to)) {
-            $redirect_url = add_query_arg('redirect_to', urlencode($redirect_to), $redirect_url);
-        }
-
-        wp_redirect($redirect_url);
-        exit;
+        wp_send_json_success('Login link sent! Please check your email.');
     }
 
     /**

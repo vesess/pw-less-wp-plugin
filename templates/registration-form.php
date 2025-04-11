@@ -79,11 +79,11 @@ document.addEventListener('DOMContentLoaded', function() {
         for (const pair of formData) {
             data.append(pair[0], pair[1]);
         }
-        
-        fetch(passwordless_auth.ajax_url, {
+          fetch('<?php echo esc_url($ajax_url); ?>', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-WP-Nonce': '<?php echo esc_attr($nonce); ?>'
             },
             body: data
         })
