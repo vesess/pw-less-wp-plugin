@@ -172,14 +172,16 @@ class My_Passwordless_Auth
      */
     public function run()
     {
-        $this->loader->run();
-
-        // Add shortcode for the login form
+        $this->loader->run();        // Add shortcode for the login form
         add_shortcode('passwordless_login_form', array($this, 'render_login_form'));
 
-        // Handle AJAX form submission for passwordless login
+        // Handle AJAX form submission for passwordless login (legacy)
         add_action('wp_ajax_nopriv_process_login', array($this, 'handle_ajax_login'));
         add_action('wp_ajax_process_login', array($this, 'handle_ajax_login'));
+        
+        // Handle AJAX form submission for passwordless login (new implementation)
+        add_action('wp_ajax_nopriv_process_passwordless_login', array($this, 'handle_passwordless_login'));
+        add_action('wp_ajax_process_passwordless_login', array($this, 'handle_passwordless_login'));
 
         // Handle magic login links
         add_action('init', array($this, 'process_magic_login'));
@@ -221,6 +223,72 @@ class My_Passwordless_Auth
         }
 
         // Generate and send magic login link
+        $email_class = new My_Passwordless_Auth_Email();
+        $sent = $email_class->send_magic_link($user_email);
+
+        if ($sent === false) {
+            my_passwordless_auth_log("Failed to send login link to user email: $user_email", 'error');
+            wp_send_json_error('Failed to send the login link. Please try again later.');
+        } elseif ($sent === 'unverified') {
+            wp_send_json_error('Your email address has not been verified yet. Please check your inbox for a verification email or register again.');
+        } elseif ($sent !== true) {
+            wp_send_json_error('An unknown error occurred while trying to send the login link. Please try again later.');
+        }
+
+        my_passwordless_auth_log("Login link successfully sent to user email: $user_email", 'info');
+        wp_send_json_success('Login link sent! Please check your email.');
+    }
+
+    /**
+     * Handle AJAX passwordless login form submission with support for both username and email
+     */
+    public function handle_passwordless_login() 
+    {
+        check_ajax_referer('passwordless-login-nonce', 'passwordless_login_nonce');
+
+        // Get user input (could be either username or email)
+        $user_input = isset($_POST['user_input']) ? sanitize_text_field($_POST['user_input']) : '';
+        
+        // Check if we received user input
+        if (empty($user_input)) {
+            wp_send_json_error('Please enter your username or email address.');
+            return;
+        }
+        
+        // Find the user and their email
+        $user = null;
+        $user_email = '';
+        
+        // Check if input is an email address
+        if (is_email($user_input)) {
+            // Input is an email, use it directly
+            $user_email = sanitize_email($user_input);
+            $user = get_user_by('email', $user_email);
+        } else {
+            // Input is a username, lookup the associated email
+            $user = get_user_by('login', $user_input);
+            if ($user) {
+                $user_email = $user->user_email;
+            }
+        }
+        
+        // Check rate limiting for login requests
+        $security = new My_Passwordless_Auth_Security();
+        $ip_address = My_Passwordless_Auth_Security::get_client_ip();
+        $block_time = $security->record_login_request($ip_address, $user_email);
+        
+        if ($block_time !== false) {
+            $minutes = ceil($block_time / 60);
+            wp_send_json_error(sprintf('Too many login link requests. Please try again in %d minutes.', $minutes));
+        }
+
+        // Verify that we found a user
+        if (!$user) {
+            wp_send_json_error('No user found with that username or email address.');
+            return;
+        }
+
+        // Generate and send magic login link to the user's email
         $email_class = new My_Passwordless_Auth_Email();
         $sent = $email_class->send_magic_link($user_email);
 

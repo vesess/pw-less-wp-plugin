@@ -136,18 +136,17 @@ class My_Passwordless_Auth_Login_Integration {
             var pwlessBtn = document.querySelector('#pwless-login-btn');
             var usernameField = document.querySelector('#user_login');
             var messagesContainer = document.querySelector('#pwless-messages');
-            
-            if (pwlessBtn && usernameField) {
+              if (pwlessBtn && usernameField) {
                 pwlessBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     
-                    // Get email from the username field
-                    var email = usernameField.value.trim();
+                    // Get username or email from the username field
+                    var userInput = usernameField.value.trim();
                     var nonce = document.querySelector('#passwordless_login_nonce').value;
                     
-                    if (!email) {
-                        // Show error if email is empty
-                        messagesContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">Please enter your email address in the field above.</div>';
+                    if (!userInput) {
+                        // Show error if field is empty
+                        messagesContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">Please enter your username or email address in the field above.</div>';
                         return;
                     }
                     
@@ -158,9 +157,9 @@ class My_Passwordless_Auth_Login_Integration {
                     
                     // Create form data
                     var data = new URLSearchParams({
-                        'action': 'process_login',
+                        'action': 'process_passwordless_login',
                         'passwordless_login_nonce': nonce,
-                        'user_email': email
+                        'user_input': userInput
                     }).toString();
                     
                     // Send AJAX request
@@ -196,18 +195,17 @@ class My_Passwordless_Auth_Login_Integration {
             var pwlessBtnLost = document.querySelector('#pwless-login-btn-lost');
             var usernameLostField = document.querySelector('#user_login');  // On lost password page, the field is the same
             var messagesLostContainer = document.querySelector('#pwless-messages-lost');
-            
-            if (pwlessBtnLost && usernameLostField) {
+              if (pwlessBtnLost && usernameLostField) {
                 pwlessBtnLost.addEventListener('click', function(e) {
                     e.preventDefault();
                     
-                    // Get email from the username field
-                    var email = usernameLostField.value.trim();
+                    // Get username or email from the username field
+                    var userInput = usernameLostField.value.trim();
                     var nonce = document.querySelector('#passwordless_login_nonce_lost').value;
                     
-                    if (!email) {
-                        // Show error if email is empty
-                        messagesLostContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">Please enter your email address in the field above.</div>';
+                    if (!userInput) {
+                        // Show error if field is empty
+                        messagesLostContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">Please enter your username or email address in the field above.</div>';
                         return;
                     }
                     
@@ -218,9 +216,9 @@ class My_Passwordless_Auth_Login_Integration {
                     
                     // Create form data
                     var data = new URLSearchParams({
-                        'action': 'process_login',
+                        'action': 'process_passwordless_login',
                         'passwordless_login_nonce': nonce,
-                        'user_email': email
+                        'user_input': userInput
                     }).toString();
                     
                     // Send AJAX request
