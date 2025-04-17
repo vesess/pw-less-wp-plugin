@@ -39,13 +39,15 @@ class My_Passwordless_Auth_Admin {
             array(),
             MY_PASSWORDLESS_AUTH_VERSION
         );
-    }
-
-    /**
+    }    /**
      * Register plugin settings.
      */
     public function register_settings() {
-        register_setting('my_passwordless_auth_options', 'my_passwordless_auth_options');
+        register_setting(
+            'my_passwordless_auth_options', 
+            'my_passwordless_auth_options',
+            array($this, 'sanitize_options')
+        );
         
         add_settings_section(
             'my_passwordless_auth_general',
@@ -242,5 +244,33 @@ class My_Passwordless_Auth_Admin {
             <code>{expiration_minutes}</code> - <?php _e('Link expiration time in minutes (from settings)', 'my-passwordless-auth'); ?>
         </p>
         <?php
+    }
+    /**
+     * Sanitize plugin options
+     * 
+     * This function properly handles checkboxes by explicitly setting them to 'no'
+     * when they are not checked, rather than removing them from the options array
+     * 
+     * @param array $input The raw input from the form
+     * @return array The sanitized options
+     */
+    public function sanitize_options($input) {
+        // Get the existing options
+        $options = get_option('my_passwordless_auth_options', array());
+        
+        // Process the checkbox options that might be missing when unchecked
+        $checkbox_options = array(
+            'enable_wp_login_integration'
+        );
+        
+        // For each known checkbox option, set it to 'no' if it's not present in the input
+        foreach ($checkbox_options as $checkbox) {
+            if (!isset($input[$checkbox])) {
+                $input[$checkbox] = 'no';
+            }
+        }
+        
+        // Merge with existing options and return
+        return is_array($input) ? array_merge($options, $input) : $options;
     }
 }

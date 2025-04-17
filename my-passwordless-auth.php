@@ -51,6 +51,11 @@ foreach ($env_paths as $path) {
 require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-passwordless-auth.php';
 
 /**
+ * Load the wp-login.php integration
+ */
+require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/login-form-integration.php';
+
+/**
  * Begins execution of the plugin.
  */
 function run_my_passwordless_auth() {
