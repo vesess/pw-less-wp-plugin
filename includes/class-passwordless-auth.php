@@ -32,8 +32,7 @@ class My_Passwordless_Auth
 
     /**
      * Define the core functionality of the plugin.
-     */
-    public function __construct()
+     */    public function __construct()
     {
         $this->version = MY_PASSWORDLESS_AUTH_VERSION;
         $this->load_dependencies();
@@ -44,6 +43,7 @@ class My_Passwordless_Auth
         $this->define_admin_hooks();
         $this->define_email_hooks();
         $this->define_url_blocker_hooks(); // Add URL blocker hooks
+        $this->define_login_integration_hooks(); // Add login integration hooks
     }
 
     /**
@@ -154,6 +154,17 @@ class My_Passwordless_Auth
         $url_blocker = new My_Passwordless_Auth_URL_Blocker();
 
         $this->loader->add_action('init', $url_blocker, 'init');
+    }
+
+    /**
+     * Define login integration related hooks.
+     */
+    private function define_login_integration_hooks()
+    {
+        if (class_exists('My_Passwordless_Auth_Login_Integration')) {
+            $login_integration = new My_Passwordless_Auth_Login_Integration();
+            $this->loader->add_action('init', $login_integration, 'init');
+        }
     }
 
     /**
