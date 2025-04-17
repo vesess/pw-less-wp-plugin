@@ -20,3 +20,10 @@
 
 # Test Coverage reports
 /coverage/
+
+# WP Mock related
+/tests/mocks
+.phpunit.result.cache
+/tests/tmp/
+/tests/logs/
+/vendor/*
