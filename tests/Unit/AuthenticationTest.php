@@ -178,42 +178,102 @@ class AuthenticationTest extends TestCase {
         $this->assertConditionsMet(); // Optional explicit assertion
     }
 
-    /*
-    // Example structure for testing send_login_code (requires more detailed mocking)
-    public function test_send_login_code_success() {
+    /**
+     * Test the verify_login_code method for a successful scenario.
+     */
+    public function test_verify_login_code_success() {
         // 1. Set up $_POST variables
-        $_POST['nonce'] = 'test_nonce';
+        $_POST['nonce'] = 'test_verify_nonce';
         $_POST['email'] = 'test@example.com';
+        $_POST['code'] = '123456';
 
-        // 2. Mock WordPress functions used within the method
-        WP_Mock::userFunction('wp_verify_nonce')->once()->with('test_nonce', 'passwordless_login_nonce')->andReturn(true);
-        WP_Mock::userFunction('sanitize_email')->once()->with('test@example.com')->andReturn('test@example.com');
-        WP_Mock::userFunction('is_email')->once()->with('test@example.com')->andReturn(true);
-        
+        // 2. Mock WordPress functions and helpers
+        WP_Mock::userFunction('wp_verify_nonce')
+            ->once()
+            ->with('test_verify_nonce', 'passwordless_login_nonce')
+            ->andReturn(true);
+
+        WP_Mock::userFunction('sanitize_email')
+            ->once()
+            ->with('test@example.com')
+            ->andReturn('test@example.com');
+
+        WP_Mock::userFunction('sanitize_text_field')
+            ->once()
+            ->with('123456')
+            ->andReturn('123456');
+
+        // Mock the WP_User object
         $mock_user = Mockery::mock('WP_User');
         $mock_user->ID = 1;
-        WP_Mock::userFunction('get_user_by')->once()->with('email', 'test@example.com')->andReturn($mock_user);
-        
-        // Mock verification check (assuming it passes)
-        WP_Mock::userFunction('my_passwordless_auth_is_email_verified')->once()->with(1)->andReturn(true);
-        
-        WP_Mock::userFunction('wp_generate_password')->once()->andReturn('123456');
-        WP_Mock::userFunction('update_user_meta')->times(3)->andReturn(true); // code, timestamp, expiration
-        WP_Mock::userFunction('time')->andReturn(1700000000);
+        WP_Mock::userFunction('get_user_by')
+            ->once()
+            ->with('email', 'test@example.com')
+            ->andReturn($mock_user);
 
-        // 3. Mock the Email class method
-        $mock_email = Mockery::mock('alias:My_Passwordless_Auth_Email');
-        $mock_email->shouldReceive('send_login_code')->once()->with(1, '123456')->andReturn(true);
+        // Mock user meta for code and expiration (ensure it's not expired)
+        $current_time = time();
+        $expiration_time = $current_time + (15 * 60); // 15 minutes in the future
+        WP_Mock::userFunction('get_user_meta')
+            ->once() // Expect it to be called once for the code
+            ->with(1, 'passwordless_login_code', true)
+            ->andReturn('123456'); // The correct code
+        WP_Mock::userFunction('get_user_meta')
+            ->once() // Expect it to be called once for the timestamp
+            ->with(1, 'passwordless_login_code_timestamp', true)
+            ->andReturn($current_time - 60); // Code generated 1 minute ago
+        WP_Mock::userFunction('get_user_meta')
+            ->once() // Expect it to be called once for the expiration
+            ->with(1, 'passwordless_login_code_expiration', true)
+            ->andReturn($expiration_time); // Code expires in the future
 
-        // 4. Expect success/error JSON responses
-        WP_Mock::userFunction('wp_send_json_success')->once()->with('Login code sent to your email');
+        // Mock login functions
+        WP_Mock::userFunction('wp_clear_auth_cookie')->once();
+        WP_Mock::userFunction('wp_set_current_user')->once()->with(1);
+        WP_Mock::userFunction('wp_set_auth_cookie')->once()->with(1);
+
+        // Mock meta cleanup
+        WP_Mock::userFunction('delete_user_meta')->once()->with(1, 'passwordless_login_code');
+        WP_Mock::userFunction('delete_user_meta')->once()->with(1, 'passwordless_login_code_timestamp');
+        WP_Mock::userFunction('delete_user_meta')->once()->with(1, 'passwordless_login_code_expiration');
+
+        // Mock last login time update
+        WP_Mock::userFunction('update_user_meta')
+            ->once()
+            ->with(1, 'last_login_time', Mockery::any()) // Time is dynamic
+            ->andReturn(true);
+
+        // Mock logging
+        WP_Mock::userFunction('my_passwordless_auth_log')
+            ->once()
+            ->with("User ID 1 successfully logged in", 'info');
+
+        // Mock the after login action
+        // Need to mock $_SERVER['REMOTE_ADDR'] if the action uses it directly
+        // For simplicity, we assume it's available or mock it if needed.
+        $_SERVER['REMOTE_ADDR'] = '127.0.0.1'; 
+        WP_Mock::expectAction('my_passwordless_auth_after_login', 1, '127.0.0.1');
+
+        // Mock redirect filter and home_url (home_url mocked in setUp)
+        WP_Mock::onFilter('my_passwordless_auth_login_redirect')
+            ->with('http://example.com', 1)
+            ->reply('http://example.com/my-account'); // Example redirect URL
+
+        // Expect success JSON response
+        WP_Mock::userFunction('wp_send_json_success')
+            ->once()
+            ->with(array(
+                'redirect_url' => 'http://example.com/my-account',
+                'message' => 'Login successful!'
+            ));
+
+        // Ensure error response is never called
         WP_Mock::userFunction('wp_send_json_error')->never();
 
-        // 5. Call the method
-        $this->authentication->send_login_code();
+        // 3. Call the method
+        $this->authentication->verify_login_code();
 
-        // 6. Assert conditions (WP_Mock does this in tearDown)
+        // 4. Assert conditions (WP_Mock does this automatically in tearDown)
         $this->assertConditionsMet();
     }
-    */
 }

@@ -8,7 +8,8 @@
          failOnRisky="true"
          failOnWarning="true"
          beStrictAboutOutputDuringTests="true"
-         beStrictAboutTodoAnnotatedTests="true">
+         beStrictAboutTodoAnnotatedTests="true"
+         processIsolation="true">
     <testsuites>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
