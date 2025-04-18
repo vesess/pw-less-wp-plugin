@@ -18,8 +18,8 @@ class My_Passwordless_Auth_Login_Integration {
         // Add the passwordless login button to the WordPress login form
         add_action('login_form', array($this, 'add_passwordless_login_button'));
         
-        // Add the passwordless login option to the lost password form
-        add_action('lostpassword_form', array($this, 'add_passwordless_login_button_lostpw'));
+        // Add the passwordless login option to the lost password form removed for now
+        // add_action('lostpassword_form', array($this, 'add_passwordless_login_button_lostpw'));
         
         // Add inline login form with AJAX functionality to the login page
         add_action('login_footer', array($this, 'add_inline_login_form'));
@@ -86,10 +86,10 @@ class My_Passwordless_Auth_Login_Integration {
         <div class="pwless-login-container" style="text-align: center; margin: 15px 0;">
             <p><?php _e('or', 'my-passwordless-auth'); ?></p>
             <button type="button" id="pwless-login-btn" class="button button-primary" style="display: block; width: 100%; text-align: center; padding: 10px 0; margin-bottom: 10px;">
-                <?php _e('Login with Email Code', 'my-passwordless-auth'); ?>
+                <?php _e('Log In with Email Code', 'my-passwordless-auth'); ?>
             </button>
             <p class="pwless-description" style="font-size: 13px; color: #666;">
-                <?php _e('No password needed - receive a login link or code via email', 'my-passwordless-auth'); ?>
+                <?php _e('No password needed: receive a login link or code via email.', 'my-passwordless-auth'); ?>
             </p>
             
             <!-- Hidden form fields for the passwordless login -->
