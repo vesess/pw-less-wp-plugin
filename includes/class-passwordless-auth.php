@@ -191,7 +191,10 @@ class My_Passwordless_Auth
     }
 
     /**
-     * Handle AJAX login form submission
+     * Handle AJAX login form submission (Legacy - Email Only).
+     * Processes the request, validates input, finds the user, and triggers the magic link sending process.
+     *
+     * @since 1.0.0
      */
     public function handle_ajax_login() 
     {
@@ -199,60 +202,42 @@ class My_Passwordless_Auth
 
         $user_email = isset($_POST['user_email']) ? sanitize_email($_POST['user_email']) : '';
         
-        // Check rate limiting for login requests
-        $security = new My_Passwordless_Auth_Security();
-        $ip_address = My_Passwordless_Auth_Security::get_client_ip();
-        $block_time = $security->record_login_request($ip_address, $user_email);
-        
-        if ($block_time !== false) {
-            $minutes = ceil($block_time / 60);
-            wp_send_json_error(sprintf('Too many login link requests. Please try again in %d minutes.', $minutes));
-        }
-
         if (empty($user_email)) {
-            wp_send_json_error('Please enter your email address.');
+            wp_send_json_error(__('Please enter your email address.', 'my-passwordless-auth'));
         }
 
         if (!is_email($user_email)) {
-            wp_send_json_error('Please enter a valid email address.');
+            wp_send_json_error(__('Please enter a valid email address.', 'my-passwordless-auth'));
         }
 
         $user = get_user_by('email', $user_email);
         if (!$user) {
-            wp_send_json_error('No user found with that email address.');
+            // Log this attempt for monitoring, but provide a generic error to the user.
+            my_passwordless_auth_log("Login attempt failed: No user found for email: $user_email", 'info');
+            wp_send_json_error(__('No user found with that email address.', 'my-passwordless-auth'));
         }
 
-        // Generate and send magic login link
-        $email_class = new My_Passwordless_Auth_Email();
-        $sent = $email_class->send_magic_link($user_email);
-
-        if ($sent === false) {
-            my_passwordless_auth_log("Failed to send login link to user email: $user_email", 'error');
-            wp_send_json_error('Failed to send the login link. Please try again later.');
-        } elseif ($sent === 'unverified') {
-            wp_send_json_error('Your email address has not been verified yet. Please check your inbox for a verification email or register again.');
-        } elseif ($sent !== true) {
-            wp_send_json_error('An unknown error occurred while trying to send the login link. Please try again later.');
-        }
-
-        my_passwordless_auth_log("Login link successfully sent to user email: $user_email", 'info');
-        wp_send_json_success('Login link sent! Please check your email.');
+        // Delegate to shared magic link handling
+        $this->handle_magic_link_sending($user, $user_email);
     }
 
     /**
-     * Handle AJAX passwordless login form submission with support for both username and email
+     * Handle AJAX passwordless login form submission with support for both username and email.
+     * Processes the request, validates input, finds user by username or email,
+     * and triggers the magic link sending process.
+     *
+     * @since 1.1.0
      */
     public function handle_passwordless_login() 
     {
         check_ajax_referer('passwordless-login-nonce', 'passwordless_login_nonce');
 
         // Get user input (could be either username or email)
-        $user_input = isset($_POST['user_input']) ? sanitize_text_field($_POST['user_input']) : '';
+        $user_input = isset($_POST['user_input']) ? sanitize_text_field(trim($_POST['user_input'])) : '';
         
         // Check if we received user input
         if (empty($user_input)) {
-            wp_send_json_error('Please enter your username or email address.');
-            return;
+            wp_send_json_error(__('Please enter your username or email address.', 'my-passwordless-auth'));
         }
         
         // Find the user and their email
@@ -265,13 +250,35 @@ class My_Passwordless_Auth
             $user_email = sanitize_email($user_input);
             $user = get_user_by('email', $user_email);
         } else {
-            // Input is a username, lookup the associated email
-            $user = get_user_by('login', $user_input);
+            // Input is potentially a username
+            $username = sanitize_user($user_input, true);
+            $user = get_user_by('login', $username);
             if ($user) {
                 $user_email = $user->user_email;
             }
         }
-        
+
+        // Verify that we found a user
+        if (!$user || empty($user_email)) {
+            // Log this attempt for monitoring, but provide a generic error to the user.
+            my_passwordless_auth_log("Login attempt failed: No user found for input: $user_input", 'info');
+            wp_send_json_error(__('No user found with that username or email address.', 'my-passwordless-auth'));
+        }
+
+        // Delegate to shared magic link handling
+        $this->handle_magic_link_sending($user, $user_email);
+    }
+
+    /**
+     * Handles the shared logic for sending magic links and rate limiting.
+     * This is a private helper method used by handle_ajax_login and handle_passwordless_login.
+     *
+     * @since 1.2.0
+     * @param WP_User $user The WordPress user object
+     * @param string $user_email The user's email address
+     */
+    private function handle_magic_link_sending($user, $user_email) 
+    {
         // Check rate limiting for login requests
         $security = new My_Passwordless_Auth_Security();
         $ip_address = My_Passwordless_Auth_Security::get_client_ip();
@@ -279,30 +286,28 @@ class My_Passwordless_Auth
         
         if ($block_time !== false) {
             $minutes = ceil($block_time / 60);
-            wp_send_json_error(sprintf('Too many login link requests. Please try again in %d minutes.', $minutes));
+            wp_send_json_error(sprintf(
+                __('Too many login link requests. Please try again in %d minutes.', 'my-passwordless-auth'), 
+                $minutes
+            ));
         }
 
-        // Verify that we found a user
-        if (!$user) {
-            wp_send_json_error('No user found with that username or email address.');
-            return;
-        }
-
-        // Generate and send magic login link to the user's email
+        // Generate and send magic login link
         $email_class = new My_Passwordless_Auth_Email();
         $sent = $email_class->send_magic_link($user_email);
 
         if ($sent === false) {
-            my_passwordless_auth_log("Failed to send login link to user email: $user_email", 'error');
-            wp_send_json_error('Failed to send the login link. Please try again later.');
+            my_passwordless_auth_log("Failed to send login link to user email: $user_email (User ID: {$user->ID})", 'error');
+            wp_send_json_error(__('Failed to send the login link. Please try again later.', 'my-passwordless-auth'));
         } elseif ($sent === 'unverified') {
-            wp_send_json_error('Your email address has not been verified yet. Please check your inbox for a verification email or register again.');
+            wp_send_json_error(__('Your email address has not been verified yet. Please check your inbox for a verification email or register again.', 'my-passwordless-auth'));
         } elseif ($sent !== true) {
-            wp_send_json_error('An unknown error occurred while trying to send the login link. Please try again later.');
+            my_passwordless_auth_log("Unknown error sending login link to user email: $user_email (User ID: {$user->ID}). Return value: " . var_export($sent, true), 'error');
+            wp_send_json_error(__('An unknown error occurred while trying to send the login link. Please try again later.', 'my-passwordless-auth'));
         }
 
-        my_passwordless_auth_log("Login link successfully sent to user email: $user_email", 'info');
-        wp_send_json_success('Login link sent! Please check your email.');
+        my_passwordless_auth_log("Login link successfully sent to user email: $user_email (User ID: {$user->ID})", 'info');
+        wp_send_json_success(__('Login link sent! Please check your email.', 'my-passwordless-auth'));
     }
 
     /**

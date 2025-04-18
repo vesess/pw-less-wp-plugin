@@ -20,19 +20,19 @@ if (!get_option('users_can_register')) {
         <div class="form-row">
             <label for="email"><?php _e('Email Address', 'my-passwordless-auth'); ?> <span class="required">*</span></label>
             <input type="email" name="email" id="email" required />
-            <p class="description"><?php _e('You\'ll use this email to log in', 'my-passwordless-auth'); ?></p>
+            <p class="description"><?php _e('You\'ll use this email to log in.', 'my-passwordless-auth'); ?></p>
         </div>
         
         <div class="form-row">
             <label for="username"><?php _e('Username', 'my-passwordless-auth'); ?></label>
             <input type="text" name="username" id="username" />
-            <p class="description"><?php _e('Leave empty to use your email address as username', 'my-passwordless-auth'); ?></p>
+            <p class="description"><?php _e('Leave this field empty to use your email address as username.', 'my-passwordless-auth'); ?></p>
         </div>
         
         <div class="form-row">
             <label for="display_name"><?php _e('Display Name', 'my-passwordless-auth'); ?></label>
             <input type="text" name="display_name" id="display_name" />
-            <p class="description"><?php _e('How your name will be displayed on the site', 'my-passwordless-auth'); ?></p>
+            <p class="description"><?php _e('This is how your name will be shown on the site.', 'my-passwordless-auth'); ?></p>
         </div>
         
         <div class="form-row button-row">
