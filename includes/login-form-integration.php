@@ -15,7 +15,7 @@ class My_Passwordless_Auth_Login_Integration {
      * Initialize the class and set its hooks
      */
     public function init() {
-        // Add the passwordless login button to the WordPress login form
+        // Revert to login_form hook and we'll use CSS to position it correctly
         add_action('login_form', array($this, 'add_passwordless_login_button'));
         
         // Add the passwordless login option to the lost password form removed for now
@@ -26,6 +26,9 @@ class My_Passwordless_Auth_Login_Integration {
         
         // Add admin setting
         add_action('admin_init', array($this, 'add_admin_settings'));
+        
+        // Add custom CSS to position the passwordless login after standard login button
+        add_action('login_enqueue_scripts', array($this, 'add_custom_login_css'));
     }
     
     /**
@@ -251,6 +254,41 @@ class My_Passwordless_Auth_Login_Integration {
             }
         });
         </script>
+        <?php
+    }
+    
+    /**
+     * Add custom CSS to properly position the passwordless login button
+     * after the standard WordPress login button
+     */
+    public function add_custom_login_css() {
+        if (!$this->is_integration_enabled()) {
+            return;
+        }
+        ?>
+        <style type="text/css">
+            /* Move the passwordless login form content below the submit button */
+            #loginform .pwless-login-container {
+                order: 100; /* High value ensures it appears after other elements */
+                margin-top: 20px !important;
+            }
+            
+            /* Make the form use flexbox for ordering elements */
+            #loginform {
+                display: flex;
+                flex-direction: column;
+            }
+            
+            /* Ensure the submit button appears before our content */
+            #loginform .submit {
+                order: 90;
+            }
+            
+            /* Ensure our content is not hidden if login form has overflow hidden */
+            #loginform {
+                overflow: visible !important;
+            }
+        </style>
         <?php
     }
 }
