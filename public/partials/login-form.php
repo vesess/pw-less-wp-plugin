@@ -23,8 +23,8 @@ if (empty($redirect_to)) {
 }
 ?>
 
-<div class="passwordless-login-container">
-    <form id="passwordless-login-form" class="passwordless-login-form">
+<div class="passwordless-login-container <?php echo esc_attr($theme_compat_class); ?>">
+    <form id="passwordless-login-form" class="passwordless-login-form <?php echo esc_attr($theme_compat_class); ?>">
         <div class="messages"></div>
         
         <p>
@@ -113,89 +113,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<style>
-.wp-block-post-title {
-    display: none;
-}
-
-.passwordless-login-container {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 20px;
-    background: #fff;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.messages {
-    margin-bottom: 20px;
-}
-
-.message {
-    padding: 10px;
-    border-radius: 4px;
-    margin-bottom: 10px;
-}
-
-.success-message {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.error-message {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-.button-primary {
-    background-color: #0073aa;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 15px;
-    width: 100%;
-}
-
-.button-primary:hover {
-    background-color: #005a87;
-}
-
-.button-primary:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-}
-
-.passwordless-submit {
-    margin-top: 20px;
-}
-
-.passwordless-login-form label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.passwordless-login-form input[type="email"] {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 3px;
-}
-
-.passwordless-info {
-    margin-top: 15px;
-    font-size: 0.9em;
-    color: #666;
-    text-align: center;
-}
-
-.login-register-link {
-    margin-top: 20px;
-    text-align: center;
-}
-</style>
+<!-- Styles now loaded from passwordless-auth.css -->
+<?php
+// Allow theme styling to override plugin styles if enabled in settings
+$options = get_option('my_passwordless_auth_options', []);
+$theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme_styles'] === 'yes' ? 'theme-compat' : '';
+?>

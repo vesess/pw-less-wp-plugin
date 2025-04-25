@@ -11,8 +11,14 @@ if (!get_option('users_can_register')) {
     return;
 }
 ?>
-<div class="my-passwordless-auth-container registration-form-container">
-    <form id="my-passwordless-auth-registration-form" class="my-passwordless-auth-form">
+<!-- Styles now loaded from passwordless-auth.css -->
+<?php
+// Allow theme styling to override plugin styles if enabled in settings
+$options = get_option('my_passwordless_auth_options', []);
+$theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme_styles'] === 'yes' ? 'theme-compat' : '';
+?>
+<div class="my-passwordless-auth-container registration-form-container <?php echo esc_attr($theme_compat_class); ?>">
+    <form id="my-passwordless-auth-registration-form" class="my-passwordless-auth-form <?php echo esc_attr($theme_compat_class); ?>">
         <h2><?php _e('Register New Account', 'my-passwordless-auth'); ?></h2>
         
         <div class="messages"></div>
@@ -110,103 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Show error message
             messagesContainer.innerHTML = '<div class="message error-message">An unexpected error occurred. Please try again later.</div>';
-            console.error('Registration error:', error);
-        });
+            console.error('Registration error:', error);        });
     });
 });
 </script>
-
-<style>
-     .wp-block-post-title {
-    display: none;
-}
-    .my-passwordless-auth-container {
-        max-width: 500px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-    
-    .my-passwordless-auth-form h2 {
-        margin-bottom: 20px;
-        text-align: center;
-    }
-    
-    .form-row {
-        margin-bottom: 15px;
-    }
-    
-    .form-row label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-    }
-    
-    .form-row input[type="email"],
-    .form-row input[type="text"] {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-    }
-    
-    .form-row .required {
-        color: red;
-    }
-    
-    .form-row .description {
-        font-size: 12px;
-        color: #666;
-        margin-top: 5px;
-    }
-    
-    .button-row {
-        margin-top: 20px;
-    }
-    
-    input[type="submit"] {
-        background-color: #0073aa;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 15px;
-        width: 100%;
-    }
-    
-    input[type="submit"]:hover {
-        background-color: #005a87;
-    }
-    
-    input[type="submit"]:disabled {
-        background-color: #cccccc;
-        cursor: not-allowed;
-    }
-    
-    .login-register-link {
-        margin-top: 20px;
-        text-align: center;
-    }
-    
-    .messages {
-        margin-bottom: 20px;
-    }
-    
-    .message {
-        padding: 10px;
-        border-radius: 4px;
-        margin-bottom: 10px;
-    }
-    
-    .success-message {
-        background-color: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-    
-    .error-message {
-        background-color: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-</style>

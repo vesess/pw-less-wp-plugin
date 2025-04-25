@@ -10,8 +10,12 @@ $current_user = wp_get_current_user();
 if (!($current_user instanceof WP_User)) {
     return;
 }
+
+// Allow theme styling to override plugin styles if enabled in settings
+$options = get_option('my_passwordless_auth_options', []);
+$theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme_styles'] === 'yes' ? 'theme-compat' : '';
 ?>
-<div class="my-passwordless-auth-container profile-page-container">
+<div class="my-passwordless-auth-container profile-page-container <?php echo esc_attr($theme_compat_class); ?>">
     <h2><?php _e('Your Profile', 'my-passwordless-auth'); ?></h2>
     
     <div class="profile-section">
@@ -87,139 +91,12 @@ if (!($current_user instanceof WP_User)) {
     </div>
 </div>
 
-<style>
-     .wp-block-post-title {
-    display: none;
-}
-    .my-passwordless-auth-container {
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-    
-    .my-passwordless-auth-container h2 {
-        margin-bottom: 20px;
-        text-align: center;
-    }
-    
-    .profile-section {
-        background: #f9f9f9;
-        border-radius: 5px;
-        padding: 20px;
-        margin-bottom: 30px;
-    }
-    
-    .profile-section h3 {
-        margin-top: 0;
-        margin-bottom: 15px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #ddd;
-    }
-    
-    .form-row {
-        margin-bottom: 15px;
-    }
-    
-    .form-row label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-    }
-    
-    .form-row input[type="email"],
-    .form-row input[type="text"] {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-    }
-    
-    .button-row {
-        margin-top: 20px;
-    }
-    
-    input[type="submit"], button {
-        background-color: #0073aa;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 15px;
-    }
-    
-    input[type="submit"]:hover, button:hover {
-        background-color: #005a87;
-    }
-    
-    input[type="submit"]:disabled, button:disabled {
-        background-color: #cccccc;
-        cursor: not-allowed;
-    }
-    
-    .logout-link {
-        display: inline-block;
-        background-color: #f0f0f0;
-        color: #333;
-        text-decoration: none;
-        padding: 8px 15px;
-        border-radius: 4px;
-    }
-    
-    .logout-link:hover {
-        background-color: #e0e0e0;
-    }
-    
-    .danger-zone {
-        border: 1px solid #dc3545;
-    }
-    
-    .danger-zone h3 {
-        color: #dc3545;
-    }
-    
-    .danger-btn {
-        background-color: #dc3545;
-    }
-    
-    .danger-btn:hover {
-        background-color: #c82333;
-    }
-    
-    .warning {
-        background-color: #fff3cd;
-        color: #856404;
-        padding: 10px;
-        border-radius: 4px;
-        margin-bottom: 15px;
-    }
-    
-    .code-container {
-        margin-top: 20px;
-    }
-    
-    .messages {
-        margin-bottom: 20px;
-    }
-    
-    .message {
-        padding: 10px;
-        border-radius: 4px;
-        margin-bottom: 10px;
-    }
-    
-    .success-message {
-        background-color: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-    
-    .error-message {
-        background-color: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-</style>
+<!-- Styles now loaded from passwordless-auth.css -->
+<?php
+// Allow theme styling to override plugin styles if enabled in settings
+$options = get_option('my_passwordless_auth_options', []);
+$theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme_styles'] === 'yes' ? 'theme-compat' : '';
+?>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
