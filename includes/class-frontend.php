@@ -29,7 +29,7 @@ class My_Passwordless_Auth_Frontend {    /**
         $nonce = wp_create_nonce('passwordless-auth-nonce');
         
         ob_start();
-        include MY_PASSWORDLESS_AUTH_PATH . 'templates/login-form.php';
+        include MY_PASSWORDLESS_AUTH_PATH . 'public/partials/login-form.php';
         return ob_get_clean();
     }    /**
      * Render registration form via shortcode.
@@ -44,7 +44,7 @@ class My_Passwordless_Auth_Frontend {    /**
         $nonce = wp_create_nonce('passwordless-auth-nonce');
         
         ob_start();
-        include MY_PASSWORDLESS_AUTH_PATH . 'templates/registration-form.php';
+        include MY_PASSWORDLESS_AUTH_PATH . 'public/partials/registration-form.php';
         return ob_get_clean();
     }    /**
      * Render profile page via shortcode.
@@ -60,7 +60,7 @@ class My_Passwordless_Auth_Frontend {    /**
         $profile_nonce = wp_create_nonce('profile_nonce');
         
         ob_start();
-        include MY_PASSWORDLESS_AUTH_PATH . 'templates/profile-page.php';
+        include MY_PASSWORDLESS_AUTH_PATH . 'public/partials/profile-page.php';
         return ob_get_clean();
     }
 }
