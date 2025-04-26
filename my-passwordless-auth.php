@@ -374,8 +374,8 @@ if (!function_exists('my_passwordless_auth_log')) {
 
 
 /**
- * Simple menu filter to hide login and registration items when user is logged in
- * This works with any theme including Astra
+ * Universal menu filter to hide login and registration items when user is logged in
+ * This works with any WordPress theme without specific theme targeting
  */
 function my_passwordless_auth_simple_menu_filter($html) {
     // Check if WordPress function exists and user is logged in
@@ -383,18 +383,31 @@ function my_passwordless_auth_simple_menu_filter($html) {
         return $html;
     }
     
+    // Return unchanged content if it's not a string or is empty
+    if (!is_string($html) || empty($html)) {
+        return $html;
+    }
+    
     // Simple pattern matching to remove list items containing login or registration
+    // These patterns are designed to be theme-agnostic
     $patterns = array(
-        // Match any list item containing "login" text and links
-        '/<li[^>]*>\s*<a[^>]*>([^<]*login[^<]*)<\/a>\s*<\/li>/i',
-        // Match any list item containing "registration" text and links
-        '/<li[^>]*>\s*<a[^>]*>([^<]*registration[^<]*)<\/a>\s*<\/li>/i',
-        // Match any list item containing "register" text and links
-        '/<li[^>]*>\s*<a[^>]*>([^<]*register[^<]*)<\/a>\s*<\/li>/i',
-        // Match list items with links containing login or registration in the URL
-        '/<li[^>]*>\s*<a[^>]*href="[^"]*\/login\/[^"]*"[^>]*>[^<]*<\/a>\s*<\/li>/i',
-        '/<li[^>]*>\s*<a[^>]*href="[^"]*\/registration\/[^"]*"[^>]*>[^<]*<\/a>\s*<\/li>/i',
-        '/<li[^>]*>\s*<a[^>]*href="[^"]*\/register\/[^"]*"[^>]*>[^<]*<\/a>\s*<\/li>/i'
+        // Match any list item containing login text
+        '/<li[^>]*>\s*<a[^>]*>([^<]*login[^<]*)<\/a>.*?<\/li>/is',
+        // Match any list item containing registration text
+        '/<li[^>]*>\s*<a[^>]*>([^<]*registration[^<]*)<\/a>.*?<\/li>/is',
+        // Match any list item containing register text
+        '/<li[^>]*>\s*<a[^>]*>([^<]*register[^<]*)<\/a>.*?<\/li>/is',
+        
+        // Match menu items with login/registration/register in href
+        '/<li[^>]*>\s*<a[^>]*href="[^"]*\/login\/[^"]*"[^>]*>.*?<\/a>.*?<\/li>/is',
+        '/<li[^>]*>\s*<a[^>]*href="[^"]*\/registration\/[^"]*"[^>]*>.*?<\/a>.*?<\/li>/is',
+        '/<li[^>]*>\s*<a[^>]*href="[^"]*\/register\/[^"]*"[^>]*>.*?<\/a>.*?<\/li>/is',
+        
+        // More inclusive patterns for various HTML structures
+        '/<li[^>]*class="[^"]*\b(?:menu-item|page-item|nav-item)[^"]*"[^>]*>\s*<a[^>]*href="[^"]*\/(login|registration|register)\/[^"]*"[^>]*>.*?<\/li>/is',
+        
+        // Catch menu items that may have additional markup inside
+        '/<li[^>]*>\s*<a[^>]*href="[^"]*\/(login|registration|register)\/[^"]*"[^>]*>.*?<\/a>(?:(?!<\/li>).)*<\/li>/is'
     );
     
     // Apply each pattern
@@ -415,7 +428,7 @@ function my_passwordless_auth_simple_menu_css() {
     }
     ?>
     <style type="text/css">
-        /* Hide menu items with login or registration text */
+        /* Universal approach to hide menu items with login/registration text */
         li a:contains("login"), li a:contains("Login"),
         li a:contains("registration"), li a:contains("Registration"),
         li a:contains("register"), li a:contains("Register"),
@@ -423,44 +436,67 @@ function my_passwordless_auth_simple_menu_css() {
             display: none !important;
         }
         
-        /* Hide parent li elements for themes like Astra */
-        .ast-nav-menu li a[href*="/login/"],
-        .ast-nav-menu li a[href*="/registration/"],
-        .ast-nav-menu li a[href*="/register/"],
-        #ast-hf-menu-1 li a[href*="/login/"],
-        #ast-hf-menu-1 li a[href*="/registration/"],
-        #ast-hf-menu-1 li a[href*="/register/"],
-        .main-header-menu li a[href*="/login/"],
-        .main-header-menu li a[href*="/registration/"],
-        .main-header-menu li a[href*="/register/"] {
+        /* Universal approach to hide parent menu items */
+        li:has(a[href*="/login/"]),
+        li:has(a[href*="/registration/"]),
+        li:has(a[href*="/register/"]),
+        nav li a[href*="/login/"],
+        nav li a[href*="/registration/"],
+        nav li a[href*="/register/"],
+        .menu li a[href*="/login/"],
+        .menu li a[href*="/registration/"],
+        .menu li a[href*="/register/"],
+        .menu-item a[href*="/login/"],
+        .menu-item a[href*="/registration/"],
+        .menu-item a[href*="/register/"] {
             display: none !important;
         }
     </style>
-    
-    <script type="text/javascript">
+      <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function() {
-            // Simple JavaScript approach to hide menu items containing login/registration text
+            // Universal JavaScript approach to hide menu items containing login/registration text
             var menuLinks = document.querySelectorAll('li a');
             
-            for (var i = 0; i < menuLinks.length; i++) {
-                var linkText = menuLinks[i].textContent.toLowerCase();
-                var linkHref = menuLinks[i].getAttribute('href') || '';
-                
-                if (linkText.indexOf('login') !== -1 || 
-                    linkText.indexOf('registration') !== -1 || 
-                    linkText.indexOf('register') !== -1 ||
-                    linkHref.indexOf('/login/') !== -1 ||
-                    linkHref.indexOf('/registration/') !== -1 ||
-                    linkHref.indexOf('/register/') !== -1) {
+            function hideLoginRegistrationItems() {
+                for (var i = 0; i < menuLinks.length; i++) {
+                    var linkText = menuLinks[i].textContent.toLowerCase();
+                    var linkHref = menuLinks[i].getAttribute('href') || '';
                     
-                    // Find the parent li element
-                    var parentLi = menuLinks[i].closest('li');
-                    if (parentLi) {
-                        parentLi.style.display = 'none';
-                    } else {
-                        menuLinks[i].style.display = 'none';
+                    if (linkText.indexOf('login') !== -1 || 
+                        linkText.indexOf('registration') !== -1 || 
+                        linkText.indexOf('register') !== -1 ||
+                        linkHref.indexOf('/login/') !== -1 ||
+                        linkHref.indexOf('/registration/') !== -1 ||
+                        linkHref.indexOf('/register/') !== -1) {
+                        
+                        // Find the parent li element
+                        var parentLi = menuLinks[i].closest('li');
+                        if (parentLi) {
+                            parentLi.style.display = 'none';
+                        } else {
+                            menuLinks[i].style.display = 'none';
+                        }
                     }
                 }
+            }
+            
+            // Execute immediately
+            hideLoginRegistrationItems();
+            
+            // Also run after a short delay to catch any dynamically loaded menus
+            setTimeout(hideLoginRegistrationItems, 500);
+            
+            // Set up a MutationObserver to watch for DOM changes
+            if (typeof MutationObserver !== 'undefined') {
+                var observer = new MutationObserver(function() {
+                    menuLinks = document.querySelectorAll('li a'); // Refresh the links collection
+                    hideLoginRegistrationItems();
+                });
+                
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
             }
         });
     </script>
@@ -470,7 +506,7 @@ function my_passwordless_auth_simple_menu_css() {
 // Add CSS and JS to the head for all themes
 add_action('wp_head', 'my_passwordless_auth_simple_menu_css');
 
-// Apply our simple filter to all potential menu outputs
+// Apply our simple filter to all potential menu outputs - universal approach
 add_filter('wp_nav_menu_items', 'my_passwordless_auth_simple_menu_filter', 9999);
 add_filter('wp_page_menu', 'my_passwordless_auth_simple_menu_filter', 9999);
 add_filter('render_block', function($block_content, $block) {
@@ -480,9 +516,25 @@ add_filter('render_block', function($block_content, $block) {
     return $block_content;
 }, 9999, 2);
 
-// Apply to Astra theme specifically
-add_filter('astra_wp_page_menu', 'my_passwordless_auth_simple_menu_filter', 9999);
-add_filter('astra_primary_menu_markup', 'my_passwordless_auth_simple_menu_filter', 9999);
-add_filter('astra_header_menu_1', 'my_passwordless_auth_simple_menu_filter', 9999);
-add_filter('astra_header_menu_2', 'my_passwordless_auth_simple_menu_filter', 9999);
-add_filter('astra_main_header_menu', 'my_passwordless_auth_simple_menu_filter', 9999);
+/**
+ * Universal hook for filtering theme navigation elements
+ * This attaches our filter to all registered theme filters that contain 'menu' in their name
+ */
+function my_passwordless_auth_register_universal_menu_filters() {
+    global $wp_filter;
+    
+    // Get all filters
+    foreach ($wp_filter as $tag => $filter) {
+        // If the filter name contains 'menu', 'nav', or 'navigation', hook into it
+        if (stripos($tag, 'menu') !== false || 
+            stripos($tag, 'nav') !== false || 
+            stripos($tag, 'navigation') !== false) {
+            
+            // Don't re-hook into filters we've already added
+            if ($tag !== 'wp_nav_menu_items' && $tag !== 'wp_page_menu') {
+                add_filter($tag, 'my_passwordless_auth_simple_menu_filter', 9999);
+            }
+        }
+    }
+}
+add_action('wp', 'my_passwordless_auth_register_universal_menu_filters');
