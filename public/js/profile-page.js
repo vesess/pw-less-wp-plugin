@@ -1,8 +1,16 @@
 (function(){
     document.addEventListener('DOMContentLoaded', function() {
+
+           // Check if the profile form exists (user is logged in)
+    if (!document.getElementById('my-passwordless-auth-profile-form')) {
+        console.log('Profile form not found. User might not be logged in.');
+        return;
+    }
+
     // Function to check email input and update UI accordingly
     function checkEmailInput() {
-        const newEmail = document.getElementById('new_email').value.trim();
+        const email = document.getElementById('new_email');
+        const newEmail = email.value.trim();
         const requestEmailCodeBtn = document.querySelector('.request-email-code-btn');
         const emailCodeContainer = document.querySelector('.email-code-container');
         const emailVerificationCodeInput = document.getElementById('email_verification_code');
@@ -18,6 +26,13 @@
     
     // Set up constant asynchronous checking (every 500ms)
     setInterval(function() {
+
+           // Check if the profile form exists (user is logged in)
+    if (!document.getElementById('my-passwordless-auth-profile-form')) {
+        console.log('Profile form not found. User might not be logged in.');
+        return;
+    }
+    
         checkEmailInput();
     }, 500);
     
