@@ -110,13 +110,21 @@ class My_Passwordless_Auth_Admin {
         //     'my-passwordless-auth',
         //     'my_passwordless_auth_main'
         // );
-        
-        add_settings_field(
+          add_settings_field(
             'code_expiration',
             __('Login Code Expiration (minutes)', 'my-passwordless-auth'),
             array($this, 'code_expiration_callback'),
             'my-passwordless-auth',
             'my_passwordless_auth_main'
+        );
+        
+        // Theme compatibility setting
+        add_settings_field(
+            'use_theme_styles',
+            __('Use Theme Styling', 'my-passwordless-auth'),
+            array($this, 'render_theme_styles_field'),
+            'my-passwordless-auth',
+            'my_passwordless_auth_general'
         );
     }
 
@@ -272,5 +280,17 @@ class My_Passwordless_Auth_Admin {
         
         // Merge with existing options and return
         return is_array($input) ? array_merge($options, $input) : $options;
+    }
+
+    /**
+     * Render theme styles toggle field
+     */
+    public function render_theme_styles_field() {
+        $options = get_option('my_passwordless_auth_options');
+        $checked = isset($options['use_theme_styles']) && $options['use_theme_styles'] === 'yes';
+        ?>
+        <input type="checkbox" name="my_passwordless_auth_options[use_theme_styles]" value="yes" <?php checked($checked); ?> />
+        <p class="description"><?php _e('Enable this to use your theme\'s styling instead of plugin default styles.', 'my-passwordless-auth'); ?></p>
+        <?php
     }
 }

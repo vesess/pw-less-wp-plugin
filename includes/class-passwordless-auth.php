@@ -185,9 +185,6 @@ class My_Passwordless_Auth
 
         // Handle magic login links
         add_action('init', array($this, 'process_magic_login'));
-
-        // Enqueue styles and scripts
-        add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
     }
 
     /**
@@ -465,19 +462,6 @@ class My_Passwordless_Auth
         wp_redirect($redirect_to);
         exit;
     }
-
-    /**
-     * Enqueue necessary scripts and styles
-     */
-    public function enqueue_scripts()
-    {
-        wp_enqueue_style('my-passwordless-auth-style', MY_PASSWORDLESS_AUTH_URL . 'assets/css/passwordless-auth.css', array(), MY_PASSWORDLESS_AUTH_VERSION);
-    }
-
-
-
-
-
 
 
     /**

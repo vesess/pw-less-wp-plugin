@@ -56,6 +56,11 @@ require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-passwordless-auth.php';
 require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/login-form-integration.php';
 
 /**
+ * Load the navbar filter functionality
+ */
+require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/navbar-filter.php';
+
+/**
  * Begins execution of the plugin.
  */
 function run_my_passwordless_auth() {
@@ -373,109 +378,4 @@ if (!function_exists('my_passwordless_auth_log')) {
 }
 
 
-/**
- * Filter the navigation menu items based on user login status
- */
-function my_passwordless_auth_filter_nav_menu_items($items, $args) {
-    // If user is logged in, remove login and registration links
-    if (is_user_logged_in()) {
-        // Convert items to DOM object for easier manipulation
-        $dom = new DOMDocument();
-        
-        // Use @ to suppress warnings about HTML5 tags
-        @$dom->loadHTML(mb_convert_encoding($items, 'HTML-ENTITIES', 'UTF-8'));
-        
-        // Find all li elements with links
-        $lis = $dom->getElementsByTagName('li');
-        
-        // Items to remove when user is logged in
-        $pages_to_hide = array(
-            '/login/',
-            '/registration/'
-        );
-        
-        // Loop through li elements in reverse order to safely remove nodes
-        for ($i = $lis->length - 1; $i >= 0; $i--) {
-            $li = $lis->item($i);
-            
-            // Find the anchor element within this li
-            $anchors = $li->getElementsByTagName('a');
-            if ($anchors->length > 0) {
-                $href = $anchors->item(0)->getAttribute('href');
-                
-                // Check if this link should be hidden
-                foreach ($pages_to_hide as $page) {
-                    if (strpos($href, $page) !== false) {
-                        // This is a login or registration link, remove it
-                        $li->parentNode->removeChild($li);
-                        break;
-                    }
-                }
-            }
-        }
-        
-        // Get the modified HTML (extract just the body part)
-        $body = $dom->saveHTML($dom->documentElement);
-        $body = preg_replace('~<(?:!DOCTYPE|/?(?:html|head|body))[^>]*>\s*~i', '', $body);
-        
-        // Return the filtered HTML
-        return $body;
-    }
-    
-    // If user is not logged in, return original items
-    return $items;
-}
-
-// Add filter for wp_nav_menu_items to conditionally hide login/registration items
-add_filter('wp_nav_menu_items', 'my_passwordless_auth_filter_nav_menu_items', 10, 2);
-
-// Alternative approach for block themes
-function my_passwordless_auth_filter_navigation_block($block_content, $block) {
-    if ($block['blockName'] === 'core/navigation' && is_user_logged_in()) {
-        // Convert content to DOM object
-        $dom = new DOMDocument();
-        
-        // Use @ to suppress warnings about HTML5 tags
-        @$dom->loadHTML(mb_convert_encoding($block_content, 'HTML-ENTITIES', 'UTF-8'));
-        
-        // Find all li elements with links
-        $lis = $dom->getElementsByTagName('li');
-        
-        // Pages to hide when logged in
-        $pages_to_hide = array(
-            '/login/',
-            '/registration/'
-        );
-        
-        // Loop through li elements in reverse order to safely remove nodes
-        for ($i = $lis->length - 1; $i >= 0; $i--) {
-            $li = $lis->item($i);
-            
-            // Find the anchor element within this li
-            $anchors = $li->getElementsByTagName('a');
-            if ($anchors->length > 0) {
-                $href = $anchors->item(0)->getAttribute('href');
-                
-                // Check if this link should be hidden
-                foreach ($pages_to_hide as $page) {
-                    if (strpos($href, $page) !== false) {
-                        // This is a login or registration link, remove it
-                        $li->parentNode->removeChild($li);
-                        break;
-                    }
-                }
-            }
-        }
-        
-        // Get the modified HTML
-        $body = $dom->saveHTML($dom->documentElement);
-        $body = preg_replace('~<(?:!DOCTYPE|/?(?:html|head|body))[^>]*>\s*~i', '', $body);
-        
-        return $body;
-    }
-    
-    return $block_content;
-}
-
-// Add filter for render_block to handle block theme navigation
-add_filter('render_block', 'my_passwordless_auth_filter_navigation_block', 10, 2);
+// Navigation menu filtering has been moved to includes/navbar-filter.php
