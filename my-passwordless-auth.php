@@ -374,108 +374,115 @@ if (!function_exists('my_passwordless_auth_log')) {
 
 
 /**
- * Filter the navigation menu items based on user login status
+ * Simple menu filter to hide login and registration items when user is logged in
+ * This works with any theme including Astra
  */
-function my_passwordless_auth_filter_nav_menu_items($items, $args) {
-    // If user is logged in, remove login and registration links
-    if (is_user_logged_in()) {
-        // Convert items to DOM object for easier manipulation
-        $dom = new DOMDocument();
-        
-        // Use @ to suppress warnings about HTML5 tags
-        @$dom->loadHTML(mb_convert_encoding($items, 'HTML-ENTITIES', 'UTF-8'));
-        
-        // Find all li elements with links
-        $lis = $dom->getElementsByTagName('li');
-        
-        // Items to remove when user is logged in
-        $pages_to_hide = array(
-            '/login/',
-            '/registration/'
-        );
-        
-        // Loop through li elements in reverse order to safely remove nodes
-        for ($i = $lis->length - 1; $i >= 0; $i--) {
-            $li = $lis->item($i);
-            
-            // Find the anchor element within this li
-            $anchors = $li->getElementsByTagName('a');
-            if ($anchors->length > 0) {
-                $href = $anchors->item(0)->getAttribute('href');
-                
-                // Check if this link should be hidden
-                foreach ($pages_to_hide as $page) {
-                    if (strpos($href, $page) !== false) {
-                        // This is a login or registration link, remove it
-                        $li->parentNode->removeChild($li);
-                        break;
-                    }
-                }
-            }
-        }
-        
-        // Get the modified HTML (extract just the body part)
-        $body = $dom->saveHTML($dom->documentElement);
-        $body = preg_replace('~<(?:!DOCTYPE|/?(?:html|head|body))[^>]*>\s*~i', '', $body);
-        
-        // Return the filtered HTML
-        return $body;
+function my_passwordless_auth_simple_menu_filter($html) {
+    // Check if WordPress function exists and user is logged in
+    if (!function_exists('is_user_logged_in') || !is_user_logged_in()) {
+        return $html;
     }
     
-    // If user is not logged in, return original items
-    return $items;
+    // Simple pattern matching to remove list items containing login or registration
+    $patterns = array(
+        // Match any list item containing "login" text and links
+        '/<li[^>]*>\s*<a[^>]*>([^<]*login[^<]*)<\/a>\s*<\/li>/i',
+        // Match any list item containing "registration" text and links
+        '/<li[^>]*>\s*<a[^>]*>([^<]*registration[^<]*)<\/a>\s*<\/li>/i',
+        // Match any list item containing "register" text and links
+        '/<li[^>]*>\s*<a[^>]*>([^<]*register[^<]*)<\/a>\s*<\/li>/i',
+        // Match list items with links containing login or registration in the URL
+        '/<li[^>]*>\s*<a[^>]*href="[^"]*\/login\/[^"]*"[^>]*>[^<]*<\/a>\s*<\/li>/i',
+        '/<li[^>]*>\s*<a[^>]*href="[^"]*\/registration\/[^"]*"[^>]*>[^<]*<\/a>\s*<\/li>/i',
+        '/<li[^>]*>\s*<a[^>]*href="[^"]*\/register\/[^"]*"[^>]*>[^<]*<\/a>\s*<\/li>/i'
+    );
+    
+    // Apply each pattern
+    foreach ($patterns as $pattern) {
+        $html = preg_replace($pattern, '', $html);
+    }
+    
+    return $html;
 }
 
-// Add filter for wp_nav_menu_items to conditionally hide login/registration items
-add_filter('wp_nav_menu_items', 'my_passwordless_auth_filter_nav_menu_items', 10, 2);
-
-// Alternative approach for block themes
-function my_passwordless_auth_filter_navigation_block($block_content, $block) {
-    if ($block['blockName'] === 'core/navigation' && is_user_logged_in()) {
-        // Convert content to DOM object
-        $dom = new DOMDocument();
+/**
+ * Add CSS to hide login/registration menu items as a fallback
+ */
+function my_passwordless_auth_simple_menu_css() {
+    // Check if WordPress function exists and user is logged in
+    if (!function_exists('is_user_logged_in') || !is_user_logged_in()) {
+        return;
+    }
+    ?>
+    <style type="text/css">
+        /* Hide menu items with login or registration text */
+        li a:contains("login"), li a:contains("Login"),
+        li a:contains("registration"), li a:contains("Registration"),
+        li a:contains("register"), li a:contains("Register"),
+        li a[href*="/login/"], li a[href*="/registration/"], li a[href*="/register/"] {
+            display: none !important;
+        }
         
-        // Use @ to suppress warnings about HTML5 tags
-        @$dom->loadHTML(mb_convert_encoding($block_content, 'HTML-ENTITIES', 'UTF-8'));
-        
-        // Find all li elements with links
-        $lis = $dom->getElementsByTagName('li');
-        
-        // Pages to hide when logged in
-        $pages_to_hide = array(
-            '/login/',
-            '/registration/'
-        );
-        
-        // Loop through li elements in reverse order to safely remove nodes
-        for ($i = $lis->length - 1; $i >= 0; $i--) {
-            $li = $lis->item($i);
+        /* Hide parent li elements for themes like Astra */
+        .ast-nav-menu li a[href*="/login/"],
+        .ast-nav-menu li a[href*="/registration/"],
+        .ast-nav-menu li a[href*="/register/"],
+        #ast-hf-menu-1 li a[href*="/login/"],
+        #ast-hf-menu-1 li a[href*="/registration/"],
+        #ast-hf-menu-1 li a[href*="/register/"],
+        .main-header-menu li a[href*="/login/"],
+        .main-header-menu li a[href*="/registration/"],
+        .main-header-menu li a[href*="/register/"] {
+            display: none !important;
+        }
+    </style>
+    
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simple JavaScript approach to hide menu items containing login/registration text
+            var menuLinks = document.querySelectorAll('li a');
             
-            // Find the anchor element within this li
-            $anchors = $li->getElementsByTagName('a');
-            if ($anchors->length > 0) {
-                $href = $anchors->item(0)->getAttribute('href');
+            for (var i = 0; i < menuLinks.length; i++) {
+                var linkText = menuLinks[i].textContent.toLowerCase();
+                var linkHref = menuLinks[i].getAttribute('href') || '';
                 
-                // Check if this link should be hidden
-                foreach ($pages_to_hide as $page) {
-                    if (strpos($href, $page) !== false) {
-                        // This is a login or registration link, remove it
-                        $li->parentNode->removeChild($li);
-                        break;
+                if (linkText.indexOf('login') !== -1 || 
+                    linkText.indexOf('registration') !== -1 || 
+                    linkText.indexOf('register') !== -1 ||
+                    linkHref.indexOf('/login/') !== -1 ||
+                    linkHref.indexOf('/registration/') !== -1 ||
+                    linkHref.indexOf('/register/') !== -1) {
+                    
+                    // Find the parent li element
+                    var parentLi = menuLinks[i].closest('li');
+                    if (parentLi) {
+                        parentLi.style.display = 'none';
+                    } else {
+                        menuLinks[i].style.display = 'none';
                     }
                 }
             }
-        }
-        
-        // Get the modified HTML
-        $body = $dom->saveHTML($dom->documentElement);
-        $body = preg_replace('~<(?:!DOCTYPE|/?(?:html|head|body))[^>]*>\s*~i', '', $body);
-        
-        return $body;
+        });
+    </script>
+    <?php
+}
+
+// Add CSS and JS to the head for all themes
+add_action('wp_head', 'my_passwordless_auth_simple_menu_css');
+
+// Apply our simple filter to all potential menu outputs
+add_filter('wp_nav_menu_items', 'my_passwordless_auth_simple_menu_filter', 9999);
+add_filter('wp_page_menu', 'my_passwordless_auth_simple_menu_filter', 9999);
+add_filter('render_block', function($block_content, $block) {
+    if ($block['blockName'] === 'core/navigation') {
+        return my_passwordless_auth_simple_menu_filter($block_content);
     }
-    
     return $block_content;
-}
+}, 9999, 2);
 
-// Add filter for render_block to handle block theme navigation
-add_filter('render_block', 'my_passwordless_auth_filter_navigation_block', 10, 2);
+// Apply to Astra theme specifically
+add_filter('astra_wp_page_menu', 'my_passwordless_auth_simple_menu_filter', 9999);
+add_filter('astra_primary_menu_markup', 'my_passwordless_auth_simple_menu_filter', 9999);
+add_filter('astra_header_menu_1', 'my_passwordless_auth_simple_menu_filter', 9999);
+add_filter('astra_header_menu_2', 'my_passwordless_auth_simple_menu_filter', 9999);
+add_filter('astra_main_header_menu', 'my_passwordless_auth_simple_menu_filter', 9999);
