@@ -9,6 +9,7 @@ class My_Passwordless_Auth_Frontend {
     public function init()
     {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_styles'));
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
     }
 
     /**
@@ -66,6 +67,81 @@ class My_Passwordless_Auth_Frontend {
 }
 
     /**
+     * Enqueue JavaScript files for the plugin
+     */
+    public function enqueue_scripts() {
+        // Only enqueue scripts when our shortcodes are present
+        global $post;
+        if (!is_a($post, 'WP_Post')) {
+            return;
+        }
+
+        $content = $post->post_content;
+        
+        // Check for login form shortcode
+        if (has_shortcode($content, 'passwordless_login')) {
+            wp_enqueue_script(
+                'my-passwordless-auth-login-script',
+                MY_PASSWORDLESS_AUTH_URL . 'public/js/login-form.js',
+                array('jquery'),
+                MY_PASSWORDLESS_AUTH_VERSION . '.' . time(),
+                true
+            );
+            
+            // Pass AJAX URL and nonce to script
+            wp_localize_script(
+                'my-passwordless-auth-login-script',
+                'passwordlessAuth',
+                array(
+                    'ajax_url' => admin_url('admin-ajax.php'),
+                    'nonce' => wp_create_nonce('passwordless-auth-nonce')
+                )
+            );
+        }
+
+        // Check for registration form shortcode
+        if (has_shortcode($content, 'passwordless_registration')) {
+            wp_enqueue_script(
+                'my-passwordless-auth-registration-script',
+                MY_PASSWORDLESS_AUTH_URL . 'public/js/registration-form.js',
+                array('jquery'),
+                MY_PASSWORDLESS_AUTH_VERSION . '.' . time(),
+                true
+            );
+            
+            // Pass AJAX URL and nonce to script
+            wp_localize_script(
+                'my-passwordless-auth-registration-script',
+                'passwordlessAuth',
+                array(
+                    'ajax_url' => admin_url('admin-ajax.php'),
+                    'nonce' => wp_create_nonce('passwordless-auth-nonce')
+                )
+            );
+        }
+
+        // Check for profile page shortcode
+        if (has_shortcode($content, 'passwordless_profile')) {
+            wp_enqueue_script(
+                'my-passwordless-auth-profile-script',
+                MY_PASSWORDLESS_AUTH_URL . 'public/js/profile-page.js',
+                array('jquery'),
+                MY_PASSWORDLESS_AUTH_VERSION . '.' . time(),
+                true
+            );
+            
+            // Pass AJAX URL and nonce to script
+            wp_localize_script(
+                'my-passwordless-auth-profile-script',
+                'passwordlessAuth',
+                array(
+                    'ajax_url' => admin_url('admin-ajax.php'),
+                    'nonce' => wp_create_nonce('passwordless-auth-nonce'),
+                    'profile_nonce' => wp_create_nonce('profile_nonce')
+                )
+            );
+        }
+    }    /**
      * Render login form via shortcode.
      */    
     public function login_form_shortcode() {
@@ -73,18 +149,13 @@ class My_Passwordless_Auth_Frontend {
             return '<p>' . esc_html__('You are already logged in.', 'my-passwordless-auth') . '</p>';
         }
         
-        // CSS is now handled by the enqueue_styles method
-        
-        // Pass AJAX data directly to the template
-        $ajax_url = admin_url('admin-ajax.php');
-        $nonce = wp_create_nonce('passwordless-auth-nonce');
+        // CSS and JS are now handled by the enqueue methods
         
         ob_start();
         include MY_PASSWORDLESS_AUTH_PATH . 'public/partials/login-form.php';
         return ob_get_clean();
     }
-    
-    /**
+      /**
      * Render registration form via shortcode.
      */    
     public function registration_form_shortcode() {
@@ -92,18 +163,13 @@ class My_Passwordless_Auth_Frontend {
             return '<p>' . esc_html__('You are already logged in.', 'my-passwordless-auth') . '</p>';
         }
         
-        // CSS is now handled by the enqueue_styles method
-        
-        // Pass AJAX data directly to the template
-        $ajax_url = admin_url('admin-ajax.php');
-        $nonce = wp_create_nonce('passwordless-auth-nonce');
+        // CSS and JS are now handled by the enqueue methods
         
         ob_start();
         include MY_PASSWORDLESS_AUTH_PATH . 'public/partials/registration-form.php';
         return ob_get_clean();
     }
-    
-    /**
+      /**
      * Render profile page via shortcode.
      */    
     public function profile_page_shortcode() {
@@ -111,12 +177,7 @@ class My_Passwordless_Auth_Frontend {
             return '<p>' . esc_html__('You must be logged in to view your profile.', 'my-passwordless-auth') . '</p>';
         }
         
-        // CSS is now handled by the enqueue_styles method
-        
-        // Pass AJAX data directly to the template
-        $ajax_url = admin_url('admin-ajax.php');
-        $nonce = wp_create_nonce('passwordless-auth-nonce');
-        $profile_nonce = wp_create_nonce('profile_nonce');
+        // CSS and JS are now handled by the enqueue methods
         
         ob_start();
         include MY_PASSWORDLESS_AUTH_PATH . 'public/partials/profile-page.php';
