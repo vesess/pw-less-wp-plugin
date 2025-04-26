@@ -10,10 +10,8 @@ if (!get_option('users_can_register')) {
     echo '<p>' . esc_html__('Registration is currently disabled.', 'my-passwordless-auth') . '</p>';
     return;
 }
-?>
-<!-- Styles now loaded from passwordless-auth.css -->
-<?php
-// Allow theme styling to override plugin styles if enabled in settings
+// CSS is now loaded via class-frontend.php
+// Define theme compatibility class at the beginning where it's needed
 $options = get_option('my_passwordless_auth_options', []);
 $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme_styles'] === 'yes' ? 'theme-compat' : '';
 ?>
@@ -57,8 +55,13 @@ $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Registration form script loaded');
     const form = document.getElementById('my-passwordless-auth-registration-form');
-    
+    if(!form) {
+        console.error('Registration form not found!');
+         return;
+    }
+    // Ensure the form exists before adding event listener
     form.addEventListener('submit', function(e) {
         e.preventDefault(); 
 

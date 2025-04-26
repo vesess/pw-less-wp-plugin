@@ -22,9 +22,11 @@ if (empty($redirect_to)) {
     $redirect_to = home_url();
 }
 
-// Allow theme styling to override plugin styles if enabled in settings
+// Define theme compatibility class at the beginning where it's needed
 $options = get_option('my_passwordless_auth_options', []);
 $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme_styles'] === 'yes' ? 'theme-compat' : '';
+
+// CSS is now loaded via class-frontend.php
 ?>
 
 <div class="passwordless-login-container <?php echo esc_attr($theme_compat_class); ?>">
@@ -116,10 +118,3 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
-<!-- Styles now loaded from passwordless-auth.css -->
-<?php
-// Allow theme styling to override plugin styles if enabled in settings
-$options = get_option('my_passwordless_auth_options', []);
-$theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme_styles'] === 'yes' ? 'theme-compat' : '';
-?>
