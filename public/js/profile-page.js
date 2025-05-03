@@ -2,7 +2,7 @@
     document.addEventListener('DOMContentLoaded', function() {
 
            // Check if the profile form exists (user is logged in)
-    if (!document.getElementById('my-passwordless-auth-profile-form')) {
+    if (!document.getElementById('passwordless-profile-form')) {
         console.log('Profile form not found. User might not be logged in.');
         return;
     }
@@ -23,12 +23,11 @@
             emailVerificationCodeInput.value = '';
         }
     }
-    
-    // Set up constant asynchronous checking (every 500ms)
+      // Set up constant asynchronous checking (every 500ms)
     setInterval(function() {
 
            // Check if the profile form exists (user is logged in)
-    if (!document.getElementById('my-passwordless-auth-profile-form')) {
+    if (!document.getElementById('passwordless-profile-form')) {
         console.log('Profile form not found. User might not be logged in.');
         return;
     }
@@ -37,7 +36,7 @@
     }, 500);
     
     // Profile form submission
-    document.getElementById('my-passwordless-auth-profile-form').addEventListener('submit', function(e) {
+    document.getElementById('passwordless-profile-form').addEventListener('submit', function(e) {
         e.preventDefault();
         
         const displayName = document.getElementById('display_name').value;
@@ -135,12 +134,11 @@
             messagesContainer.innerHTML = '<div class="message error-message">An error occurred. Please try again.</div>';
         });
     });
-    
-    // Delete account form handling - completely separated functionality
+      // Delete account form handling - completely separated functionality
     
     // Function to request a deletion code
     function requestDeletionCode() {
-        const messagesContainer = document.getElementById('my-passwordless-auth-delete-account-form').querySelector('.messages');
+        const messagesContainer = document.getElementById('passwordless-delete-account-form').querySelector('.messages');
         const codeContainer = document.querySelector('.code-container');
         const requestCodeBtn = document.querySelector('.request-code-btn');
         
@@ -193,10 +191,9 @@
             requestCodeBtn.disabled = false;
         });
     }
-    
-    // Function to delete account
+      // Function to delete account
     function deleteAccount(confirmationCode) {
-        const messagesContainer = document.getElementById('my-passwordless-auth-delete-account-form').querySelector('.messages');
+        const messagesContainer = document.getElementById('passwordless-delete-account-form').querySelector('.messages');
         console.log('Confirmation code:', confirmationCode);
         
         // Clear previous messages

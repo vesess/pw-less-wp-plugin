@@ -29,23 +29,23 @@ $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme
 // CSS is now loaded via class-frontend.php
 ?>
 
-<div class="passwordless-login-container <?php echo esc_attr($theme_compat_class); ?>">
-    <form id="passwordless-login-form" class="passwordless-login-form <?php echo esc_attr($theme_compat_class); ?>">
+<div class="passwordless-container passwordless-login-container <?php echo esc_attr($theme_compat_class); ?>">
+    <form id="passwordless-login-form" class="passwordless-form <?php echo esc_attr($theme_compat_class); ?>">
         <div class="messages"></div>
         
-        <p>
+        <div class="form-row">
             <label for="user_email"><?php _e('Email Address', 'my-passwordless-auth'); ?></label>
-            <input type="email" name="user_email" id="user_email" class="input" required />
-        </p>
+            <input type="email" name="user_email" id="user_email" required />
+        </div>
         
-        <p class="passwordless-submit">
+        <div class="form-row passwordless-submit">
             <input type="hidden" name="redirect_to" value="<?php echo esc_attr($redirect_to); ?>" />
             <input type="hidden" name="action" value="process_login" />
             <?php wp_nonce_field('passwordless-login-nonce', 'passwordless_login_nonce'); ?>
-            <button type="submit" name="wp-submit" id="wp-submit" class="button button-primary">
+            <button type="submit" name="wp-submit" id="wp-submit" class="button-primary">
                 <?php _e('Send Login Link', 'my-passwordless-auth'); ?>
             </button>
-        </p>
+        </div>
         
         <p class="login-register-link">
             <?php _e('First time user?', 'my-passwordless-auth'); ?>

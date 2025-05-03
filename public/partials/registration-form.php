@@ -15,8 +15,8 @@ if (!get_option('users_can_register')) {
 $options = get_option('my_passwordless_auth_options', []);
 $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme_styles'] === 'yes' ? 'theme-compat' : '';
 ?>
-<div class="my-passwordless-auth-container registration-form-container <?php echo esc_attr($theme_compat_class); ?>">
-    <form id="my-passwordless-auth-registration-form" class="my-passwordless-auth-form <?php echo esc_attr($theme_compat_class); ?>">
+<div class="passwordless-container registration-form-container <?php echo esc_attr($theme_compat_class); ?>">
+    <form id="passwordless-registration-form" class="passwordless-form <?php echo esc_attr($theme_compat_class); ?>">
         <h2><?php _e('Register New Account', 'my-passwordless-auth'); ?></h2>
         
         <div class="messages"></div>
@@ -40,12 +40,11 @@ $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme
         </div>
         
         <div class="form-row button-row">
-            <input type="submit" value="<?php esc_attr_e('Register', 'my-passwordless-auth'); ?>" class="submit-btn" />
+            <input type="submit" value="<?php esc_attr_e('Register', 'my-passwordless-auth'); ?>" class="button-primary" />
         </div>
         
         <p class="login-register-link">
             <?php _e('Already have an account?', 'my-passwordless-auth'); ?>
-            <!-- change the url if it is broken to /index.php/ -->
             <a href="<?php echo esc_url(home_url('/login')); ?>"><?php _e('Login here', 'my-passwordless-auth'); ?></a>
         </p>
         <input type="hidden" name="action" value="register_new_user" />

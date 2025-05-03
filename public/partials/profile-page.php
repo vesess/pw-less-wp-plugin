@@ -19,11 +19,11 @@ if (!($current_user instanceof WP_User)) {
 $options = get_option('my_passwordless_auth_options', []);
 $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme_styles'] === 'yes' ? 'theme-compat' : '';
 ?>
-<div class="my-passwordless-auth-container profile-page-container <?php echo esc_attr($theme_compat_class); ?>">
+<div class="passwordless-container profile-page-container <?php echo esc_attr($theme_compat_class); ?>">
     <h2><?php _e('Your Profile', 'my-passwordless-auth'); ?></h2>
     
     <div class="profile-section">
-        <form id="my-passwordless-auth-profile-form" class="my-passwordless-auth-form">
+        <form id="passwordless-profile-form" class="passwordless-form">
             <h3><?php _e('Update Profile Information', 'my-passwordless-auth'); ?></h3>
             
             <div class="messages"></div>
@@ -41,8 +41,7 @@ $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme
             <div class="form-row button-row email-buttons">
                 <button type="button" class="request-email-code-btn" disabled><?php _e('Request Verification Code', 'my-passwordless-auth'); ?></button>
             </div>
-            
-            <div class="form-row email-code-container" style="display: none;">
+              <div class="form-row email-code-container" style="display: none;">
                 <label for="email_verification_code"><?php _e('Verification Code', 'my-passwordless-auth'); ?></label>
                 <input type="text" name="email_verification_code" id="email_verification_code" placeholder="<?php esc_attr_e('Enter the code sent to your new email', 'my-passwordless-auth'); ?>" />
             </div>
@@ -61,13 +60,12 @@ $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme
             </div>
             
             <div class="form-row button-row">
-                <input type="submit" value="<?php esc_attr_e('Update Profile', 'my-passwordless-auth'); ?>" class="submit-btn" />
+                <input type="submit" value="<?php esc_attr_e('Update Profile', 'my-passwordless-auth'); ?>" class="button-primary" />
             </div>
         </form>
     </div>
-    
-    <div class="profile-section danger-zone">
-        <form id="my-passwordless-auth-delete-account-form" class="my-passwordless-auth-form">
+      <div class="profile-section danger-zone">
+        <form id="passwordless-delete-account-form" class="passwordless-form">
             <h3><?php _e('Delete Account', 'my-passwordless-auth'); ?></h3>
             
             <div class="messages"></div>
