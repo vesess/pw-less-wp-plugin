@@ -1,57 +1,37 @@
 
-/* Registration Form Styles */
-.my-passwordless-auth-container {
+/* Registration Form Styles - Component-specific styles only */
+/* Common styles are imported via common.css */
+
+/* Override container width for registration form */
+.registration-form-container {
     max-width: 500px;
-    margin: 0 auto;
-    padding: 20px;
 }
 
-.my-passwordless-auth-form h2 {
+/* Form title styling */
+.passwordless-form h2 {
     margin-bottom: 20px;
     text-align: center;
-}
-
-.form-row {
-    margin-bottom: 15px;
-}
-
-.form-row label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.form-row input[type="email"],
-.form-row input[type="text"] {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-.form-row .required {
-    color: red;
-}
-
-.form-row .description {
-    font-size: 12px;
-    color: #666;
-    margin-top: 5px;
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
 }
 
 .button-row {
     margin-top: 20px;
 }
 
+/* Registration button consistency */
 input[type="submit"] {
     background-color: #0073aa;
     color: white;
     border: none;
-    padding: 10px 15px;
+    padding: 12px 15px;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 15px;
+    font-size: 16px;
+    font-weight: 500;
     width: 100%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 input[type="submit"]:hover {
@@ -61,4 +41,5 @@ input[type="submit"]:hover {
 input[type="submit"]:disabled {
     background-color: #cccccc;
     cursor: not-allowed;
+    opacity: 0.7;
 }

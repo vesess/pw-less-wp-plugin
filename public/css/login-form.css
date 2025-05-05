@@ -1,53 +1,9 @@
-/* Login Form Styles */
+/* Login Form Styles - Component-specific styles only */
+/* Common styles are imported via common.css */
+
+/* Override container width for login form */
 .passwordless-login-container {
     max-width: 450px;
-    margin: 40px auto;
-    padding: 30px;
-    background: #fff;
-    border-radius: 6px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-}
-
-.passwordless-login-form label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #333;
-    font-size: 14px;
-}
-
-.passwordless-login-form input[type="email"] {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 15px;
-    box-sizing: border-box;
-}
-
-.button-primary {
-    background-color: var(--passwordless-primary-color, #0073aa);
-    color: white;
-    border: none;
-    padding: 12px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 500;
-    width: 100%;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.button-primary:hover {
-    background-color: var(--passwordless-primary-hover, #005a87);
-}
-
-.button-primary:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-    opacity: 0.7;
 }
 
 .passwordless-submit {
@@ -61,66 +17,4 @@
     color: #666;
     text-align: center;
     padding: 0 10px;
-}
-
-.login-register-link {
-    margin-top: 20px;
-    padding-top: 15px;
-    text-align: center;
-    border-top: 1px solid #f0f0f0;
-}
-
-/* Message styling */
-.messages {
-    margin-bottom: 20px;
-}
-
-.message {
-    padding: 12px 15px;
-    border-radius: 4px;
-    margin-bottom: 10px;
-}
-
-.success-message {
-    background-color: #f0f7ee;
-    color: #155724;
-    border: 1px solid #d4edda;
-}
-
-.error-message {
-    background-color: #fdf3f4;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-/* Improved link styling */
-.login-register-link a {
-    color: var(--passwordless-primary-color, #0073aa);
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.login-register-link a:hover {
-    text-decoration: underline;
-}
-
-/* Focus states for form elements */
-.passwordless-login-form input[type="email"]:focus {
-    border-color: var(--passwordless-primary-color, #0073aa);
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
-}
-
-/* Responsive styles */
-@media (max-width: 500px) {
-    .passwordless-login-container {
-        max-width: 100%;
-        margin: 20px auto;
-        padding: 20px;
-        border-radius: 0;
-    }
-    
-    .button-primary {
-        padding: 10px;
-    }
 }

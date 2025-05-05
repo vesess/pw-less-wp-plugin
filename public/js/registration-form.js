@@ -2,7 +2,7 @@
     
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Registration form script loaded');
-    const form = document.getElementById('my-passwordless-auth-registration-form');
+    const form = document.getElementById('passwordless-registration-form');
     if(!form) {
         console.error('Registration form not found!');
          return;
@@ -22,9 +22,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Clear previous messages
         messagesContainer.innerHTML = '';
-        
-        // Disable submit button during submission
-        const submitBtn = form.querySelector('.submit-btn');
+          // Disable submit button during submission
+        const submitBtn = form.querySelector('input[type="submit"]');
         submitBtn.value = 'Registering...';
         submitBtn.disabled = true;
         
