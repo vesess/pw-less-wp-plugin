@@ -101,15 +101,16 @@ class My_Passwordless_Auth
         $registration = new My_Passwordless_Auth_Registration();
 
         $this->loader->add_action('init', $registration, 'init');
-    }
-
-    /**
+    }    /**
      * Register profile related hooks.
+     * 
+     * Most profile functionality has been removed, 
+     * but we need to keep the account deletion functionality.
      */
     private function define_profile_hooks()
     {
+        // Initialize the profile class for account deletion functionality
         $profile = new My_Passwordless_Auth_Profile();
-
         $this->loader->add_action('init', $profile, 'init');
     }
 
@@ -120,12 +121,10 @@ class My_Passwordless_Auth
     {
         $frontend = new My_Passwordless_Auth_Frontend();
 
-        $this->loader->add_action('init', $frontend, 'init');
-
-        // Register shortcodes through the loader
+        $this->loader->add_action('init', $frontend, 'init');        // Register shortcodes through the loader
         $this->loader->add_shortcode('passwordless_login', $frontend, 'login_form_shortcode');
         $this->loader->add_shortcode('passwordless_registration', $frontend, 'registration_form_shortcode');
-        $this->loader->add_shortcode('passwordless_profile', $frontend, 'profile_page_shortcode');
+        // Profile page shortcode has been removed
     }
 
     /**

@@ -52,18 +52,7 @@ class My_Passwordless_Auth_Frontend {
             MY_PASSWORDLESS_AUTH_VERSION . '.' . time()
         );
         wp_enqueue_style('my-passwordless-auth-common-style');
-    }
-
-    // Check for profile page shortcode
-    if (has_shortcode($content, 'passwordless_profile')) {
-        wp_enqueue_style(
-            'my-passwordless-auth-profile-style',
-            MY_PASSWORDLESS_AUTH_URL . 'public/css/profile-page.css',
-            array('my-passwordless-auth-common-style'),
-            MY_PASSWORDLESS_AUTH_VERSION . '.' . time()
-        );
-        wp_enqueue_style('my-passwordless-auth-common-style');
-    }
+    }    // Profile page shortcode has been removed
 }
 
     /**
@@ -118,29 +107,7 @@ class My_Passwordless_Auth_Frontend {
                     'nonce' => wp_create_nonce('passwordless-auth-nonce')
                 )
             );
-        }
-
-        // Check for profile page shortcode
-        if (has_shortcode($content, 'passwordless_profile')) {
-            wp_enqueue_script(
-                'my-passwordless-auth-profile-script',
-                MY_PASSWORDLESS_AUTH_URL . 'public/js/profile-page.js',
-                array('jquery'),
-                MY_PASSWORDLESS_AUTH_VERSION . '.' . time(),
-                true
-            );
-            
-            // Pass AJAX URL and nonce to script
-            wp_localize_script(
-                'my-passwordless-auth-profile-script',
-                'passwordlessAuth',
-                array(
-                    'ajax_url' => admin_url('admin-ajax.php'),
-                    'nonce' => wp_create_nonce('passwordless-auth-nonce'),
-                    'profile_nonce' => wp_create_nonce('profile_nonce')
-                )
-            );
-        }
+        }        // Profile page shortcode has been removed
     }    /**
      * Render login form via shortcode.
      */    
@@ -168,19 +135,7 @@ class My_Passwordless_Auth_Frontend {
         ob_start();
         include MY_PASSWORDLESS_AUTH_PATH . 'public/partials/registration-form.php';
         return ob_get_clean();
-    }
-      /**
-     * Render profile page via shortcode.
-     */    
-    public function profile_page_shortcode() {
-        if (!is_user_logged_in()) {
-            return '<p>' . esc_html__('You must be logged in to view your profile.', 'my-passwordless-auth') . '</p>';
-        }
-        
-        // CSS and JS are now handled by the enqueue methods
-        
-        ob_start();
-        include MY_PASSWORDLESS_AUTH_PATH . 'public/partials/profile-page.php';
-        return ob_get_clean();
-    }
+    }      /**
+     * Profile page functionality has been removed
+     */
 }

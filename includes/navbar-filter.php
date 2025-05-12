@@ -3,7 +3,7 @@
  * Navigation Menu Filter
  *
  * This file contains functions to filter navigation menu items based on user login status:
- * 1. Hide login/registration items when user is logged in
+ * 1. Hide login/sign-up items when user is logged in
  * 2. Hide profile items when user is not logged in
  *
  * @package My_Passwordless_Auth
@@ -15,7 +15,7 @@ if (!defined('WPINC')) {
 }
 
 /**
- * Menu filter to hide login/registration items when user is logged in
+ * Menu filter to hide login/sign-up items when user is logged in
  * And hide profile links when user is not logged in
  */
 function my_passwordless_auth_navbar_filter($html) {
@@ -31,25 +31,25 @@ function my_passwordless_auth_navbar_filter($html) {
     
     // Different patterns based on login status
     if (is_user_logged_in()) {
-        // When logged in: Hide login and registration links
+        // When logged in: Hide login and sign-up links
         $patterns = array(
             // Match any list item containing login text
             '/<li[^>]*>\s*<a[^>]*>([^<]*login[^<]*)<\/a>.*?<\/li>/is',
-            // Match any list item containing registration text
-            '/<li[^>]*>\s*<a[^>]*>([^<]*registration[^<]*)<\/a>.*?<\/li>/is',
+            // Match any list item containing sign-up text
+            '/<li[^>]*>\s*<a[^>]*>([^<]*sign-up[^<]*)<\/a>.*?<\/li>/is',
             // Match any list item containing register text
             '/<li[^>]*>\s*<a[^>]*>([^<]*register[^<]*)<\/a>.*?<\/li>/is',
             
-            // Match menu items with login/registration/register in href
+            // Match menu items with login/sign-up/register in href
             '/<li[^>]*>\s*<a[^>]*href="[^"]*\/login\/[^"]*"[^>]*>.*?<\/a>.*?<\/li>/is',
-            '/<li[^>]*>\s*<a[^>]*href="[^"]*\/registration\/[^"]*"[^>]*>.*?<\/a>.*?<\/li>/is',
+            '/<li[^>]*>\s*<a[^>]*href="[^"]*\/sign-up\/[^"]*"[^>]*>.*?<\/a>.*?<\/li>/is',
             '/<li[^>]*>\s*<a[^>]*href="[^"]*\/register\/[^"]*"[^>]*>.*?<\/a>.*?<\/li>/is',
             
             // More inclusive patterns for various HTML structures
-            '/<li[^>]*class="[^"]*\b(?:menu-item|page-item|nav-item)[^"]*"[^>]*>\s*<a[^>]*href="[^"]*\/(login|registration|register)\/[^"]*"[^>]*>.*?<\/li>/is',
+            '/<li[^>]*class="[^"]*\b(?:menu-item|page-item|nav-item)[^"]*"[^>]*>\s*<a[^>]*href="[^"]*\/(login|sign-up|register)\/[^"]*"[^>]*>.*?<\/li>/is',
             
             // Catch menu items that may have additional markup inside
-            '/<li[^>]*>\s*<a[^>]*href="[^"]*\/(login|registration|register)\/[^"]*"[^>]*>.*?<\/a>(?:(?!<\/li>).)*<\/li>/is'
+            '/<li[^>]*>\s*<a[^>]*href="[^"]*\/(login|sign-up|register)\/[^"]*"[^>]*>.*?<\/a>(?:(?!<\/li>).)*<\/li>/is'
         );
     } else {
         // When not logged in: Hide profile links
@@ -87,29 +87,29 @@ function my_passwordless_auth_navbar_css() {
     
     // Different CSS based on login status
     if (is_user_logged_in()) {
-        // When logged in: Hide login and registration links
+        // When logged in: Hide login and sign-up links
         ?>
         <style type="text/css">
-            /* Hide menu items with login or registration text when logged in */
+            /* Hide menu items with login or sign-up text when logged in */
             li a:contains("login"), li a:contains("Login"),
-            li a:contains("registration"), li a:contains("Registration"),
+            li a:contains("sign-up"), li a:contains("sign-up"),
             li a:contains("register"), li a:contains("Register"),
-            li a[href*="/login/"], li a[href*="/registration/"], li a[href*="/register/"] {
+            li a[href*="/login/"], li a[href*="/sign-up/"], li a[href*="/register/"] {
                 display: none !important;
             }
             
             /* Hide parent li elements */
             li:has(a[href*="/login/"]),
-            li:has(a[href*="/registration/"]),
+            li:has(a[href*="/sign-up/"]),
             li:has(a[href*="/register/"]),
             nav li a[href*="/login/"],
-            nav li a[href*="/registration/"],
+            nav li a[href*="/sign-up/"],
             nav li a[href*="/register/"],
             .menu li a[href*="/login/"],
-            .menu li a[href*="/registration/"],
+            .menu li a[href*="/sign-up/"],
             .menu li a[href*="/register/"],
             .menu-item a[href*="/login/"],
-            .menu-item a[href*="/registration/"],
+            .menu-item a[href*="/sign-up/"],
             .menu-item a[href*="/register/"] {
                 display: none !important;
             }
@@ -144,11 +144,11 @@ function my_passwordless_auth_navbar_css() {
         
         // Terms to look for based on login status
         var termsToHide = isLoggedIn ? 
-            ['login', 'registration', 'register'] : 
+            ['login', 'sign-up', 'register'] : 
             ['profile'];
             
         var pathsToHide = isLoggedIn ? 
-            ['/login/', '/registration/', '/register/'] : 
+            ['/login/', '/sign-up/', '/register/'] : 
             ['/profile/'];
         
         function hideMenuItems() {

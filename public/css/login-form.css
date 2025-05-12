@@ -1,20 +1,227 @@
 /* Login Form Styles - Component-specific styles only */
 /* Common styles are imported via common.css */
 
-/* Override container width for login form */
+/* Main container for the whole login block (Frame 5 overall style) */
 .passwordless-login-container {
-    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center children horizontally */
+    padding: 40px 32px; /* Vertical and horizontal padding */
+    gap: 30px; /* Gap between direct children: title, form, info, separator, register link. Adjusted from user's 34px for visual balance. */
+    max-width: 1030px;
+    background: #FFFFFF;
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.05);
+    border-radius: 16px;
+    margin: 50px auto; /* Center the container on the page */
+    box-sizing: border-box;
 }
 
+/* Login Title */
+.login-title {
+    font-family: 'Roboto', sans-serif;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 36px;
+    line-height: 120%;
+    text-align: center;
+    color: #000000;
+    margin: 0; /* Remove default h1 margin */
+}
+
+/* Form element */
+#passwordless-login-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px; /* Gap between email input and submit button */
+    width: 480px; /* Fixed width for the form content area */
+}
+
+/* Form row containing the email input */
+.passwordless-form .form-row:not(.passwordless-submit) {
+    width: 100%; /* Take full width of the form (480px) */
+}
+
+/* Email Input */
+#user_email {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 18px 14px; /* Padding inside the input field */
+    width: 100%; /* Full width of its container */
+    height: 60px;
+    border: 1px solid rgba(99, 102, 241, 0.77);
+    border-radius: 8px;
+    font-family: 'Roboto', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 150%;
+    color: #000000; /* Text color when typing */
+    box-sizing: border-box;
+}
+
+#user_email::placeholder {
+    color: rgba(0, 0, 0, 0.6); /* Placeholder text color */
+}
+
+/* Submit button container */
 .passwordless-submit {
-    margin-top: 25px;
+    width: 100%; /* Take full width of the form (480px) */
+    margin-top: 0; /* Reset default margin, gap handles spacing */
+    display: flex; /* To allow button to take full width or be centered if needed */
+    justify-content: center;
 }
 
+/* Submit Button */
+#wp-submit {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 0px;
+    gap: 8px;
+    width: 100%; /* Full width of its 480px container */
+    height: 48px;
+    background: #111111;
+    border: 1px solid #111111;
+    border-radius: 8px;
+    font-family: 'Roboto', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 150%;
+    color: #FFFFFF;
+    cursor: pointer;
+    border: none; /* Remove default button border if any */
+}
+
+/* Informational text below the button */
 .passwordless-info {
-    margin-top: 20px;
+    font-family: 'Roboto', sans-serif;
+    font-style: normal;
+    font-weight: 400;
     font-size: 14px;
     line-height: 1.5;
-    color: #666;
+    color: #666666;
     text-align: center;
     padding: 0 10px;
+    width: 480px; /* Match form width */
+    margin: 0; /* Reset default paragraph margin */
+    box-sizing: border-box;
+}
+
+/* Separator Line */
+.login-separator {
+    width: 480px;
+    height: 1px;
+    background: #000000;
+    border: none; /* Ensure it's just a background color line */
+}
+
+/* "Don't have an account? Sign Up" link area */
+.login-register-link {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 5px; /* Gap between the text and the link */
+    font-family: 'Roboto', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 150%;
+    text-align: center;
+    color: #666666;
+    margin: 0; /* Reset default paragraph margin */
+}
+
+.login-register-link a {
+    color: #666666; /* Link color */
+    text-decoration: underline; /* Underline for the link */
+}
+
+/* Hide the original label for the email input as placeholder is used */
+.passwordless-form .form-row label[for="user_email"] {
+    display: none;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    /* Adjust container padding and gaps for medium screens */
+    .passwordless-login-container {
+        padding-left: 20px;
+        padding-right: 20px;
+        gap: 25px;
+    }
+
+    /* Make form and its key elements full width */
+    #passwordless-login-form,
+    .passwordless-form .form-row, /* Ensures input fields take available width */
+    #wp-submit,
+    .passwordless-info,
+    .login-separator {
+        width: 100%;
+        max-width: 480px; /* Retain a max-width for very wide viewports within this breakpoint if container is wider */
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    #user_email { /* Already 100% of its parent form-row, which is now 100% of form */
+        width: 100%;
+    }
+
+
+    #passwordless-login-form {
+        gap: 20px; /* Reduce gap inside form */
+    }
+
+    .login-title {
+        font-size: 30px; /* Slightly smaller title */
+    }
+}
+
+@media (max-width: 500px) {
+    /* Container adjustments for small screens are partly handled by common.css */
+    .passwordless-login-container {
+        padding-left: 15px;
+        padding-right: 15px;
+        gap: 20px; /* Further reduce gap */
+    }
+    
+    #passwordless-login-form,
+    .passwordless-form .form-row,
+    #wp-submit,
+    .passwordless-info,
+    .login-separator {
+        max-width: 100%; /* Allow full bleed on small screens */
+    }
+
+    #passwordless-login-form {
+        gap: 15px; /* Further reduce gap inside form */
+    }
+
+    .login-title {
+        font-size: 26px; /* Smaller title for mobile */
+    }
+
+    #user_email, 
+    #wp-submit {
+        height: 50px; 
+        font-size: 15px;
+    }
+    
+    /* Ensure padding is maintained correctly with height adjustment */
+    #user_email {
+        padding: 10px 14px;
+    }
+    #wp-submit {
+         padding: 10px 0px;
+    }
+
+
+    .passwordless-info, 
+    .login-register-link {
+        font-size: 13px; /* Slightly smaller text */
+    }
 }

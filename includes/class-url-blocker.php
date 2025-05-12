@@ -50,9 +50,9 @@ class My_Passwordless_Auth_URL_Blocker {
             $base_url . '/category/*',
             '*/private/*',
             $base_url . '/index.php/login',
-            $base_url . '/index.php/registration',
+            $base_url . '/index.php/sign-up',
             $base_url . '/login',
-            $base_url . '/registration',
+            $base_url . '/sign-up',
         );
 
         // URLs to block when user is NOT logged in

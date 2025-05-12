@@ -26,7 +26,7 @@ My Passwordless Authentication offers a modern, secure way to log in to WordPres
    * Customize other settings like email templates and login code expiration
 4. Create two pages in WordPress:
    * Create a page named exactly "login" (e.g., `/login/`) and add the login form shortcode
-   * Create a page named exactly "registration" (e.g., `/registration/`) and add the registration form shortcode
+   * Create a page named exactly "sign-up" (e.g., `/sign-up/`) and add the registration form shortcode
    * These specific page names are required for proper form redirections to work correctly
 5. Go to Settings → Permalinks to configure the URLs:
    * Set "Permalink structure" structure to "Post name".
@@ -36,7 +36,6 @@ My Passwordless Authentication offers a modern, secure way to log in to WordPres
 
 * `[passwordless_login]` - Displays the login form
 * `[passwordless_registration]` - Displays the registration form
-* `[passwordless_profile]` - Displays the user profile management form
 
 ## Security Benefits
 
@@ -55,7 +54,6 @@ Passwordless authentication eliminates many security issues related to password-
 4. Upon successful verification, the user is logged in
 5. The code becomes invalid immediately after use or expiration
 
-## Customization
 
 ### Email Settings
 
@@ -65,15 +63,6 @@ You can customize the following email settings in the admin panel:
 * From email address
 * Code expiration time
 
-### Template Customization
-
-For advanced customization, you can override the template files by copying them to your theme:
-
-```
-your-theme/my-passwordless-auth/login-form.php
-your-theme/my-passwordless-auth/registration-form.php
-your-theme/my-passwordless-auth/profile-page.php
-```
 
 ## Requirements
 

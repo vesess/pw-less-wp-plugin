@@ -1,4 +1,11 @@
 (function() {
+    // Hide the h1 element to remove unnessary text
+    document.querySelectorAll('h1').forEach(h1 => {
+  if (h1.textContent.includes('login')) {
+    h1.style.display = 'none';
+  }
+});
+
     document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('passwordless-login-form');
     
