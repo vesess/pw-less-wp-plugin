@@ -2,10 +2,6 @@
  * Common styles shared across all Passwordless Authentication components
  */
 
-/* Hide WordPress post title when displaying forms */
-.wp-block-post-title {
-    display: none;
-}
 
 /* Base container styles */
 .passwordless-container {
