@@ -64,7 +64,7 @@ $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme
             </div>
         </form>
     </div>
-      <div class="profile-section danger-zone">
+    <div class="profile-section danger-zone">
         <form id="passwordless-delete-account-form" class="passwordless-form">
             <h3><?php _e('Delete Account', 'my-passwordless-auth'); ?></h3>
             
