@@ -25,8 +25,9 @@ $GLOBALS['my_passwordless_env'] = array();
 // Include helper functions
 require_once plugin_dir_path(__FILE__) . 'includes/helpers.php';
 
-// Include admin profile extensions
+// Include admin profile extensions and account deletion functionality
 require_once plugin_dir_path(__FILE__) . 'includes/admin-profile-extension.php';
+require_once plugin_dir_path(__FILE__) . 'includes/account-deletion-handlers.php';
 
 // Try to load environment variables - first from WordPress root directory
 $env_paths = array(
