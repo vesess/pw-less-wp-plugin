@@ -145,3 +145,83 @@
 .passwordless-form .form-row label[for="user_email"] {
     display: none;
 }
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    /* Adjust container padding and gaps for medium screens */
+    .passwordless-login-container {
+        padding-left: 20px;
+        padding-right: 20px;
+        gap: 25px;
+    }
+
+    /* Make form and its key elements full width */
+    #passwordless-login-form,
+    .passwordless-form .form-row, /* Ensures input fields take available width */
+    #wp-submit,
+    .passwordless-info,
+    .login-separator {
+        width: 100%;
+        max-width: 480px; /* Retain a max-width for very wide viewports within this breakpoint if container is wider */
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    #user_email { /* Already 100% of its parent form-row, which is now 100% of form */
+        width: 100%;
+    }
+
+
+    #passwordless-login-form {
+        gap: 20px; /* Reduce gap inside form */
+    }
+
+    .login-title {
+        font-size: 30px; /* Slightly smaller title */
+    }
+}
+
+@media (max-width: 500px) {
+    /* Container adjustments for small screens are partly handled by common.css */
+    .passwordless-login-container {
+        padding-left: 15px;
+        padding-right: 15px;
+        gap: 20px; /* Further reduce gap */
+    }
+    
+    #passwordless-login-form,
+    .passwordless-form .form-row,
+    #wp-submit,
+    .passwordless-info,
+    .login-separator {
+        max-width: 100%; /* Allow full bleed on small screens */
+    }
+
+    #passwordless-login-form {
+        gap: 15px; /* Further reduce gap inside form */
+    }
+
+    .login-title {
+        font-size: 26px; /* Smaller title for mobile */
+    }
+
+    #user_email, 
+    #wp-submit {
+        height: 50px; 
+        font-size: 15px;
+    }
+    
+    /* Ensure padding is maintained correctly with height adjustment */
+    #user_email {
+        padding: 10px 14px;
+    }
+    #wp-submit {
+         padding: 10px 0px;
+    }
+
+
+    .passwordless-info, 
+    .login-register-link {
+        font-size: 13px; /* Slightly smaller text */
+    }
+}

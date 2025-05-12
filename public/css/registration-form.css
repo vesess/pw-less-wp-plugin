@@ -130,3 +130,81 @@
 .passwordless-form .form-row .description {
     display: none;
 }
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    /* Adjust container padding and gaps for medium screens */
+    .registration-form-container {
+        padding-left: 20px;
+        padding-right: 20px;
+        gap: 25px;
+    }
+
+    /* Make form and its key elements full width or constrained */
+    #passwordless-registration-form,
+    .passwordless-form .form-row, /* Ensures input fields take available width */
+    #passwordless-registration-form input[type="submit"],
+    .login-link {
+        width: 100%;
+        max-width: 480px; /* Retain a max-width for form elements */
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    #passwordless-registration-form input[type="email"],
+    #passwordless-registration-form input[type="text"] {
+        width: 100%; /* Already 100% of their parent form-row */
+    }
+
+    #passwordless-registration-form {
+        gap: 20px; /* Reduce gap inside form */
+    }
+
+    .registration-title {
+        font-size: 28px; /* Slightly smaller title */
+    }
+}
+
+@media (max-width: 500px) {
+    /* Container adjustments for small screens, complementing common.css */
+    .registration-form-container {
+        padding-left: 15px;
+        padding-right: 15px;
+        gap: 20px; /* Further reduce gap */
+    }
+
+    #passwordless-registration-form,
+    .passwordless-form .form-row,
+    #passwordless-registration-form input[type="submit"],
+    .login-link {
+        max-width: 100%; /* Allow full bleed on small screens */
+    }
+
+    #passwordless-registration-form {
+        gap: 15px; /* Further reduce gap inside form */
+    }
+
+    .registration-title {
+        font-size: 24px; /* Smaller title for mobile */
+    }
+
+    #passwordless-registration-form input[type="email"],
+    #passwordless-registration-form input[type="text"],
+    #passwordless-registration-form input[type="submit"] {
+        height: 50px;
+        font-size: 15px;
+    }
+    
+    #passwordless-registration-form input[type="email"],
+    #passwordless-registration-form input[type="text"] {
+        padding: 10px 14px; /* Adjust padding for new height */
+    }
+
+    #passwordless-registration-form input[type="submit"] {
+        padding: 10px 0px; /* Adjust padding for new height */
+    }
+
+    .login-link {
+        font-size: 13px; /* Slightly smaller text */
+    }
+}
