@@ -58,6 +58,6 @@ $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme
 
     <p class="login-register-link">
         <?php _e('Don\'t have an account?', 'my-passwordless-auth'); ?>
-        <a href="<?php echo esc_url(home_url('/registration')); ?>"><?php _e('Sign Up', 'my-passwordless-auth'); ?></a>
+        <a href="<?php echo esc_url(home_url('/sign-up')); ?>"><?php _e('Sign Up', 'my-passwordless-auth'); ?></a>
     </p>
 </div>
