@@ -1,45 +1,132 @@
-
 /* Registration Form Styles - Component-specific styles only */
 /* Common styles are imported via common.css */
 
-/* Override container width for registration form */
+/* Main container for the whole registration block */
 .registration-form-container {
-    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center children horizontally */
+    padding: 40px 32px; /* Vertical and horizontal padding, consistent with login */
+    gap: 30px; /* Gap between direct children: title, form, login link. User CSS had 22px for inner form, this is for outer elements */
+    max-width: 1030px; /* Width of the overall container */
+    background: #FFFFFF;
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.05);
+    border-radius: 16px;
+    margin: 50px auto; /* Center the container on the page */
+    box-sizing: border-box;
 }
 
-/* Form title styling */
-.passwordless-form h2 {
-    margin-bottom: 20px;
+/* Registration Title */
+.registration-title {
+    font-family: 'Plus Jakarta Sans', sans-serif; /* From user CSS for title */
+    font-style: normal;
+    font-weight: 700;
+    font-size: 32px; /* From user CSS */
+    line-height: 120%;
     text-align: center;
-    font-size: 24px;
-    font-weight: 600;
-    color: #333;
+    color: #000000;
+    margin: 0; /* Remove default h1 margin */
+    /* height: 76px; */ /* Height will be auto based on content and line-height */
 }
 
-.button-row {
-    margin-top: 20px;
+/* Form element */
+#passwordless-registration-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px; /* Gap between input fields and button, from user CSS for form content */
+    width: 480px; /* Fixed width for the form content area */
 }
 
-/* Registration button consistency */
-input[type="submit"] {
-    background-color: #0073aa;
-    color: white;
-    border: none;
-    padding: 12px 15px;
-    border-radius: 4px;
-    cursor: pointer;
+/* Form row containing an input */
+.passwordless-form .form-row:not(.button-row) {
+    width: 100%; /* Take full width of the form (480px) */
+}
+
+/* Input fields (email, username, display_name) */
+#passwordless-registration-form input[type="email"],
+#passwordless-registration-form input[type="text"] {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 18px 14px; /* Padding inside the input field */
+    width: 100%; /* Full width of its container */
+    height: 60px;
+    border: 1px solid #D1D5DB; /* From user CSS for inputs */
+    /* box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25); */ /* Optional: user CSS had this, can be too strong */
+    border-radius: 10px; /* From user CSS for inputs */
+    font-family: 'Roboto', sans-serif;
+    font-style: normal;
+    font-weight: 400;
     font-size: 16px;
-    font-weight: 500;
-    width: 100%;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    line-height: 150%;
+    color: #000000; /* Text color when typing */
+    box-sizing: border-box;
 }
 
-input[type="submit"]:hover {
-    background-color: #005a87;
+#passwordless-registration-form input[type="email"]::placeholder,
+#passwordless-registration-form input[type="text"]::placeholder {
+    color: rgba(0, 0, 0, 0.6); /* Placeholder text color */
 }
 
-input[type="submit"]:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-    opacity: 0.7;
+/* Submit button row */
+.passwordless-form .button-row {
+    width: 100%; /* Take full width of the form (480px) */
+    margin-top: 0; /* User CSS had gap:32px for inputs, then button is order:3. The form gap:24px should cover this. */
+    display: flex;
+    justify-content: center;
+}
+
+/* Submit Button */
+#passwordless-registration-form input[type="submit"] {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 0px;
+    gap: 8px;
+    width: 100%; /* Full width of its 480px container */
+    height: 48px;
+    background: #0F172A; /* From user CSS for button */
+    border: 1px solid #0F172A; /* From user CSS for button */
+    border-radius: 8px; /* From user CSS for button */
+    font-family: 'Roboto', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 150%;
+    color: #FFFFFF; /* From user CSS for button text */
+    cursor: pointer;
+}
+
+#passwordless-registration-form input[type="submit"]:hover {
+    background-color: #1e293b; /* Darken a bit on hover */
+}
+
+/* "Already have an account? Log In" link area */
+.login-link { /* Changed from .login-register-link to be specific if needed, or reuse if styles are identical */
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 5px; /* Gap between the text and the link */
+    font-family: 'Roboto', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 150%;
+    text-align: center;
+    color: #666666; /* Text color from user CSS */
+    margin: 0; /* Reset default paragraph margin */
+}
+
+.login-link a {
+    color: #000000; /* Link color from user CSS for "Sign Up" which is now "Log In" */
+    text-decoration: underline;
+}
+
+/* Hide original labels and descriptions as placeholders are used */
+.passwordless-form .form-row label,
+.passwordless-form .form-row .description {
+    display: none;
 }
