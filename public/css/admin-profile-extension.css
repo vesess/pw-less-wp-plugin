@@ -1,0 +1,42 @@
+/**
+ * Admin profile extension styles for account deletion functionality
+ */
+
+/* Danger zone styling */
+#my-passwordless-auth-delete-account {
+    background: rgba(220, 53, 69, 0.05);
+    border-left: 4px solid #dc3545;
+    padding: 15px;
+    margin: 10px 0;
+}
+
+#my-passwordless-auth-delete-account .description {
+    color: #721c24;
+    margin-bottom: 15px;
+}
+
+/* Delete button styling */
+#confirm-delete-account-btn {
+    margin-left: 10px;
+}
+
+/* Message styling */
+.delete-account-messages .notice {
+    margin: 10px 0;
+    padding: 8px 12px;
+}
+
+/* Input field for verification code */
+#deletion-confirmation-code {
+    width: 200px;
+}
+
+/* Animation for step transitions */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.delete-account-step2 {
+    animation: fadeIn 0.3s ease forwards;
+}
