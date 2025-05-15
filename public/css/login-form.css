@@ -33,7 +33,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 24px; /* Gap between email input and submit button */
+    gap: 30px; /* Increased gap between form elements to account for labels */
     width: 480px; /* Fixed width for the form content area */
 }
 
@@ -141,9 +141,16 @@
     text-decoration: underline; /* Underline for the link */
 }
 
-/* Hide the original label for the email input as placeholder is used */
-.passwordless-form .form-row label[for="user_email"] {
-    display: none;
+/* Style for labels */
+.passwordless-form .form-row label {
+    display: block;
+    font-family: 'Roboto', sans-serif;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 150%;
+    color: #000000;
+    margin-bottom: 8px;
 }
 
 /* Responsive Styles */
@@ -170,10 +177,8 @@
     #user_email { /* Already 100% of its parent form-row, which is now 100% of form */
         width: 100%;
     }
-
-
     #passwordless-login-form {
-        gap: 20px; /* Reduce gap inside form */
+        gap: 25px; /* Adjusted gap for responsive design with labels */
     }
 
     .login-title {
@@ -195,10 +200,8 @@
     .passwordless-info,
     .login-separator {
         max-width: 100%; /* Allow full bleed on small screens */
-    }
-
-    #passwordless-login-form {
-        gap: 15px; /* Further reduce gap inside form */
+    }    #passwordless-login-form {
+        gap: 20px; /* Adjusted gap for mobile view with labels */
     }
 
     .login-title {
@@ -223,5 +226,10 @@
     .passwordless-info, 
     .login-register-link {
         font-size: 13px; /* Slightly smaller text */
+    }
+
+    /* Adjust label font size for mobile */
+    .passwordless-form .form-row label {
+        font-size: 14px;
     }
 }

@@ -33,10 +33,9 @@ $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme
     <h1 class="login-title"><?php _e('Log In', 'my-passwordless-auth'); ?></h1>
     <form id="passwordless-login-form" class="passwordless-form <?php echo esc_attr($theme_compat_class); ?>">
         <div class="messages"></div>
-        
-        <div class="form-row">
-            <?php /* <label for="user_email"><?php _e('Email Address', 'my-passwordless-auth'); ?></label> */ ?>
-            <input type="email" name="user_email" id="user_email" placeholder="<?php _e('Email', 'my-passwordless-auth'); ?>" required />
+          <div class="form-row">
+            <label for="user_email"><?php _e('Email Address', 'my-passwordless-auth'); ?></label>
+            <input type="email" name="user_email" id="user_email" required />
         </div>
         
         <div class="form-row passwordless-submit">

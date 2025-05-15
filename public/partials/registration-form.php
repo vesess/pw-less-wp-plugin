@@ -19,23 +19,22 @@ $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme
     <h1 class="registration-title"><?php _e('Sign Up', 'my-passwordless-auth'); ?></h1>
     <form id="passwordless-registration-form" class="passwordless-form <?php echo esc_attr($theme_compat_class); ?>">
         <div class="messages"></div>
-        
-        <div class="form-row">
-            <?php /* <label for="email"><?php _e('Email Address', 'my-passwordless-auth'); ?> <span class="required">*</span></label> */ ?>
-            <input type="email" name="email" id="email" placeholder="<?php esc_attr_e('Email', 'my-passwordless-auth'); ?>" required />
-            <?php /* <p class="description"><?php _e('You\'ll use this email to log in.', 'my-passwordless-auth'); ?></p> */ ?>
+          <div class="form-row">
+            <label for="email"><?php _e('Email Address', 'my-passwordless-auth'); ?> <span class="required">*</span></label>
+            <input type="email" name="email" id="email" required />
+            <p class="description"><?php _e('You\'ll use this email to log in.', 'my-passwordless-auth'); ?></p>
         </div>
         
         <div class="form-row">
-            <?php /* <label for="username"><?php _e('Username', 'my-passwordless-auth'); ?></label> */ ?>
-            <input type="text" name="username" id="username" placeholder="<?php esc_attr_e('Username (optional)', 'my-passwordless-auth'); ?>" />
-            <?php /* <p class="description"><?php _e('Leave this field empty to use your email address as username.', 'my-passwordless-auth'); ?></p> */ ?>
+            <label for="username"><?php _e('Username', 'my-passwordless-auth'); ?></label>
+            <input type="text" name="username" id="username" />
+            <p class="description"><?php _e('Leave this field empty to use your email address as username.', 'my-passwordless-auth'); ?></p>
         </div>
         
         <div class="form-row">
-            <?php /* <label for="display_name"><?php _e('Display Name', 'my-passwordless-auth'); ?></label> */ ?>
-            <input type="text" name="display_name" id="display_name" placeholder="<?php esc_attr_e('Display Name (optional)', 'my-passwordless-auth'); ?>" />
-            <?php /* <p class="description"><?php _e('This is how your name will be shown on the site.', 'my-passwordless-auth'); ?></p> */ ?>
+            <label for="display_name"><?php _e('Display Name', 'my-passwordless-auth'); ?></label>
+            <input type="text" name="display_name" id="display_name" />
+            <p class="description"><?php _e('This is how your name will be shown on the site.', 'my-passwordless-auth'); ?></p>
         </div>
         
         <div class="form-row button-row">
