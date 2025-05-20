@@ -50,8 +50,6 @@
     padding: 18px 14px; /* Padding inside the input field */
     width: 100%; /* Full width of its container */
     height: 60px;
-    border: 1px solid rgba(99, 102, 241, 0.77);
-    border-radius: 8px;
     font-family: 'Roboto', sans-serif;
     font-style: normal;
     font-weight: 400;
