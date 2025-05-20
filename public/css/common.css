@@ -38,7 +38,7 @@
 .passwordless-form input[type="text"]:focus {
     border-color: #0073aa;
     outline: none;
-    box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+    box-shadow: 0 0 0 2px rgba(0, 116, 170, 0.5);
 }
 
 /* Button styles */
