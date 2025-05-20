@@ -1,7 +1,7 @@
 (function(){
       // Hide the h1 element to remove unnessary text
     document.querySelectorAll('h1').forEach(h1 => {
-  if (h1.textContent.includes('registration')) {
+  if (h1.textContent.includes('sign-up')) {
     h1.style.display = 'none';
   }
 });
