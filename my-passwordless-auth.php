@@ -1,13 +1,11 @@
 <?php
 /**
- * Plugin Name: My Passwordless Authentication
+ * Plugin Name: EasyAuth WP
  * Plugin URI: https://vesess.com
  * Description: A WordPress plugin for passwordless authentication.
  * Version: 1.0.0
  * Author: Vesess
  * Author URI: https://vesess.com
- * Text Domain: my-passwordless-auth
- * Domain Path: /languages
  */
 
 // If this file is called directly, abort.
