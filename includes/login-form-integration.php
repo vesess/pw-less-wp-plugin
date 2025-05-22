@@ -119,11 +119,9 @@ class My_Passwordless_Auth_Login_Integration {
         </div>
         <?php
     }
-    
-    /**
+      /**
      * Add inline JavaScript for passwordless login to wp-login.php
-     */
-    public function add_inline_login_form() {
+     */    public function add_inline_login_form() {
         if (!$this->is_integration_enabled()) {
             return;
         }
@@ -162,7 +160,7 @@ class My_Passwordless_Auth_Login_Integration {
                     }).toString();
                     
                     // Send AJAX request
-                    fetch('<?php echo $ajax_url; ?>', {
+                    fetch('<?php echo esc_url($ajax_url); ?>', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded'
@@ -220,7 +218,7 @@ class My_Passwordless_Auth_Login_Integration {
                     }).toString();
                     
                     // Send AJAX request
-                    fetch('<?php echo $ajax_url; ?>', {
+                    fetch('<?php echo esc_url($ajax_url); ?>', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded'
