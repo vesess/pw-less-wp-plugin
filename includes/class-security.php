@@ -252,8 +252,7 @@ class My_Passwordless_Auth_Security {
      * Get client IP address
      *
      * @return string
-     */
-    public static function get_client_ip() {
+     */    public static function get_client_ip() {
         $ip_headers = array(
             'HTTP_CF_CONNECTING_IP', // Cloudflare
             'HTTP_X_FORWARDED_FOR',
@@ -266,8 +265,9 @@ class My_Passwordless_Auth_Security {
         );
 
         foreach ($ip_headers as $header) {
-            if (!empty($_SERVER[$header])) {
-                $ip = trim(explode(',', $_SERVER[$header])[0]);
+            if (isset($_SERVER[$header]) && !empty($_SERVER[$header])) {
+                $header_value = sanitize_text_field($_SERVER[$header]);
+                $ip = trim(explode(',', $header_value)[0]);
                 if (filter_var($ip, FILTER_VALIDATE_IP)) {
                     return $ip;
                 }

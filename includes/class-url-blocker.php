@@ -148,11 +148,10 @@ class My_Passwordless_Auth_URL_Blocker {
 
     /**
      * Get the current URL
-     */
-    private function get_current_url() {
+     */    private function get_current_url() {
         $protocol = function_exists('is_ssl') && is_ssl() ? 'https://' : 'http://';
-        $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
-        $uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+        $host = isset($_SERVER['HTTP_HOST']) ? sanitize_text_field($_SERVER['HTTP_HOST']) : '';
+        $uri = isset($_SERVER['REQUEST_URI']) ? sanitize_text_field($_SERVER['REQUEST_URI']) : '';
         
         // Ensure URL doesn't have double slashes
         $url = $protocol . $host . $uri;

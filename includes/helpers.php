@@ -8,7 +8,7 @@
  * Get the plugin option with a fallback default value.
  *
  * @param string $key The option key.
- * @param mixed $default The default value.
+ * @para        my_passwordless_auth_log("Generated login token for user ID: $user_id, expires: " . gmdate('Y-m-d H:i:s', $expiration)); mixed $default The default value.
  * @return mixed The option value.
  */
 function my_passwordless_auth_get_option($key, $default = '')
