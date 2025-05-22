@@ -16,18 +16,16 @@ class My_Passwordless_Auth_Authentication {
         
         // Add a custom action for plugins to hook into after successful login
         add_action('my_passwordless_auth_after_login', array($this, 'after_login'), 10, 2);
-    }
-
-    /**
+    }    /**
      * Send a login code to the user's email.
      */
     public function send_login_code() {
         // Check nonce
-        if (!wp_verify_nonce($_POST['nonce'], 'passwordless_login_nonce')) {
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'passwordless_login_nonce')) {
             wp_send_json_error('Security check failed');
         }
 
-        $email = sanitize_email($_POST['email']);
+        $email = isset($_POST['email']) ? sanitize_email($_POST['email']) : '';
         if (!is_email($email)) {
             wp_send_json_error('Invalid email address');
         }
