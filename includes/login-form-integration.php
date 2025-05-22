@@ -34,10 +34,9 @@ class My_Passwordless_Auth_Login_Integration {
     /**
      * Add admin settings for the integration
      */
-    public function add_admin_settings() {
-        add_settings_field(
+    public function add_admin_settings() {        add_settings_field(
             'enable_wp_login_integration',
-            __('Enable Admin Login Integration', 'my-passwordless-auth'),
+            'Enable Admin Login Integration',
             array($this, 'render_wp_login_integration_field'),
             'my-passwordless-auth',
             'my_passwordless_auth_general'
@@ -55,7 +54,7 @@ class My_Passwordless_Auth_Login_Integration {
         $checked = isset($options['enable_wp_login_integration']) ? $options['enable_wp_login_integration'] === 'yes' : true;
         ?>
         <input type="checkbox" name="my_passwordless_auth_options[enable_wp_login_integration]" value="yes" <?php checked($checked); ?> />
-        <p class="description"><?php _e('Add passwordless login option to the WordPress login screen (wp-login.php)', 'my-passwordless-auth'); ?></p>
+        <p class="description">Add passwordless login option to the WordPress login screen (wp-login.php)</p>
         <?php
     }
       /**
@@ -86,13 +85,12 @@ class My_Passwordless_Auth_Login_Integration {
         $nonce = wp_create_nonce('passwordless-login-nonce');
         $ajax_url = admin_url('admin-ajax.php');
         ?>
-        <div class="pwless-login-container" style="text-align: center; margin: 15px 0;">
-            <p><?php _e('or', 'my-passwordless-auth'); ?></p>
+        <div class="pwless-login-container" style="text-align: center; margin: 15px 0;">            <p>or</p>
             <button type="button" id="pwless-login-btn" class="button button-primary" style="display: block; width: 100%; text-align: center; padding: 10px 0; margin-bottom: 10px;">
-                <?php _e('Log In with Email Code', 'my-passwordless-auth'); ?>
+                Log In with Email Code
             </button>
             <p class="pwless-description" style="font-size: 13px; color: #666;">
-                <?php _e('No password needed: receive a login link or code via email.', 'my-passwordless-auth'); ?>
+                No password needed: receive a login link or code via email.
             </p>
             
             <!-- Hidden form fields for the passwordless login -->
@@ -112,10 +110,9 @@ class My_Passwordless_Auth_Login_Integration {
         // Create a nonce for security
         $nonce = wp_create_nonce('passwordless-login-nonce');
         ?>
-        <div class="pwless-login-container" style="text-align: center; margin: 15px 0;">
-            <p><?php _e('or', 'my-passwordless-auth'); ?></p>
+        <div class="pwless-login-container" style="text-align: center; margin: 15px 0;">            <p>or</p>
             <button type="button" id="pwless-login-btn-lost" class="button button-primary" style="display: block; width: 100%; text-align: center; padding: 10px 0;">
-                <?php _e('Use Passwordless Login Instead', 'my-passwordless-auth'); ?>
+                Use Passwordless Login Instead
             </button>
             <input type="hidden" name="passwordless_login_nonce_lost" id="passwordless_login_nonce_lost" value="<?php echo esc_attr($nonce); ?>">
             <div id="pwless-messages-lost" style="margin-top: 10px;"></div>
@@ -153,9 +150,8 @@ class My_Passwordless_Auth_Login_Integration {
                         return;
                     }
                     
-                    // Disable button
-                    var originalBtnText = pwlessBtn.textContent;
-                    pwlessBtn.textContent = '<?php _e('Sending...', 'my-passwordless-auth'); ?>';
+                    // Disable button                    var originalBtnText = pwlessBtn.textContent;
+                    pwlessBtn.textContent = 'Sending...';
                     pwlessBtn.disabled = true;
                     
                     // Create form data
@@ -212,9 +208,8 @@ class My_Passwordless_Auth_Login_Integration {
                         return;
                     }
                     
-                    // Disable button
-                    var originalBtnText = pwlessBtnLost.textContent;
-                    pwlessBtnLost.textContent = '<?php _e('Sending...', 'my-passwordless-auth'); ?>';
+                    // Disable button                    var originalBtnText = pwlessBtnLost.textContent;
+                    pwlessBtnLost.textContent = 'Sending...';
                     pwlessBtnLost.disabled = true;
                     
                     // Create form data

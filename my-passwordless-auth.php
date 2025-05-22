@@ -81,10 +81,9 @@ function run_my_passwordless_auth() {
 /**
  * Add action links to the Plugins page
  */
-function my_passwordless_auth_plugin_action_links($links) {
-    $settings_link = '<a href="' . admin_url('options-general.php?page=my-passwordless-auth') . '">' . __('Settings', 'my-passwordless-auth') . '</a>';
-    $docs_link = '<a href="https://vesess.com" target="_blank">' . __('Documentation', 'my-passwordless-auth') . '</a>';
-    $support_link = '<a href="https://vesess.com" target="_blank">' . __('Support', 'my-passwordless-auth') . '</a>';
+function my_passwordless_auth_plugin_action_links($links) {    $settings_link = '<a href="' . admin_url('options-general.php?page=my-passwordless-auth') . '">Settings</a>';
+    $docs_link = '<a href="https://vesess.com" target="_blank">Documentation</a>';
+    $support_link = '<a href="https://vesess.com" target="_blank">Support</a>';
     
     // Add links to the beginning of the actions list
     array_unshift($links, $settings_link, $docs_link, $support_link);
@@ -317,18 +316,13 @@ function my_passwordless_auth_admin_notices() {
     if ($error_count > 0) {
         ?>
         <div class="notice notice-warning is-dismissible">
-            <p>
-                <?php echo esc_html(sprintf(
-                    _n(
-                        'Passwordless Authentication: There is %d error log entry in the last 24 hours.',
-                        'Passwordless Authentication: There are %d error log entries in the last 24 hours.',
-                        $error_count,
-                        'my-passwordless-auth'
-                    ),
-                    $error_count
-                )); ?>
-                <a href="<?php echo esc_url(admin_url('options-general.php?page=my-passwordless-auth-logs')); ?>">
-                    <?php esc_html_e('View logs', 'my-passwordless-auth'); ?>
+            <p>                <?php 
+                    $message = $error_count === 1 
+                        ? 'Passwordless Authentication: There is 1 error log entry in the last 24 hours.'
+                        : sprintf('Passwordless Authentication: There are %d error log entries in the last 24 hours.', $error_count); 
+                    echo esc_html($message); 
+                ?>                <a href="<?php echo esc_url(admin_url('options-general.php?page=my-passwordless-auth-logs')); ?>">
+                    <?php echo esc_html('View logs'); ?>
                 </a>
             </p>
         </div>
