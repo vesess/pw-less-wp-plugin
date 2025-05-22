@@ -321,10 +321,9 @@ class My_Passwordless_Auth
         $security = new My_Passwordless_Auth_Security();
         $ip_address = My_Passwordless_Auth_Security::get_client_ip();
         $block_time = $security->is_ip_blocked($ip_address);
-          if ($block_time !== false) {            $minutes = ceil($block_time / 60);
-            $error_message = sprintf('Too many login attempts. Please try again in %d minutes.', $minutes);
+          if ($block_time !== false) {            $minutes = ceil($block_time / 60);            $error_message = sprintf('Too many login attempts. Please try again in %d minutes.', $minutes);
             wp_die(
-                $error_message,
+                esc_html($error_message),
                 'Login Failed',
                 array('response' => 429, 'back_link' => true)
             );
@@ -339,14 +338,16 @@ class My_Passwordless_Auth
         my_passwordless_auth_log("Processing magic login request with uid: " . sanitize_text_field($_GET['uid']));
 
         $uid = sanitize_text_field($_GET['uid']);
-        $encrypted_token = sanitize_text_field($_GET['token']);
 
         $user_id = my_passwordless_auth_decrypt_user_id($uid);
 
         if ($user_id === false) {
-            my_passwordless_auth_log("Magic login failed - could not decrypt user ID from: $uid", 'error');            $error = new WP_Error('invalid_user', 'Invalid login link. Please request a new one.');
+            $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
+            
+            my_passwordless_auth_log("Magic login failed - could not decrypt user ID from: $uid", 'error');            
+            $error = new WP_Error('invalid_user', 'Invalid login link. Please request a new one.');
             wp_die(
-                $error->get_error_message(),
+                esc_html($error->get_error_message()),
                 'Login Failed',
                 array('response' => 403, 'back_link' => true)
             );
@@ -357,44 +358,50 @@ class My_Passwordless_Auth
 
         // Get stored token data for this user
         $stored_data = get_user_meta($user_id, 'passwordless_auth_login_token', true);
-
-        if (empty($stored_data)) {
+        if (!$stored_data || !is_array($stored_data)) {
+            $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
+            
             my_passwordless_auth_log("Magic login failed - no token stored for user ID: $user_id", 'error');
             $error = new WP_Error('invalid_token', 'Invalid login link. Please request a new one.');
             wp_die(
-                $error->get_error_message(),
+                esc_html($error->get_error_message()),
                 'Login Failed',
                 array('response' => 403, 'back_link' => true)
             );
             return;
         }
 
-        // Decrypt the token from the URL
-        $token = my_passwordless_auth_decrypt_token_from_url($encrypted_token);
-        if ($token === false) {
+        // Decrypt token from URL
+        $token_param = sanitize_text_field($_GET['token']);
+        $token = my_passwordless_auth_decrypt_token_from_url($token_param);
+        
+        if (!$token) {
+            $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
+            
             my_passwordless_auth_log("Magic login failed - could not decrypt token from URL", 'error');
             $error = new WP_Error('invalid_token', 'Invalid login link. Please request a new one.');
             wp_die(
-                $error->get_error_message(),
+                esc_html($error->get_error_message()),
                 'Login Failed',
                 array('response' => 403, 'back_link' => true)
             );
             return;
         }
 
-        // Check if stored data has correct format
-        if (!is_array($stored_data) || !isset($stored_data['token']) || !isset($stored_data['expiration'])) {
+        // Check if token data is properly formatted
+        if (!isset($stored_data['token']) || !isset($stored_data['expiration'])) {
+            $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
+            
             my_passwordless_auth_log("Magic login failed - token data format invalid for user ID: $user_id", 'error');
             $error = new WP_Error('invalid_token', 'Invalid login link. Please request a new one.');
             wp_die(
-                $error->get_error_message(),
+                esc_html($error->get_error_message()),
                 'Login Failed',
                 array('response' => 403, 'back_link' => true)
             );
             return;
         }
 
-        // Encrypt the decrypted URL token using the database encryption method for comparison
         $encrypted_token_for_comparison = my_passwordless_auth_encrypt_token($token);
 
         // Check if token matches the stored encrypted token
@@ -402,7 +409,7 @@ class My_Passwordless_Auth
             my_passwordless_auth_log("Magic login failed - token mismatch for user ID: $user_id", 'error');
             $error = new WP_Error('invalid_token', 'Invalid login link. Please request a new one.');
             wp_die(
-                $error->get_error_message(),
+                esc_html($error->get_error_message()),
                 'Login Failed',
                 array('response' => 403, 'back_link' => true)
             );
@@ -415,7 +422,7 @@ class My_Passwordless_Auth
             delete_user_meta($user_id, 'passwordless_auth_login_token');
             $error = new WP_Error('expired_token', 'This login link has expired. Please request a new one.');
             wp_die(
-                $error->get_error_message(),
+                esc_html($error->get_error_message()),
                 'Login Failed',
                 array('response' => 403, 'back_link' => true)
             );
@@ -428,7 +435,7 @@ class My_Passwordless_Auth
             my_passwordless_auth_log("Magic login failed - user ID $user_id not found", 'error');
             $error = new WP_Error('invalid_user', 'User not found. Please try again.');
             wp_die(
-                $error->get_error_message(),
+                esc_html($error->get_error_message()),
                 'Login Failed',
                 array('response' => 403, 'back_link' => true)
             );

@@ -78,10 +78,9 @@ function my_passwordless_auth_add_profile_fields() {
                 
                 $.ajax({
                     url: ajaxurl,
-                    type: 'POST',
-                    data: {
+                    type: 'POST',                    data: {
                         action: 'request_deletion_code',
-                        nonce: '<?php echo wp_create_nonce('delete_account_nonce'); ?>'
+                        nonce: '<?php echo esc_js(wp_create_nonce('delete_account_nonce')); ?>'
                     },
                     success: function(response) {
                         if (response.success) {
@@ -128,11 +127,10 @@ function my_passwordless_auth_add_profile_fields() {
                 
                 $.ajax({
                     url: ajaxurl,
-                    type: 'POST',
-                    data: {
+                    type: 'POST',                    data: {
                         action: 'delete_account',
                         confirmation_code: confirmationCode,
-                        nonce: '<?php echo wp_create_nonce('delete_account_nonce'); ?>'
+                        nonce: '<?php echo esc_js(wp_create_nonce('delete_account_nonce')); ?>'
                     },
                     success: function(response) {
                         if (response.success) {
