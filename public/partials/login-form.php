@@ -12,12 +12,12 @@ if (!defined('WPINC')) {
 
 // Check if a success message should be displayed
 $success_message = '';
-if (isset($_GET['sent']) && $_GET['sent'] === '1') {
+if (isset($_GET['sent']) && wp_unslash($_GET['sent']) === '1') {
     $success_message = 'Login link sent! Please check your email.';
 }
 
 // Get redirect URL after successful login
-$redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : '';
+$redirect_to = isset($_REQUEST['redirect_to']) ? esc_url_raw(wp_unslash($_REQUEST['redirect_to'])) : '';
 if (empty($redirect_to)) {
     $redirect_to = home_url();
 }

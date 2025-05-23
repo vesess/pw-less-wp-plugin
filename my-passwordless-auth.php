@@ -126,7 +126,7 @@ function my_passwordless_auth_is_login_page() {
  * Handle the email verification process - Centralized handler for all verification requests
  */
 function my_passwordless_auth_handle_verification() {
-    if (isset($_GET['action']) && $_GET['action'] === 'verify_email') {
+    if (isset($_GET['action']) && wp_unslash($_GET['action']) === 'verify_email') {
         my_passwordless_auth_log('Email verification request detected', 'info');
         
         if (!isset($_GET['user_id']) || !isset($_GET['code'])) {
@@ -134,9 +134,8 @@ function my_passwordless_auth_handle_verification() {
             wp_safe_redirect(home_url('/login/?verification=invalid'));
             exit;
         }
-        
-        $encrypted_user_id = sanitize_text_field($_GET['user_id']);
-        $code = sanitize_text_field($_GET['code']);
+          $encrypted_user_id = sanitize_text_field(wp_unslash($_GET['user_id']));
+        $code = sanitize_text_field(wp_unslash($_GET['code']));
         
         // Decrypt the user ID
         $user_id = my_passwordless_auth_decrypt_user_id($encrypted_user_id);
@@ -256,7 +255,7 @@ function my_passwordless_auth_logs_page() {
             
             <?php
             // Handle clearing logs
-            if (isset($_POST['clear_logs']) && isset($_POST['auth_logs_nonce']) && wp_verify_nonce($_POST['auth_logs_nonce'], 'clear_auth_logs')) {
+            if (isset($_POST['clear_logs']) && isset($_POST['auth_logs_nonce']) && wp_verify_nonce(wp_unslash($_POST['auth_logs_nonce']), 'clear_auth_logs')) {
                 delete_transient('my_passwordless_auth_logs');
                 echo '<div class="updated"><p>Logs cleared.</p></div>';
                 echo '<script>window.location.reload();</script>';
@@ -270,7 +269,7 @@ function my_passwordless_auth_logs_page() {
 // Add script to display console logs on the frontend login page
 function my_passwordless_auth_add_login_debug() {
     if (isset($_GET['verification'])) {
-        $status = sanitize_text_field($_GET['verification']);
+        $status = sanitize_text_field(wp_unslash($_GET['verification']));
         
         echo '<script>
             console.group("Passwordless Auth - Verification Process");

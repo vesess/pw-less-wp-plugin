@@ -264,9 +264,8 @@ class My_Passwordless_Auth_Security {
             'REMOTE_ADDR'
         );
 
-        foreach ($ip_headers as $header) {
-            if (isset($_SERVER[$header]) && !empty($_SERVER[$header])) {
-                $header_value = sanitize_text_field($_SERVER[$header]);
+        foreach ($ip_headers as $header) {            if (isset($_SERVER[$header]) && !empty($_SERVER[$header])) {
+                $header_value = sanitize_text_field(wp_unslash($_SERVER[$header]));
                 $ip = trim(explode(',', $header_value)[0]);
                 if (filter_var($ip, FILTER_VALIDATE_IP)) {
                     return $ip;
