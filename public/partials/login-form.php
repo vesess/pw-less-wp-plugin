@@ -12,8 +12,11 @@ if (!defined('WPINC')) {
 
 // Check if a success message should be displayed
 $success_message = '';
-if (isset($_GET['sent']) && wp_unslash($_GET['sent']) === '1') {
-    $success_message = 'Login link sent! Please check your email.';
+if (isset($_GET['sent'])) {
+    $sent_value = sanitize_text_field(wp_unslash($_GET['sent']));
+    if ($sent_value === '1') {
+        $success_message = 'Login link sent! Please check your email.';
+    }
 }
 
 // Get redirect URL after successful login

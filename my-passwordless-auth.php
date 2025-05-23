@@ -126,14 +126,17 @@ function my_passwordless_auth_is_login_page() {
  * Handle the email verification process - Centralized handler for all verification requests
  */
 function my_passwordless_auth_handle_verification() {
-    if (isset($_GET['action']) && wp_unslash($_GET['action']) === 'verify_email') {
-        my_passwordless_auth_log('Email verification request detected', 'info');
+    if (isset($_GET['action'])) {
+        $action = sanitize_text_field(wp_unslash($_GET['action']));
         
-        if (!isset($_GET['user_id']) || !isset($_GET['code'])) {
-            my_passwordless_auth_log('Missing required verification parameters', 'error', true);
-            wp_safe_redirect(home_url('/login/?verification=invalid'));
-            exit;
-        }
+        if ($action === 'verify_email') {
+            my_passwordless_auth_log('Email verification request detected', 'info');
+            
+            if (!isset($_GET['user_id']) || !isset($_GET['code'])) {
+                my_passwordless_auth_log('Missing required verification parameters', 'error', true);
+                wp_safe_redirect(home_url('/login/?verification=invalid'));
+                exit;
+            }
           $encrypted_user_id = sanitize_text_field(wp_unslash($_GET['user_id']));
         $code = sanitize_text_field(wp_unslash($_GET['code']));
         
@@ -180,11 +183,11 @@ function my_passwordless_auth_handle_verification() {
             wp_safe_redirect($redirect_url);
             exit;
         }
-        
-        // Otherwise redirect to login page with success message
+          // Otherwise redirect to login page with success message
         $redirect_url = add_query_arg('verification', 'success', home_url('/login/'));
         wp_safe_redirect($redirect_url);
         exit;
+        }
     }
 }
 
@@ -253,12 +256,15 @@ function my_passwordless_auth_logs_page() {
                 <?php wp_nonce_field('clear_auth_logs', 'auth_logs_nonce'); ?>
             </form>
             
-            <?php
-            // Handle clearing logs
-            if (isset($_POST['clear_logs']) && isset($_POST['auth_logs_nonce']) && wp_verify_nonce(wp_unslash($_POST['auth_logs_nonce']), 'clear_auth_logs')) {
-                delete_transient('my_passwordless_auth_logs');
-                echo '<div class="updated"><p>Logs cleared.</p></div>';
-                echo '<script>window.location.reload();</script>';
+            <?php            // Handle clearing logs
+            if (isset($_POST['clear_logs']) && isset($_POST['auth_logs_nonce'])) {
+                $nonce = sanitize_text_field(wp_unslash($_POST['auth_logs_nonce']));
+                
+                if (wp_verify_nonce($nonce, 'clear_auth_logs')) {
+                    delete_transient('my_passwordless_auth_logs');
+                    echo '<div class="updated"><p>Logs cleared.</p></div>';
+                    echo '<script>window.location.reload();</script>';
+                }
             }
             ?>
         <?php endif; ?>

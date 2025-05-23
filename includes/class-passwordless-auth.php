@@ -345,11 +345,9 @@ class My_Passwordless_Auth
             return false;
         }        my_passwordless_auth_log("Processing magic login request with uid: " . sanitize_text_field(wp_unslash($_GET['uid'])));
 
-        $uid = sanitize_text_field(wp_unslash($_GET['uid']));
-
-        $user_id = my_passwordless_auth_decrypt_user_id($uid);        if ($user_id === false) {
+        $uid = sanitize_text_field(wp_unslash($_GET['uid']));        $user_id = my_passwordless_auth_decrypt_user_id($uid);        if ($user_id === false) {
             if (isset($_SESSION)) {
-                $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
+                $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? (int) $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
             }
             
             my_passwordless_auth_log("Magic login failed - could not decrypt user ID from: $uid", 'error');
@@ -367,7 +365,7 @@ class My_Passwordless_Auth
         // Get stored token data for this user
         $stored_data = get_user_meta($user_id, 'passwordless_auth_login_token', true);        if (!$stored_data || !is_array($stored_data)) {
             if (isset($_SESSION)) {
-                $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
+                $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? (int) $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
             }
             
             my_passwordless_auth_log("Magic login failed - no token stored for user ID: $user_id", 'error');
@@ -380,10 +378,9 @@ class My_Passwordless_Auth
             return;
         }        // Decrypt token from URL
         $token_param = sanitize_text_field(wp_unslash($_GET['token']));
-        $token = my_passwordless_auth_decrypt_token_from_url($token_param);
-          if (!$token) {
+        $token = my_passwordless_auth_decrypt_token_from_url($token_param);          if (!$token) {
             if (isset($_SESSION)) {
-                $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
+                $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? (int) $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
             }
             
             my_passwordless_auth_log("Magic login failed - could not decrypt token from URL", 'error');
@@ -397,7 +394,7 @@ class My_Passwordless_Auth
         }        // Check if token data is properly formatted
         if (!isset($stored_data['token']) || !isset($stored_data['expiration'])) {
             if (isset($_SESSION)) {
-                $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
+                $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? (int) $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
             }
             
             my_passwordless_auth_log("Magic login failed - token data format invalid for user ID: $user_id", 'error');
