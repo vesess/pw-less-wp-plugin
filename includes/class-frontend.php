@@ -110,10 +110,9 @@ class My_Passwordless_Auth_Frontend {
         }        // Profile page shortcode has been removed
     }    /**
      * Render login form via shortcode.
-     */    
-    public function login_form_shortcode() {
+     */      public function login_form_shortcode() {
         if (is_user_logged_in()) {
-            return '<p>' . esc_html__('You are already logged in.', 'my-passwordless-auth') . '</p>';
+            return '<p>' . esc_html('You are already logged in.') . '</p>';
         }
         
         // CSS and JS are now handled by the enqueue methods
@@ -124,10 +123,9 @@ class My_Passwordless_Auth_Frontend {
     }
       /**
      * Render registration form via shortcode.
-     */    
-    public function registration_form_shortcode() {
+     */      public function registration_form_shortcode() {
         if (is_user_logged_in()) {
-            return '<p>' . esc_html__('You are already logged in.', 'my-passwordless-auth') . '</p>';
+            return '<p>' . esc_html('You are already logged in.') . '</p>';
         }
         
         // CSS and JS are now handled by the enqueue methods

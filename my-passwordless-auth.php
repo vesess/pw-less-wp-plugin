@@ -6,6 +6,8 @@
  * Version: 1.0.0
  * Author: Vesess
  * Author URI: https://vesess.com
+ * License: GPL-2.0+
+ * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  */
 
 // If this file is called directly, abort.
@@ -81,10 +83,9 @@ function run_my_passwordless_auth() {
 /**
  * Add action links to the Plugins page
  */
-function my_passwordless_auth_plugin_action_links($links) {
-    $settings_link = '<a href="' . admin_url('options-general.php?page=my-passwordless-auth') . '">' . __('Settings', 'my-passwordless-auth') . '</a>';
-    $docs_link = '<a href="https://vesess.com" target="_blank">' . __('Documentation', 'my-passwordless-auth') . '</a>';
-    $support_link = '<a href="https://vesess.com" target="_blank">' . __('Support', 'my-passwordless-auth') . '</a>';
+function my_passwordless_auth_plugin_action_links($links) {    $settings_link = '<a href="' . admin_url('options-general.php?page=my-passwordless-auth') . '">Settings</a>';
+    $docs_link = '<a href="https://vesess.com" target="_blank">Documentation</a>';
+    $support_link = '<a href="https://vesess.com" target="_blank">Support</a>';
     
     // Add links to the beginning of the actions list
     array_unshift($links, $settings_link, $docs_link, $support_link);
@@ -125,17 +126,19 @@ function my_passwordless_auth_is_login_page() {
  * Handle the email verification process - Centralized handler for all verification requests
  */
 function my_passwordless_auth_handle_verification() {
-    if (isset($_GET['action']) && $_GET['action'] === 'verify_email') {
-        my_passwordless_auth_log('Email verification request detected', 'info');
+    if (isset($_GET['action'])) {
+        $action = sanitize_text_field(wp_unslash($_GET['action']));
         
-        if (!isset($_GET['user_id']) || !isset($_GET['code'])) {
-            my_passwordless_auth_log('Missing required verification parameters', 'error', true);
-            wp_safe_redirect(home_url('/login/?verification=invalid'));
-            exit;
-        }
-        
-        $encrypted_user_id = sanitize_text_field($_GET['user_id']);
-        $code = sanitize_text_field($_GET['code']);
+        if ($action === 'verify_email') {
+            my_passwordless_auth_log('Email verification request detected', 'info');
+            
+            if (!isset($_GET['user_id']) || !isset($_GET['code'])) {
+                my_passwordless_auth_log('Missing required verification parameters', 'error', true);
+                wp_safe_redirect(home_url('/login/?verification=invalid'));
+                exit;
+            }
+          $encrypted_user_id = sanitize_text_field(wp_unslash($_GET['user_id']));
+        $code = sanitize_text_field(wp_unslash($_GET['code']));
         
         // Decrypt the user ID
         $user_id = my_passwordless_auth_decrypt_user_id($encrypted_user_id);
@@ -180,11 +183,11 @@ function my_passwordless_auth_handle_verification() {
             wp_safe_redirect($redirect_url);
             exit;
         }
-        
-        // Otherwise redirect to login page with success message
+          // Otherwise redirect to login page with success message
         $redirect_url = add_query_arg('verification', 'success', home_url('/login/'));
         wp_safe_redirect($redirect_url);
         exit;
+        }
     }
 }
 
@@ -253,12 +256,15 @@ function my_passwordless_auth_logs_page() {
                 <?php wp_nonce_field('clear_auth_logs', 'auth_logs_nonce'); ?>
             </form>
             
-            <?php
-            // Handle clearing logs
-            if (isset($_POST['clear_logs']) && isset($_POST['auth_logs_nonce']) && wp_verify_nonce($_POST['auth_logs_nonce'], 'clear_auth_logs')) {
-                delete_transient('my_passwordless_auth_logs');
-                echo '<div class="updated"><p>Logs cleared.</p></div>';
-                echo '<script>window.location.reload();</script>';
+            <?php            // Handle clearing logs
+            if (isset($_POST['clear_logs']) && isset($_POST['auth_logs_nonce'])) {
+                $nonce = sanitize_text_field(wp_unslash($_POST['auth_logs_nonce']));
+                
+                if (wp_verify_nonce($nonce, 'clear_auth_logs')) {
+                    delete_transient('my_passwordless_auth_logs');
+                    echo '<div class="updated"><p>Logs cleared.</p></div>';
+                    echo '<script>window.location.reload();</script>';
+                }
             }
             ?>
         <?php endif; ?>
@@ -269,7 +275,7 @@ function my_passwordless_auth_logs_page() {
 // Add script to display console logs on the frontend login page
 function my_passwordless_auth_add_login_debug() {
     if (isset($_GET['verification'])) {
-        $status = sanitize_text_field($_GET['verification']);
+        $status = sanitize_text_field(wp_unslash($_GET['verification']));
         
         echo '<script>
             console.group("Passwordless Auth - Verification Process");
@@ -317,18 +323,13 @@ function my_passwordless_auth_admin_notices() {
     if ($error_count > 0) {
         ?>
         <div class="notice notice-warning is-dismissible">
-            <p>
-                <?php echo esc_html(sprintf(
-                    _n(
-                        'Passwordless Authentication: There is %d error log entry in the last 24 hours.',
-                        'Passwordless Authentication: There are %d error log entries in the last 24 hours.',
-                        $error_count,
-                        'my-passwordless-auth'
-                    ),
-                    $error_count
-                )); ?>
-                <a href="<?php echo esc_url(admin_url('options-general.php?page=my-passwordless-auth-logs')); ?>">
-                    <?php esc_html_e('View logs', 'my-passwordless-auth'); ?>
+            <p>                <?php 
+                    $message = $error_count === 1 
+                        ? 'Passwordless Authentication: There is 1 error log entry in the last 24 hours.'
+                        : sprintf('Passwordless Authentication: There are %d error log entries in the last 24 hours.', $error_count); 
+                    echo esc_html($message); 
+                ?>                <a href="<?php echo esc_url(admin_url('options-general.php?page=my-passwordless-auth-logs')); ?>">
+                    <?php echo esc_html('View logs'); ?>
                 </a>
             </p>
         </div>

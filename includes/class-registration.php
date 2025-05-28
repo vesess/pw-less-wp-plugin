@@ -29,11 +29,9 @@ class My_Passwordless_Auth_Registration {
             $minutes = ceil($block_time / 60);
             wp_send_json_error(sprintf('Too many registration attempts. Please try again in %d minutes.', $minutes));
             return;
-        }
-
-        $email = sanitize_email($_POST['email']);
-        $username = sanitize_user($_POST['username']);
-        $display_name = sanitize_text_field($_POST['display_name']);
+        }        $email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
+        $username = isset($_POST['username']) ? sanitize_user(wp_unslash($_POST['username'])) : '';
+        $display_name = isset($_POST['display_name']) ? sanitize_text_field(wp_unslash($_POST['display_name'])) : '';
 
         if (!is_email($email)) {
             wp_send_json_error('Invalid email address');

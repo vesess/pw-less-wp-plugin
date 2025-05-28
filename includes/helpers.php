@@ -8,7 +8,7 @@
  * Get the plugin option with a fallback default value.
  *
  * @param string $key The option key.
- * @param mixed $default The default value.
+ * @para        my_passwordless_auth_log("Generated login token for user ID: $user_id, expires: " . gmdate('Y-m-d H:i:s', $expiration)); mixed $default The default value.
  * @return mixed The option value.
  */
 function my_passwordless_auth_get_option($key, $default = '')
@@ -195,11 +195,9 @@ if (!function_exists('my_passwordless_auth_generate_login_token')) {
         $token_data = [
             'token' => $encrypted_token_for_storage, // Store encrypted token
             'expiration' => $expiration
-        ];
+        ];        update_user_meta($user_id, 'passwordless_auth_login_token', $token_data);
 
-        update_user_meta($user_id, 'passwordless_auth_login_token', $token_data);
-
-        my_passwordless_auth_log("Generated login token for user ID: $user_id, expires: " . date('Y-m-d H:i:s', $expiration));
+        my_passwordless_auth_log("Generated login token for user ID: $user_id, expires: " . gmdate('Y-m-d H:i:s', $expiration));
 
         return $encrypted_token_for_url; // Return token encrypted for URL use
     }

@@ -39,27 +39,25 @@ function my_passwordless_auth_add_profile_fields() {
     if (!($current_user instanceof WP_User)) {
         return;
     }
-    
-    // Add the account deletion section
+      // Add the account deletion section
     ?>
-    <h2><?php _e('Account Management', 'my-passwordless-auth'); ?></h2>
+    <h2>Account Management</h2>
     <table class="form-table" role="presentation">
         <tr>
-            <th><label for="account_deletion"><?php _e('Delete Your Account', 'my-passwordless-auth'); ?></label></th>
+            <th><label for="account_deletion">Delete Your Account</label></th>
             <td>
                 <div id="my-passwordless-auth-delete-account">
-                    <p class="description"><?php _e('Deleting your account is permanent and cannot be undone. All your personal data will be removed from the site.', 'my-passwordless-auth'); ?></p>
+                    <p class="description">Deleting your account is permanent and cannot be undone. All your personal data will be removed from the site.</p>
                     
                     <div class="delete-account-messages"></div>
-                    
-                    <div class="delete-account-step1">
-                        <button type="button" id="request-deletion-code-btn" class="button button-secondary"><?php _e('Request Verification Code', 'my-passwordless-auth'); ?></button>
+                      <div class="delete-account-step1">
+                        <button type="button" id="request-deletion-code-btn" class="button button-secondary">Request Verification Code</button>
                     </div>
                     
                     <div class="delete-account-step2" style="display:none; margin-top: 15px;">
-                        <p><?php _e('Enter the verification code sent to your email address:', 'my-passwordless-auth'); ?></p>
-                        <input type="text" id="deletion-confirmation-code" name="deletion_confirmation_code" class="regular-text" placeholder="<?php esc_attr_e('Verification code', 'my-passwordless-auth'); ?>" />
-                        <button type="button" id="confirm-delete-account-btn" class="button button-primary" style="background-color: #dc3545; border-color: #dc3545;"><?php _e('Delete My Account', 'my-passwordless-auth'); ?></button>
+                        <p>Enter the verification code sent to your email address:</p>
+                        <input type="text" id="deletion-confirmation-code" name="deletion_confirmation_code" class="regular-text" placeholder="Verification code" />
+                        <button type="button" id="confirm-delete-account-btn" class="button button-primary" style="background-color: #dc3545; border-color: #dc3545;">Delete My Account</button>
                     </div>
                 </div>
             </td>
@@ -74,17 +72,15 @@ function my_passwordless_auth_add_profile_fields() {
                 
                 // Clear previous messages
                 messagesContainer.html('');
-                
-                // Change button text and disable it while sending
-                button.text('<?php _e('Sending...', 'my-passwordless-auth'); ?>');
+                  // Change button text and disable it while sending
+                button.text('Sending...');
                 button.prop('disabled', true);
                 
                 $.ajax({
                     url: ajaxurl,
-                    type: 'POST',
-                    data: {
+                    type: 'POST',                    data: {
                         action: 'request_deletion_code',
-                        nonce: '<?php echo wp_create_nonce('delete_account_nonce'); ?>'
+                        nonce: '<?php echo esc_js(wp_create_nonce('delete_account_nonce')); ?>'
                     },
                     success: function(response) {
                         if (response.success) {
@@ -93,16 +89,15 @@ function my_passwordless_auth_add_profile_fields() {
                         } else {
                             messagesContainer.html('<div class="notice notice-error inline"><p>' + response.data + '</p></div>');
                         }
-                        
-                        // Restore button
-                        button.text('<?php _e('Request Verification Code', 'my-passwordless-auth'); ?>');
+                          // Restore button
+                        button.text('Request Verification Code');
                         button.prop('disabled', false);
                     },
                     error: function() {
-                        messagesContainer.html('<div class="notice notice-error inline"><p><?php _e('An error occurred. Please try again.', 'my-passwordless-auth'); ?></p></div>');
+                        messagesContainer.html('<div class="notice notice-error inline"><p>An error occurred. Please try again.</p></div>');
                         
                         // Restore button
-                        button.text('<?php _e('Request Verification Code', 'my-passwordless-auth'); ?>');
+                        button.text('Request Verification Code');
                         button.prop('disabled', false);
                     }
                 });
@@ -115,30 +110,27 @@ function my_passwordless_auth_add_profile_fields() {
                 var confirmationCode = $('#deletion-confirmation-code').val();
                 
                 // Validate code
-                if (!confirmationCode) {
-                    messagesContainer.html('<div class="notice notice-error inline"><p><?php _e('Please enter the verification code.', 'my-passwordless-auth'); ?></p></div>');
+                if (!confirmationCode) {                    messagesContainer.html('<div class="notice notice-error inline"><p>Please enter the verification code.</p></div>');
                     return;
                 }
                 
                 // Confirm deletion
-                if (!confirm('<?php _e('Are you absolutely sure you want to delete your account? This action cannot be undone!', 'my-passwordless-auth'); ?>')) {
+                if (!confirm('Are you absolutely sure you want to delete your account? This action cannot be undone!')) {
                     return;
                 }
                 
                 // Clear previous messages
                 messagesContainer.html('');
-                
-                // Change button text and disable it while processing
-                button.text('<?php _e('Deleting...', 'my-passwordless-auth'); ?>');
+                  // Change button text and disable it while processing
+                button.text('Deleting...');
                 button.prop('disabled', true);
                 
                 $.ajax({
                     url: ajaxurl,
-                    type: 'POST',
-                    data: {
+                    type: 'POST',                    data: {
                         action: 'delete_account',
                         confirmation_code: confirmationCode,
-                        nonce: '<?php echo wp_create_nonce('delete_account_nonce'); ?>'
+                        nonce: '<?php echo esc_js(wp_create_nonce('delete_account_nonce')); ?>'
                     },
                     success: function(response) {
                         if (response.success) {
@@ -150,17 +142,16 @@ function my_passwordless_auth_add_profile_fields() {
                             }, 2000);
                         } else {
                             messagesContainer.html('<div class="notice notice-error inline"><p>' + response.data + '</p></div>');
-                            
-                            // Restore button
-                            button.text('<?php _e('Delete My Account', 'my-passwordless-auth'); ?>');
+                              // Restore button
+                            button.text('Delete My Account');
                             button.prop('disabled', false);
                         }
                     },
                     error: function() {
-                        messagesContainer.html('<div class="notice notice-error inline"><p><?php _e('An error occurred. Please try again.', 'my-passwordless-auth'); ?></p></div>');
+                        messagesContainer.html('<div class="notice notice-error inline"><p>An error occurred. Please try again.</p></div>');
                         
                         // Restore button
-                        button.text('<?php _e('Delete My Account', 'my-passwordless-auth'); ?>');
+                        button.text('Delete My Account');
                         button.prop('disabled', false);
                     }
                 });

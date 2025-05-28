@@ -68,9 +68,8 @@ function my_passwordless_auth_delete_account() {
         wp_send_json_error('Security check failed.');
         return;
     }
-    
-    // Get confirmation code from request
-    $confirmation_code = isset($_POST['confirmation_code']) ? sanitize_text_field($_POST['confirmation_code']) : '';
+      // Get confirmation code from request
+    $confirmation_code = isset($_POST['confirmation_code']) ? sanitize_text_field(wp_unslash($_POST['confirmation_code'])) : '';
     if (empty($confirmation_code)) {
         wp_send_json_error('Please provide the verification code.');
         return;

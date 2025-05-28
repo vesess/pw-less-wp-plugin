@@ -1,4 +1,9 @@
-# My Passwordless Authentication
+# EasyAuth
+
+Tested up to: 6.8
+Stable tag: 1.0.0
+License: GPL-2.0+
+License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
 A WordPress plugin that provides passwordless authentication via email verification codes.
 

@@ -17,13 +17,10 @@ class My_Passwordless_Auth_Email {
         }
 
         // Get configured expiration time
-        $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);
-
-        $to = $user->user_email;
-        $subject = sprintf(esc_html__('[%s] Your Login Code', 'my-passwordless-auth'), esc_html(get_bloginfo('name')));
-        
-        $message = sprintf(
-            esc_html__("Hello %s,\n\nYour login code is: %s\n\nThis code will expire in %d minutes.\n\nBest regards,\n%s", 'my-passwordless-auth'),
+        $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);        $to = $user->user_email;
+        $subject = '[' . esc_html(get_bloginfo('name')) . '] Your Login Code';
+          $message = sprintf(
+            "Hello %s,\n\nYour login code is: %s\n\nThis code will expire in %d minutes.\n\nBest regards,\n%s",
             esc_html($user->display_name),
             esc_html($login_code),
             $expiration_minutes,
@@ -32,7 +29,7 @@ class My_Passwordless_Auth_Email {
         
         $headers = array(
             'Content-Type: text/plain; charset=UTF-8',
-            'From: ' . esc_html($this->get_from_name()) . ' <' . sanitize_email($this->get_from_email()) . '>',
+            'From: ' . $this->get_from_name() . ' <' . $this->get_from_email() . '>',
         );
 
         return $this->send_email($to, $subject, $message, $headers, 'login_code');
@@ -57,13 +54,10 @@ class My_Passwordless_Auth_Email {
             $base_url . '?action=verify_email' . 
             '&user_id=' . my_passwordless_auth_encrypt_user_id($user_id) . 
             '&code=' . $verification_code
-        );
-
-        $to = $user->user_email;
-        $subject = sprintf(esc_html__('[%s] Verify Your Email', 'my-passwordless-auth'), esc_html(get_bloginfo('name')));
-        
-        $message = sprintf(
-            esc_html__("Hello %s,\n\nThank you for registering! Please verify your email address by clicking the link below:\n\n%s\n\nBest regards,\n%s", 'my-passwordless-auth'),
+        );        $to = $user->user_email;
+        $subject = '[' . esc_html(get_bloginfo('name')) . '] Verify Your Email';
+          $message = sprintf(
+            "Hello %s,\n\nThank you for registering! Please verify your email address by clicking the link below:\n\n%s\n\nBest regards,\n%s",
             esc_html($user->display_name),
             $verification_url,
             esc_html(get_bloginfo('name'))
@@ -71,7 +65,7 @@ class My_Passwordless_Auth_Email {
         
         $headers = array(
             'Content-Type: text/plain; charset=UTF-8',
-            'From: ' . esc_html($this->get_from_name()) . ' <' . sanitize_email($this->get_from_email()) . '>',
+            'From: ' . $this->get_from_name() . ' <' . $this->get_from_email() . '>',
         );
        
         return $this->send_email($to, $subject, $message, $headers, 'verification');
@@ -88,13 +82,10 @@ class My_Passwordless_Auth_Email {
         $user = get_userdata($user_id);
         if (!$user) {
             return false;
-        }
-
-        $to = $user->user_email;
-        $subject = sprintf(esc_html__('[%s] Confirm Account Deletion', 'my-passwordless-auth'), esc_html(get_bloginfo('name')));
-        
-        $message = sprintf(
-            esc_html__("Hello %s,\n\nWe received a request to delete your account. To confirm, use the following code:\n\n%s\n\nIf you did not request this, please ignore this email.\n\nBest regards,\n%s", 'my-passwordless-auth'),
+        }        $to = $user->user_email;
+        $subject = '[' . esc_html(get_bloginfo('name')) . '] Confirm Account Deletion';
+          $message = sprintf(
+            "Hello %s,\n\nWe received a request to delete your account. To confirm, use the following code:\n\n%s\n\nIf you did not request this, please ignore this email.\n\nBest regards,\n%s",
             esc_html($user->display_name),
             esc_html($confirmation_code),
             esc_html(get_bloginfo('name'))
@@ -102,7 +93,7 @@ class My_Passwordless_Auth_Email {
         
         $headers = array(
             'Content-Type: text/plain; charset=UTF-8',
-            'From: ' . esc_html($this->get_from_name()) . ' <' . sanitize_email($this->get_from_email()) . '>',
+            'From: ' . $this->get_from_name() . ' <' . $this->get_from_email() . '>',
         );
 
         return $this->send_email($to, $subject, $message, $headers, 'deletion');
@@ -123,14 +114,11 @@ class My_Passwordless_Auth_Email {
         }
 
         // Get configured expiration time
-        $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);
-
-        // Send to the current email address, not the new one
+        $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);        // Send to the current email address, not the new one
         $to = $user->user_email;
-        $subject = sprintf(esc_html__('[%s] Verify Your Email Change', 'my-passwordless-auth'), esc_html(get_bloginfo('name')));
-        
-        $message = sprintf(
-            esc_html__("Hello %s,\n\nWe received a request to change your email address on %s from %s to %s.\n\nTo verify this change, please use the following verification code:\n\n%s\n\nThis code will expire in %d minutes.\n\nIf you did not request this change, please ignore this email or contact support.\n\nBest regards,\n%s", 'my-passwordless-auth'),
+        $subject = '[' . esc_html(get_bloginfo('name')) . '] Verify Your Email Change';
+          $message = sprintf(
+            "Hello %s,\n\nWe received a request to change your email address on %s from %s to %s.\n\nTo verify this change, please use the following verification code:\n\n%s\n\nThis code will expire in %d minutes.\n\nIf you did not request this change, please ignore this email or contact support.\n\nBest regards,\n%s",
             esc_html($user->display_name),
             esc_html(get_bloginfo('name')),
             esc_html($user->user_email),
@@ -142,7 +130,7 @@ class My_Passwordless_Auth_Email {
         
         $headers = array(
             'Content-Type: text/plain; charset=UTF-8',
-            'From: ' . esc_html($this->get_from_name()) . ' <' . sanitize_email($this->get_from_email()) . '>',
+            'From: ' . $this->get_from_name() . ' <' . $this->get_from_email() . '>',
         );
         
         return $this->send_email($to, $subject, $message, $headers, 'email_change_verification');
@@ -172,42 +160,38 @@ class My_Passwordless_Auth_Email {
         }
 
         // Get configured expiration time
-        $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);
-
-        // Get email subject from options or use default
+        $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);        // Get email subject from options or use default
         $options = get_option('my_passwordless_auth_options', []);
         $subject = isset($options['email_subject']) ? sanitize_text_field($options['email_subject']) : '';
         if (empty($subject)) {
-            $subject = sprintf(esc_html__('Login link for %s', 'my-passwordless-auth'), esc_html(get_bloginfo('name')));
+            $subject = 'Login link for ' . esc_html(get_bloginfo('name'));
         }
         
         // Get email template from options or use default
         $template = isset($options['email_template']) ? sanitize_textarea_field($options['email_template']) : '';
         if (empty($template)) {
             $message = sprintf(
-                esc_html__("Hello %s,\n\nClick the link below to log in:\n\n%s\n\nThis link will expire in %d minutes.\n\nIf you did not request this login link, please ignore this email.\n\nRegards,\n%s", 'my-passwordless-auth'),
+                "Hello %s,\n\nClick the link below to log in:\n\n%s\n\nThis link will expire in %d minutes.\n\nIf you did not request this login link, please ignore this email.\n\nRegards,\n%s",
                 esc_html($user->display_name),
-                esc_url($login_link),
+                $login_link,
                 $expiration_minutes,
                 esc_html(get_bloginfo('name'))
-            );
-        } else {
+            );        } else {
             // Replace placeholders in the template
             $message = str_replace(
                 ['{display_name}', '{login_link}', '{site_name}', '{expiration_minutes}'],
                 [
                     esc_html($user->display_name), 
-                    esc_url($login_link), 
+                    $login_link, 
                     esc_html(get_bloginfo('name')),
                     $expiration_minutes
                 ],
                 $template
             );
         }
-        
-        $headers = array(
+          $headers = array(
             'Content-Type: text/html; charset=UTF-8',
-            'From: ' . esc_html($this->get_from_name()) . ' <' . sanitize_email($this->get_from_email()) . '>',
+            'From: ' . $this->get_from_name() . ' <' . $this->get_from_email() . '>',
         );
         
         // Apply filters to allow customization
@@ -236,8 +220,8 @@ class My_Passwordless_Auth_Email {
         // Log email attempt
         $log_message = sprintf(
             'Attempting to send %s email to %s via WP Mail SMTP',
-            $type,
-            $to
+            sanitize_text_field($type),
+            sanitize_email($to)
         );
         
         my_passwordless_auth_log($log_message);
@@ -252,14 +236,14 @@ class My_Passwordless_Auth_Email {
         
         // Log the result
         if ($result) {
-            my_passwordless_auth_log(sprintf('Email send successful for %s email to %s', $type, $to));
+            my_passwordless_auth_log(sprintf('Email send successful for %s email to %s', sanitize_text_field($type), sanitize_email($to)));
         } else {
-            my_passwordless_auth_log(sprintf('Email send failed for %s email to %s', $type, $to), 'error');
+            my_passwordless_auth_log(sprintf('Email send failed for %s email to %s', sanitize_text_field($type), sanitize_email($to)), 'error');
             
             // Try to get any error information
             global $phpmailer;
             if (isset($phpmailer) && $phpmailer->ErrorInfo) {
-                my_passwordless_auth_log('Email error: ' . $phpmailer->ErrorInfo, 'error');
+                my_passwordless_auth_log('Email error: ' . esc_html($phpmailer->ErrorInfo), 'error');
             }
         }
         
@@ -273,7 +257,7 @@ class My_Passwordless_Auth_Email {
      */
     private function get_from_name() {
         $options = get_option('my_passwordless_auth_options');
-        return isset($options['email_from_name']) ? $options['email_from_name'] : get_bloginfo('name');
+        return isset($options['email_from_name']) ? esc_html($options['email_from_name']) : esc_html(get_bloginfo('name'));
     }
 
     /**
@@ -283,6 +267,6 @@ class My_Passwordless_Auth_Email {
      */
     private function get_from_email() {
         $options = get_option('my_passwordless_auth_options');
-        return isset($options['email_from_address']) ? $options['email_from_address'] : get_bloginfo('admin_email');
+        return isset($options['email_from_address']) ? sanitize_email($options['email_from_address']) : sanitize_email(get_bloginfo('admin_email'));
     }
 }
