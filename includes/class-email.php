@@ -41,20 +41,38 @@ class My_Passwordless_Auth_Email {
      * @param int $user_id The user ID.
      * @param string $verification_code The verification code.
      * @return bool Whether the email was sent successfully.
-     */
-    public function send_verification_email($user_id, $verification_code) {
+     */    public function send_verification_email($user_id, $verification_code) {
         $user = get_userdata($user_id);
         if (!$user) {
             return false;
-        }
-
-        // Fix the URL encoding issue by using a direct approach instead of add_query_arg
-        $base_url = home_url();
-        $verification_url = esc_url_raw(
-            $base_url . '?action=verify_email' . 
-            '&user_id=' . my_passwordless_auth_encrypt_user_id($user_id) . 
-            '&code=' . $verification_code
-        );        $to = $user->user_email;
+        }        
+        // Log the verification code being saved
+        my_passwordless_auth_log("Generated verification code for user ID $user_id: $verification_code", 'info');        // Use home_url() for the base URL
+        $base_url = home_url();        
+        $encrypted_user_id = my_passwordless_auth_encrypt_user_id($user_id);
+        
+        // Log full details for debugging
+        my_passwordless_auth_log("Generating verification link - User ID: $user_id", 'info');
+        my_passwordless_auth_log("Encrypted user ID: $encrypted_user_id", 'info');
+        my_passwordless_auth_log("Verification code: $verification_code", 'info');        // Build the URL manually ensuring consistent and predictable encoding
+        // Make sure base URL has no trailing slash before adding query parameters
+        $base_url = rtrim($base_url, '/');
+        
+        // Start with the action parameter
+        $verification_url = $base_url . '/?action=verify_email';
+        
+        // Add nonce for security
+        $verification_url .= '&_wpnonce=' . wp_create_nonce('verify_email_nonce');
+        
+        // Add user ID and verification code with consistent encoding
+        // Use rawurlencode to ensure + signs and other special chars are properly encoded
+        $verification_url .= '&user_id=' . rawurlencode($encrypted_user_id);
+        $verification_url .= '&code=' . rawurlencode($verification_code);
+        
+        // Log the final URL for debugging
+        my_passwordless_auth_log("Generated verification URL: $verification_url", 'info');
+        
+        $to = $user->user_email;
         $subject = '[' . esc_html(get_bloginfo('name')) . '] Verify Your Email';
           $message = sprintf(
             "Hello %s,\n\nThank you for registering! Please verify your email address by clicking the link below:\n\n%s\n\nBest regards,\n%s",

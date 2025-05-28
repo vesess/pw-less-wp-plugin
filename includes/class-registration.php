@@ -13,8 +13,7 @@ class My_Passwordless_Auth_Registration {
 
     /**
      * Register a new user.
-     */
-    public function register_new_user() {
+     */    public function register_new_user() {
         // Check nonce
         if (!check_ajax_referer('registration_nonce', 'nonce', false)) {
             wp_send_json_error('Security check failed');
@@ -60,11 +59,23 @@ class My_Passwordless_Auth_Registration {
         }
 
         // Mark the user as unverified
-        update_user_meta($user_id, 'email_verified', false);
-
-        // Generate verification code
-        $verification_code = wp_generate_password(32, false);
-        update_user_meta($user_id, 'email_verification_code', $verification_code);
+        update_user_meta($user_id, 'email_verified', false);        // Generate a simple verification code that's URL-safe and easy to transmit
+        // Use only letters and numbers to avoid URL encoding issues (no special chars)
+        $verification_code = substr(str_replace(['+', '/', '='], '', base64_encode(random_bytes(16))), 0, 20);
+        
+        // Ensure verification code is URL-safe
+        $verification_code = preg_replace('/[^a-zA-Z0-9]/', '', $verification_code);
+        
+        // Log the generated code for debugging
+        my_passwordless_auth_log("Generated verification code for new user (ID: $user_id): $verification_code");
+        
+        // Make sure the code is stored exactly as it is
+        my_passwordless_auth_log("Storing verification code in user_meta for user ID $user_id: $verification_code", 'info');
+        my_passwordless_auth_log("Verification code length: " . strlen($verification_code), 'info');
+        my_passwordless_auth_log("Verification code hex: " . bin2hex($verification_code), 'info');
+        
+        // Store the verification code - make sure it's stored exactly as generated
+        update_user_meta($user_id, 'email_verification_code', trim($verification_code));
 
         // Send verification email
         $email_class = new My_Passwordless_Auth_Email();

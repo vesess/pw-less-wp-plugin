@@ -307,9 +307,7 @@ class My_Passwordless_Auth
 
         my_passwordless_auth_log("Login link successfully sent to user email: $user_email (User ID: {$user->ID})", 'info');
         wp_send_json_success('Login link sent! Please check your email.');
-    }
-
-    /**
+    }    /**
      * Process magic login requests
      */
     public function process_magic_login()
@@ -322,6 +320,16 @@ class My_Passwordless_Auth
         $action = sanitize_text_field(wp_unslash($_GET['action']));
         
         if ($action !== 'magic_login') {
+            return;
+        }
+          // Verify nonce for security
+        if (!isset($_GET['_wpnonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'magic_login_nonce')) {
+            my_passwordless_auth_log("Magic login failed - invalid nonce", 'error');
+            wp_die(
+                esc_html('Security check failed. Please request a new login link.'),
+                'Login Failed',
+                array('response' => 403, 'back_link' => true)
+            );
             return;
         }
 

@@ -156,14 +156,13 @@ if (!function_exists('my_passwordless_auth_create_login_link')) {
         }
 
         // Generate a secure token
-        $token = my_passwordless_auth_generate_login_token($user->ID);
-
-        // Create a login URL directly to avoid encoding issues
+        $token = my_passwordless_auth_generate_login_token($user->ID);        // Create a login URL directly to avoid encoding issues
         $base_url = home_url();
         $login_link = esc_url_raw(
             $base_url . '?action=magic_login' .
             '&uid=' . my_passwordless_auth_encrypt_user_id($user->ID) .
-            '&token=' . $token
+            '&token=' . $token .
+            '&_wpnonce=' . wp_create_nonce('magic_login_nonce')
         );
 
         my_passwordless_auth_log("Magic login link created for user ID: {$user->ID}");
@@ -334,43 +333,73 @@ function my_passwordless_auth_decrypt_user_id($encrypted_id)
     $encryption_key = my_passwordless_auth_get_env('PWLESS_UID_KEY', 'PwLessWpAuthPluginSecretKey123!');
     $iv = substr(my_passwordless_auth_get_env('PWLESS_UID_IV', 'PwLessWpAuthIv16----'), 0, 16);
 
+    // Log the encrypted ID for debugging
+    my_passwordless_auth_log("Attempting to decrypt user ID: " . $encrypted_id, 'info');
+    
     try {
-        // Log the input for debugging
-        my_passwordless_auth_log("Attempting to decrypt: " . $encrypted_id);
-
-        // URL-safe base64 decoding
-        $encrypted_data = base64_decode(strtr($encrypted_id, '-_,', '+/='));
-        if ($encrypted_data === false) {
-            my_passwordless_auth_log("Decryption failed: Invalid base64 encoding", 'error');
-            return false;
+        // Expand the attempts array to cover more possible URL encoding scenarios
+        $attempts = [
+            $encrypted_id,                       // As received
+            str_replace(' ', '+', $encrypted_id), // Common URL encoding issue fix for spaces converted to +
+            rawurldecode($encrypted_id),         // Standard URL decode
+            str_replace(' ', '+', rawurldecode($encrypted_id)), // Combined approach
+            urldecode($encrypted_id),            // Alternative URL decode
+            str_replace('_', '/', str_replace('-', '+', $encrypted_id)), // Manual Base64URL to Base64 conversion
+            base64_encode(base64_decode(strtr($encrypted_id, '-_,', '+/='))), // Double decode/encode to normalize
+            trim($encrypted_id),                 // Trim whitespace 
+        ];
+        
+        // Add debug logs for each attempt
+        foreach ($attempts as $index => $attempt) {
+            my_passwordless_auth_log("Decryption attempt #" . ($index + 1) . ": " . substr($attempt, 0, 40) . (strlen($attempt) > 40 ? '...' : ''), 'info');
         }
-
-        // Decrypt
-        $decrypted = openssl_decrypt(
-            $encrypted_data,
-            'AES-128-CBC',
-            $encryption_key,
-            0,
-            $iv
-        );
-
-        if ($decrypted === false) {
-            my_passwordless_auth_log("Decryption failed: " . openssl_error_string(), 'error');
-            return false;
+        
+        // Try each approach in sequence
+        foreach ($attempts as $index => $attempt) {
+            try {
+                // URL-safe base64 decoding
+                $encrypted_data = base64_decode(strtr($attempt, '-_,', '+/='));
+                if ($encrypted_data === false) {
+                    my_passwordless_auth_log("Attempt #" . ($index + 1) . " failed: Invalid base64 encoding", 'info');
+                    continue;
+                }
+                
+                // Try to decrypt
+                $decrypted = openssl_decrypt(
+                    $encrypted_data,
+                    'AES-128-CBC',
+                    $encryption_key,
+                    0,
+                    $iv
+                );
+                
+                if ($decrypted === false) {
+                    my_passwordless_auth_log("Attempt #" . ($index + 1) . " failed: " . openssl_error_string(), 'info');
+                    continue;
+                }
+                
+                // Log success
+                my_passwordless_auth_log("Decryption attempt #" . ($index + 1) . " succeeded: " . $decrypted, 'info');
+                
+                // Validate that we got a numeric result
+                if (!is_numeric($decrypted)) {
+                    my_passwordless_auth_log("Decryption result is not numeric: " . $decrypted, 'error');
+                    continue;
+                }
+                
+                // Success - return the decrypted user ID
+                return (int)$decrypted;
+            } catch (Exception $e) {
+                my_passwordless_auth_log("Exception in attempt #" . ($index + 1) . ": " . $e->getMessage(), 'error');
+                continue;
+            }
         }
-
-        // Log decryption result for debugging
-        my_passwordless_auth_log("Successfully decrypted to: " . $decrypted);
-
-        // Validate that we got a numeric result
-        if (!is_numeric($decrypted)) {
-            my_passwordless_auth_log("Decryption result is not numeric: " . $decrypted, 'error');
-            return false;
-        }
-
-        return (int)$decrypted;
+        
+        // If we get here, all attempts failed
+        my_passwordless_auth_log("All decryption attempts failed for: " . $encrypted_id, 'error');
+        return false;
     } catch (Exception $e) {
-        my_passwordless_auth_log("Exception during decryption: " . $e->getMessage(), 'error');
+        my_passwordless_auth_log("Exception during decryption process: " . $e->getMessage(), 'error');
         return false;
     }
 }
