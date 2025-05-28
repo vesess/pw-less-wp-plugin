@@ -76,14 +76,16 @@ class My_Passwordless_Auth_Frontend {
                 MY_PASSWORDLESS_AUTH_VERSION . '.' . time(),
                 true
             );
-            
-            // Pass AJAX URL and nonce to script
+              // Pass AJAX URL and nonces to script
             wp_localize_script(
                 'my-passwordless-auth-login-script',
                 'passwordlessAuth',
                 array(
                     'ajax_url' => admin_url('admin-ajax.php'),
-                    'nonce' => wp_create_nonce('passwordless-auth-nonce')
+                    'nonce' => wp_create_nonce('passwordless-auth-nonce'),
+                    'login_nonce' => wp_create_nonce('passwordless-login-nonce'),
+                    'redirect_nonce' => wp_create_nonce('passwordless_redirect'),
+                    'feedback_nonce' => wp_create_nonce('passwordless_login_feedback')
                 )
             );
         }
@@ -104,7 +106,9 @@ class My_Passwordless_Auth_Frontend {
                 'passwordlessAuth',
                 array(
                     'ajax_url' => admin_url('admin-ajax.php'),
-                    'nonce' => wp_create_nonce('passwordless-auth-nonce')
+                    'nonce' => wp_create_nonce('passwordless-auth-nonce'),
+                    'registration_nonce' => wp_create_nonce('passwordless-registration-nonce'),
+                    'registration_feedback_nonce' => wp_create_nonce('passwordless_registration_feedback')
                 )
             );
         }        // Profile page shortcode has been removed

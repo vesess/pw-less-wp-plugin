@@ -193,7 +193,17 @@ class My_Passwordless_Auth
      * @since 1.0.0
      */    public function handle_ajax_login() 
     {
+        // Verify the primary login nonce
         check_ajax_referer('passwordless-login-nonce', 'passwordless_login_nonce');
+        
+        // Also verify the redirect nonce if it's provided
+        if (isset($_POST['redirect_to']) && isset($_POST['redirect_nonce'])) {
+            $redirect_nonce = sanitize_text_field(wp_unslash($_POST['redirect_nonce']));
+            if (!wp_verify_nonce($redirect_nonce, 'passwordless_redirect')) {
+                wp_send_json_error('Invalid redirect request.');
+                return;
+            }
+        }
 
         $user_email = isset($_POST['user_email']) ? sanitize_email(wp_unslash($_POST['user_email'])) : '';
         

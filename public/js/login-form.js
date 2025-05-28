@@ -22,13 +22,18 @@
         // Disable submit button during submission
         submitBtn.textContent = 'Sending...';
         submitBtn.disabled = true;
+          // Send AJAX request
+        const formData = new FormData(form);
         
-        // Send AJAX request
-        const formData = new FormData(form);        const data = new URLSearchParams();
+        // Add the specific login nonce to the form data
+        formData.append('passwordless_login_nonce', passwordlessAuth.login_nonce);
+        
+        const data = new URLSearchParams();
         for (const pair of formData) {
             data.append(pair[0], pair[1]);
         }
-          fetch(passwordlessAuth.ajax_url, {
+        
+        fetch(passwordlessAuth.ajax_url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -41,10 +46,18 @@
             // Re-enable submit button
             submitBtn.textContent = 'Send Login Link';
             submitBtn.disabled = false;
-            
-            if (response.success) {
+              if (response.success) {
                 // Show success message
                 messagesContainer.innerHTML = '<div class="message success-message">' + response.data + '</div>';
+                
+                // Update URL with sent parameter and nonce for visual feedback
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('sent', '1');
+                currentUrl.searchParams.set('_wpnonce', passwordlessAuth.feedback_nonce);
+                
+                // Update URL without refreshing the page
+                window.history.replaceState({}, '', currentUrl.toString());
+                
                 // Clear form
                 form.reset();
             } else {

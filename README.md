@@ -20,6 +20,9 @@ My Passwordless Authentication offers a modern, secure way to log in to WordPres
 * **Shortcodes**: Easy implementation with ready-to-use shortcodes
 * **Developer Friendly**: Hooks and filters for extending functionality
 * **Enhanced Security**: Environment variable support for encryption keys
+* **CSRF Protection**: Complete nonce verification throughout all forms and processes
+* **Secure Redirects**: Protection against open redirect vulnerabilities
+* **Input Validation**: Thorough sanitization and validation of all user inputs
 
 ## Installation
 
@@ -48,8 +51,13 @@ Passwordless authentication eliminates many security issues related to password-
 
 * No passwords to be stolen or brute-forced
 * No risk of password reuse across multiple sites
-* Verification codes expire quickly after generation
-* Protection against credential stuffing attacks
+* Protection against phishing attacks targeting credentials
+* Complete CSRF protection with WordPress nonces
+* Secure handling of redirects to prevent open redirect vulnerabilities
+* Strict input validation and sanitization throughout the plugin
+* Rate limiting to prevent brute force attacks
+
+For more details about the security enhancements, please see [security-enhancements.md](security-enhancements.md).
 
 ## How It Works
 

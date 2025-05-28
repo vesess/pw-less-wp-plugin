@@ -14,9 +14,23 @@ class My_Passwordless_Auth_Registration {
     /**
      * Register a new user.
      */    public function register_new_user() {
-        // Check nonce
-        if (!check_ajax_referer('registration_nonce', 'nonce', false)) {
-            wp_send_json_error('Security check failed');
+        // Check nonce - verify both the legacy nonce and the new registration-specific nonce
+        $is_valid_nonce = false;
+        
+        // Check legacy nonce field
+        if (check_ajax_referer('registration_nonce', 'nonce', false)) {
+            $is_valid_nonce = true;
+        }
+        
+        // Check registration-specific nonce (added in security enhancement)
+        if (isset($_POST['registration_nonce']) && 
+            wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['registration_nonce'])), 'passwordless-registration-nonce')) {
+            $is_valid_nonce = true;
+        }
+        
+        if (!$is_valid_nonce) {
+            wp_send_json_error('Security check failed. Please refresh the page and try again.');
+            return;
         }
 
         // Check rate limiting
