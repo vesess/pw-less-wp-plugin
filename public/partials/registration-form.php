@@ -68,10 +68,6 @@ $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme
             <input type="submit" value="<?php echo esc_attr('Sign Up'); ?>" class="button-primary" />
         </div>
         
-        <?php /* <p class="login-register-link">
-            <?php _e('Already have an account?', 'my-passwordless-auth'); ?>
-            <a href="<?php echo esc_url(home_url('/login')); ?>"><?php _e('Login here', 'my-passwordless-auth'); ?></a>
-        </p> */ ?>
         <input type="hidden" name="action" value="register_new_user" />
         <?php wp_nonce_field('registration_nonce', 'nonce'); ?>
     </form>    <p class="login-link">

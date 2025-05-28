@@ -309,9 +309,10 @@ class My_Passwordless_Auth
             my_passwordless_auth_log("Failed to send login link to user email: $user_email (User ID: {$user->ID})", 'error');
             wp_send_json_error('Failed to send the login link. Please try again later.');
         } elseif ($sent === 'unverified') {
-            wp_send_json_error('Your email address has not been verified yet. Please check your inbox for a verification email or register again.');
-        } elseif ($sent !== true) {
-            my_passwordless_auth_log("Unknown error sending login link to user email: $user_email (User ID: {$user->ID}). Return value: " . var_export($sent, true), 'error');
+            wp_send_json_error('Your email address has not been verified yet. Please check your inbox for a verification email or register again.');        } elseif ($sent !== true) {
+            // Use more appropriate error logging without var_export
+            $error_value = is_string($sent) ? $sent : json_encode($sent);
+            my_passwordless_auth_log("Unknown error sending login link to user email: $user_email (User ID: {$user->ID}). Return value: " . $error_value, 'error');
             wp_send_json_error('An unknown error occurred while trying to send the login link. Please try again later.');
         }
 

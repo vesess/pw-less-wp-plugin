@@ -67,10 +67,6 @@ function my_passwordless_auth_get_template_url($template, $args = [])
  */
 function my_passwordless_auth_log($message, $level = 'info', $display = false)
 {
-    // Log to PHP error log
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log("My Passwordless Auth [{$level}]: {$message}");
-    }
 
     // Store log in transient for admin dashboard viewing
     $logs = get_transient('my_passwordless_auth_logs') ?: [];

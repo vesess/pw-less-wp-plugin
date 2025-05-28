@@ -37,16 +37,6 @@ $env_paths = array(
     dirname(MY_PASSWORDLESS_AUTH_PATH) . '/.env'  // One level above plugin directory
 );
 
-// Try each path until we find a .env file
-foreach ($env_paths as $path) {
-    if (my_passwordless_auth_load_env($path)) {
-        // Log successful loading of .env file if debugging is enabled
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log("Passwordless Auth: Loaded environment variables from $path");
-        }
-        break;
-    }
-}
 
 /**
  * The core plugin class that is used to define internationalization,
