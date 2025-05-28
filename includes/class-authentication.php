@@ -181,11 +181,10 @@ class My_Passwordless_Auth_Authentication {
         do_action('my_passwordless_auth_after_login', $user->ID, $ip_address);
 
         // Get redirect URL from request with security validation
-        $redirect_to = home_url();
-        
-        if (isset($_POST['redirect_to'])) {
-            // Validate the redirect URL
-            $raw_redirect = wp_unslash($_POST['redirect_to']);
+        $redirect_to = home_url();        if (isset($_POST['redirect_to'])) {
+            // Properly sanitize input for security while preserving URL structure
+            // Use esc_url_raw since we're dealing with a URL
+            $raw_redirect = esc_url_raw(wp_unslash($_POST['redirect_to']));
             $is_valid_redirect = false;
             
             // If a nonce is provided with the redirect, verify it
@@ -198,12 +197,12 @@ class My_Passwordless_Auth_Authentication {
                 // If it's a relative URL or starts with home_url, consider it safe
                 $is_valid_redirect = true;
             }
-            
-            if ($is_valid_redirect) {
-                $redirect_to = esc_url_raw($raw_redirect);
+              if ($is_valid_redirect) {
+                // We already sanitized the URL with esc_url_raw earlier, so just assign it
+                $redirect_to = $raw_redirect;
             } else {
-                // Log suspicious redirect attempt
-                my_passwordless_auth_log("Suspicious redirect attempt for user ID {$user->ID}: {$raw_redirect}", 'warning');
+                // Log suspicious redirect attempt (already sanitized)
+                my_passwordless_auth_log("Suspicious redirect attempt for user ID {$user->ID}: " . $raw_redirect, 'warning');
             }
         }
         

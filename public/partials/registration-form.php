@@ -17,18 +17,17 @@ if (isset($_GET['registered'])) {
     // Verify nonce if provided, otherwise only allow safe parameter
     $is_valid_request = false;
     if (isset($_GET['_wpnonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'passwordless_registration_feedback')) {
-        $is_valid_request = true;
-    } else {
+        $is_valid_request = true;    } else {
         // Still allow the "registered" parameter without nonce if it only contains '1' (safe value)
-        $raw_registered = wp_unslash($_GET['registered']);
+        // Properly sanitize the input
+        $raw_registered = sanitize_text_field(wp_unslash($_GET['registered']));
         if ($raw_registered === '1') {
             $is_valid_request = true;
         }
     }
-    
-    if ($is_valid_request) {
-        $registered_value = sanitize_text_field(wp_unslash($_GET['registered']));
-        if ($registered_value === '1') {
+      if ($is_valid_request) {
+        // We can reuse the already sanitized value instead of sanitizing again
+        if ($raw_registered === '1') {
             $success_message = 'Registration successful! Please check your email for verification instructions.';
         }
     }
