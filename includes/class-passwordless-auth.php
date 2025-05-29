@@ -234,7 +234,16 @@ class My_Passwordless_Auth
      * @since 1.1.0
      */    public function handle_passwordless_login() 
     {
-        check_ajax_referer('passwordless-login-nonce', 'passwordless_login_nonce');
+        // Add error logging to debug
+        my_passwordless_auth_log("handle_passwordless_login called", 'info');
+        
+        try {
+            check_ajax_referer('passwordless-login-nonce', 'passwordless_login_nonce');
+        } catch (Exception $e) {
+            my_passwordless_auth_log("Nonce verification failed: " . $e->getMessage(), 'error');
+            wp_send_json_error('Security check failed. Please refresh the page and try again.');
+            return;
+        }
         
         // Get user input (could be either username or email)        // Initialize user input variable
         $user_input = '';
@@ -244,9 +253,13 @@ class My_Passwordless_Auth
             $user_input = sanitize_text_field(wp_unslash($_POST['user_input']));
         }
         
+        my_passwordless_auth_log("User input received: " . $user_input, 'info');
+        
         // Check if we received user input
         if (empty($user_input)) {
+            my_passwordless_auth_log("Empty user input provided", 'error');
             wp_send_json_error('Please enter your username or email address.');
+            return;
         }
         
         // Find the user and their email
@@ -258,12 +271,14 @@ class My_Passwordless_Auth
             // Input is an email, use it directly
             $user_email = sanitize_email($user_input);
             $user = get_user_by('email', $user_email);
+            my_passwordless_auth_log("Input is email: " . $user_email, 'info');
         } else {
             // Input is potentially a username
             $username = sanitize_user($user_input, true);
             $user = get_user_by('login', $username);
             if ($user) {
                 $user_email = $user->user_email;
+                my_passwordless_auth_log("Input is username: " . $username . ", email: " . $user_email, 'info');
             }
         }
 
@@ -272,10 +287,17 @@ class My_Passwordless_Auth
             // Log this attempt for monitoring, but provide a generic error to the user.
             my_passwordless_auth_log("Login attempt failed: No user found for input: $user_input", 'info');
             wp_send_json_error('No user found with that username or email address.');
-        }
-
+            return;
+        }        my_passwordless_auth_log("User found, proceeding to send magic link", 'info');
+        
         // Delegate to shared magic link handling
-        $this->handle_magic_link_sending($user, $user_email);
+        try {
+            $this->handle_magic_link_sending($user, $user_email);
+        } catch (Exception $e) {
+            my_passwordless_auth_log("Error in handle_magic_link_sending: " . $e->getMessage(), 'error');
+            wp_send_json_error('An error occurred while sending the login link: ' . $e->getMessage());
+            return;
+        }
     }
 
     /**

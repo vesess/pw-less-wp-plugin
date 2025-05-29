@@ -159,23 +159,32 @@ class My_Passwordless_Auth_Email {
      *
      * @param string $user_email The user's email address.
      * @return bool|string Whether the email was sent successfully.
-     */
-    public function send_magic_link($user_email) {
+     */    public function send_magic_link($user_email) {
+        my_passwordless_auth_log("Attempting to send magic link to email: $user_email", 'info');
+        
         $user = get_user_by('email', $user_email);
         if (!$user) {
             my_passwordless_auth_log("Failed to send magic link: User with email $user_email not found", 'error');
             return false;
-        }        // Check if email is verified (use the helper function to respect admin bypass)
+        }
+        
+        my_passwordless_auth_log("Found user with ID: {$user->ID}", 'info');
+        
+        // Check if email is verified (use the helper function to respect admin bypass)
         if (!my_passwordless_auth_is_email_verified($user->ID)) {
             my_passwordless_auth_log("Cannot send login link: Email not verified for user ID {$user->ID}", 'error');
             return 'unverified';
         }
         
-        $login_link = my_passwordless_auth_create_login_link($user_email);
-
+        my_passwordless_auth_log("Email is verified, proceeding to create login link", 'info');
+          $login_link = my_passwordless_auth_create_login_link($user_email);
+        
         if (!$login_link) {
+            my_passwordless_auth_log("Failed to create login link for user email: $user_email", 'error');
             return false;
         }
+        
+        my_passwordless_auth_log("Login link created successfully: " . substr($login_link, 0, 50) . "...", 'info');
 
         // Get configured expiration time
         $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);        // Get email subject from options or use default
@@ -233,8 +242,7 @@ class My_Passwordless_Auth_Email {
      * @param array $headers Email headers.
      * @param string $type Email type for logging.
      * @return bool Whether the email was sent successfully.
-     */
-    private function send_email($to, $subject, $message, $headers, $type = 'general') {
+     */    private function send_email($to, $subject, $message, $headers, $type = 'general') {
         // Log email attempt
         $log_message = sprintf(
             'Attempting to send %s email to %s via WP Mail SMTP',
@@ -249,23 +257,30 @@ class My_Passwordless_Auth_Email {
         my_passwordless_auth_log("Email subject: " . $subject);
         my_passwordless_auth_log("Email message: " . substr($message, 0, 100) . "..."); // Log first 100 chars
         
-        // Send the email using wp_mail
-        $result = wp_mail($to, $subject, $message, $headers);
-        
-        // Log the result
-        if ($result) {
-            my_passwordless_auth_log(sprintf('Email send successful for %s email to %s', sanitize_text_field($type), sanitize_email($to)));
-        } else {
-            my_passwordless_auth_log(sprintf('Email send failed for %s email to %s', sanitize_text_field($type), sanitize_email($to)), 'error');
+        try {
+            // Send the email using wp_mail
+            $result = wp_mail($to, $subject, $message, $headers);
             
-            // Try to get any error information
-            global $phpmailer;
-            if (isset($phpmailer) && $phpmailer->ErrorInfo) {
-                my_passwordless_auth_log('Email error: ' . esc_html($phpmailer->ErrorInfo), 'error');
+            // Log the result
+            if ($result) {
+                my_passwordless_auth_log(sprintf('Email send successful for %s email to %s', sanitize_text_field($type), sanitize_email($to)));
+            } else {
+                my_passwordless_auth_log(sprintf('Email send failed for %s email to %s', sanitize_text_field($type), sanitize_email($to)), 'error');
+                
+                // Try to get any error information
+                global $phpmailer;
+                if (isset($phpmailer) && $phpmailer->ErrorInfo) {
+                    my_passwordless_auth_log('Email error: ' . $phpmailer->ErrorInfo, 'error');
+                } else {
+                    my_passwordless_auth_log('Email send failed but no error information available', 'error');
+                }
             }
+            
+            return $result;
+        } catch (Exception $e) {
+            my_passwordless_auth_log('Exception when sending email: ' . $e->getMessage(), 'error');
+            return false;
         }
-        
-        return $result;
     }
 
     /**
