@@ -126,6 +126,15 @@ class My_Passwordless_Auth_Admin {
             'my-passwordless-auth',
             'my_passwordless_auth_general'
         );
+        
+        // Auth Logs menu visibility setting
+        add_settings_field(
+            'show_auth_logs_menu',
+            'Show Auth Logs Menu',
+            array($this, 'render_show_auth_logs_field'),
+            'my-passwordless-auth',
+            'my_passwordless_auth_general'
+        );
     }
 
     /**
@@ -166,12 +175,30 @@ class My_Passwordless_Auth_Admin {
     
     /**
      * Render the settings page.
-     */
-    public function render_settings_page() {
+     */    public function render_settings_page() {
         if (!current_user_can('manage_options')) {
             return;
-        }        ?>        <div class="wrap">
+        }
+
+        // Check security status
+        $security_status = my_passwordless_auth_validate_security();
+        ?>
+        <div class="wrap">
             <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+            
+            <?php if ($security_status['status'] !== 'secure'): ?>
+            <div class="notice notice-error">
+                <h3>Security Issues Detected</h3>
+                <ul>
+                    <?php foreach ($security_status['issues'] as $issue): ?>
+                        <li><?php echo esc_html($issue); ?></li>
+                    <?php endforeach; ?>
+                </ul>
+                <p><strong>Please address these issues before using this plugin in production.</strong></p>
+            </div>
+        
+            <?php endif; ?>
+            
             <form action="options.php" method="post">
                 <?php
                 settings_fields('my_passwordless_auth_options');
@@ -242,8 +269,7 @@ class My_Passwordless_Auth_Admin {
             <code>{expiration_minutes}</code> - Link expiration time in minutes (from settings)
         </p>
         <?php
-    }
-    /**
+    }    /**
      * Sanitize plugin options
      * 
      * This function properly handles checkboxes by explicitly setting them to 'no'
@@ -254,11 +280,13 @@ class My_Passwordless_Auth_Admin {
      */
     public function sanitize_options($input) {
         // Get the existing options
-        $options = get_option('my_passwordless_auth_options', array());
+        $existing_options = get_option('my_passwordless_auth_options', array());
         
         // Process the checkbox options that might be missing when unchecked
         $checkbox_options = array(
-            'enable_wp_login_integration'
+            'enable_wp_login_integration',
+            'use_theme_styles',
+            'show_auth_logs_menu'
         );
         
         // For each known checkbox option, set it to 'no' if it's not present in the input
@@ -268,8 +296,15 @@ class My_Passwordless_Auth_Admin {
             }
         }
         
+        // Preserve other existing settings that aren't in the current input
+        foreach ($existing_options as $key => $value) {
+            if (!isset($input[$key])) {
+                $input[$key] = $value;
+            }
+        }
+        
         // Merge with existing options and return
-        return is_array($input) ? array_merge($options, $input) : $options;
+        return is_array($input) ? $input : $existing_options;
     }
 
     /**
@@ -281,6 +316,18 @@ class My_Passwordless_Auth_Admin {
         ?>
         <input type="checkbox" name="my_passwordless_auth_options[use_theme_styles]" value="yes" <?php checked($checked); ?> />
         <p class="description">Enable this to use your theme's styling instead of plugin default styles.</p>
+        <?php
+    }
+
+    /**
+     * Render show auth logs menu toggle field
+     */
+    public function render_show_auth_logs_field() {
+        $options = get_option('my_passwordless_auth_options');
+        $checked = isset($options['show_auth_logs_menu']) && $options['show_auth_logs_menu'] === 'yes';
+        ?>
+        <input type="checkbox" name="my_passwordless_auth_options[show_auth_logs_menu]" value="yes" <?php checked($checked); ?> />
+        <p class="description">Enable this to show the Auth Logs menu in the settings. When disabled, authentication logging is also disabled.</p>
         <?php
     }
 }

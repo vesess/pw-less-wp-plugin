@@ -67,9 +67,15 @@ function my_passwordless_auth_get_template_url($template, $args = [])
  */
 function my_passwordless_auth_log($message, $level = 'info', $display = false)
 {
-    // Log to PHP error log
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log("My Passwordless Auth [{$level}]: {$message}");
+    // Check if logging is enabled unless we're forcing display to user
+    if (!$display) {
+        $options = get_option('my_passwordless_auth_options', array());
+        $logging_enabled = isset($options['show_auth_logs_menu']) && $options['show_auth_logs_menu'] === 'yes';
+        
+        // If logging is not enabled, don't log
+        if (!$logging_enabled) {
+            return;
+        }
     }
 
     // Store log in transient for admin dashboard viewing
@@ -156,14 +162,13 @@ if (!function_exists('my_passwordless_auth_create_login_link')) {
         }
 
         // Generate a secure token
-        $token = my_passwordless_auth_generate_login_token($user->ID);
-
-        // Create a login URL directly to avoid encoding issues
+        $token = my_passwordless_auth_generate_login_token($user->ID);        // Create a login URL directly to avoid encoding issues
         $base_url = home_url();
         $login_link = esc_url_raw(
             $base_url . '?action=magic_login' .
             '&uid=' . my_passwordless_auth_encrypt_user_id($user->ID) .
-            '&token=' . $token
+            '&token=' . $token .
+            '&_wpnonce=' . wp_create_nonce('magic_login_nonce')
         );
 
         my_passwordless_auth_log("Magic login link created for user ID: {$user->ID}");
@@ -210,20 +215,7 @@ if (!function_exists('my_passwordless_auth_generate_login_token')) {
  * @return string The encrypted token
  */
 function my_passwordless_auth_encrypt_token($token) {
-    // Get encryption key and IV from environment variables with fallbacks
-    $encryption_key = my_passwordless_auth_get_env('PWLESS_DB_KEY', 'PwLessWpAuthPluginSecretKey123!');
-    $iv = substr(my_passwordless_auth_get_env('PWLESS_DB_IV', 'PwLessWpAuthIv16----'), 0, 16);
-    
-    // Encrypt the token
-    $encrypted = openssl_encrypt(
-        $token,
-        'AES-256-CBC',
-        $encryption_key,
-        0,
-        $iv
-    );
-    
-    return $encrypted;
+    return My_Passwordless_Auth_Crypto::encrypt_for_storage($token);
 }
 
 /**
@@ -233,21 +225,7 @@ function my_passwordless_auth_encrypt_token($token) {
  * @return string URL-safe encrypted token
  */
 function my_passwordless_auth_encrypt_token_for_url($token) {
-    // Get encryption key and IV from environment variables with fallbacks
-    $encryption_key = my_passwordless_auth_get_env('PWLESS_URL_KEY', 'UrlTokenEncryptionKey456!');
-    $iv = substr(my_passwordless_auth_get_env('PWLESS_URL_IV', 'UrlTokenIv16Val--'), 0, 16);
-    
-    // Encrypt the token
-    $encrypted = openssl_encrypt(
-        $token,
-        'AES-256-CBC',
-        $encryption_key,
-        0,
-        $iv
-    );
-    
-    // Make URL safe
-    return strtr(base64_encode($encrypted), '+/=', '-_,');
+    return My_Passwordless_Auth_Crypto::encrypt_for_url($token);
 }
 
 /**
@@ -257,28 +235,17 @@ function my_passwordless_auth_encrypt_token_for_url($token) {
  * @return string The original plain text token
  */
 function my_passwordless_auth_decrypt_token_from_url($encrypted_token) {
-    // Get encryption key and IV from environment variables with fallbacks - must match encryption
-    $encryption_key = my_passwordless_auth_get_env('PWLESS_URL_KEY', 'UrlTokenEncryptionKey456!');
-    $iv = substr(my_passwordless_auth_get_env('PWLESS_URL_IV', 'UrlTokenIv16Val--'), 0, 16);
-    
-    try {
-        // Convert from URL-safe format
-        $encrypted_data = base64_decode(strtr($encrypted_token, '-_,', '+/='));
-        
-        // Decrypt
-        $decrypted = openssl_decrypt(
-            $encrypted_data,
-            'AES-256-CBC',
-            $encryption_key,
-            0,
-            $iv
-        );
-        
-        return $decrypted;
-    } catch (Exception $e) {
-        my_passwordless_auth_log("Exception during token decryption: " . $e->getMessage(), 'error');
-        return false;
-    }
+    return My_Passwordless_Auth_Crypto::decrypt_from_url($encrypted_token);
+}
+
+/**
+ * Decrypt a token from storage format
+ *
+ * @param string $encrypted_token The encrypted token from storage
+ * @return string|false The original plain text token or false on failure
+ */
+function my_passwordless_auth_decrypt_token_from_storage($encrypted_token) {
+    return My_Passwordless_Auth_Crypto::decrypt_from_storage($encrypted_token);
 }
 
 /**
@@ -287,39 +254,8 @@ function my_passwordless_auth_decrypt_token_from_url($encrypted_token) {
  * @param int $user_id The user ID to encrypt
  * @return string Encrypted user ID
  */
-function my_passwordless_auth_encrypt_user_id($user_id)
-{
-    // Get encryption key and IV from environment variables with fallbacks
-    $encryption_key = my_passwordless_auth_get_env('PWLESS_UID_KEY', 'PwLessWpAuthPluginSecretKey123!');
-    $iv = substr(my_passwordless_auth_get_env('PWLESS_UID_IV', 'PwLessWpAuthIv16----'), 0, 16);
-
-    // Salt the ID with just the user ID - keep it simple
-    $data_to_encrypt = (string)$user_id;
-
-    // Log for debugging
-    my_passwordless_auth_log("Encrypting user ID: " . $data_to_encrypt);
-
-    // Use a simpler encryption method
-    $encrypted = openssl_encrypt(
-        $data_to_encrypt,
-        'AES-128-CBC',
-        $encryption_key,
-        0,
-        $iv
-    );
-
-    if ($encrypted === false) {
-        my_passwordless_auth_log("Encryption failed: " . openssl_error_string(), 'error');
-        return false;
-    }
-
-    // URL-safe base64 encoding
-    $result = strtr(base64_encode($encrypted), '+/=', '-_,');
-
-    // Log for debugging
-    my_passwordless_auth_log("Encryption result: " . $result);
-
-    return $result;
+function my_passwordless_auth_encrypt_user_id($user_id) {
+    return My_Passwordless_Auth_Crypto::encrypt_user_id($user_id);
 }
 
 /**
@@ -328,119 +264,53 @@ function my_passwordless_auth_encrypt_user_id($user_id)
  * @param string $encrypted_id The encrypted user ID
  * @return int|false Decrypted user ID or false on failure
  */
-function my_passwordless_auth_decrypt_user_id($encrypted_id)
-{
-    // Get encryption key and IV from environment variables with fallbacks - must match encryption
-    $encryption_key = my_passwordless_auth_get_env('PWLESS_UID_KEY', 'PwLessWpAuthPluginSecretKey123!');
-    $iv = substr(my_passwordless_auth_get_env('PWLESS_UID_IV', 'PwLessWpAuthIv16----'), 0, 16);
-
-    try {
-        // Log the input for debugging
-        my_passwordless_auth_log("Attempting to decrypt: " . $encrypted_id);
-
-        // URL-safe base64 decoding
-        $encrypted_data = base64_decode(strtr($encrypted_id, '-_,', '+/='));
-        if ($encrypted_data === false) {
-            my_passwordless_auth_log("Decryption failed: Invalid base64 encoding", 'error');
-            return false;
-        }
-
-        // Decrypt
-        $decrypted = openssl_decrypt(
-            $encrypted_data,
-            'AES-128-CBC',
-            $encryption_key,
-            0,
-            $iv
-        );
-
-        if ($decrypted === false) {
-            my_passwordless_auth_log("Decryption failed: " . openssl_error_string(), 'error');
-            return false;
-        }
-
-        // Log decryption result for debugging
-        my_passwordless_auth_log("Successfully decrypted to: " . $decrypted);
-
-        // Validate that we got a numeric result
-        if (!is_numeric($decrypted)) {
-            my_passwordless_auth_log("Decryption result is not numeric: " . $decrypted, 'error');
-            return false;
-        }
-
-        return (int)$decrypted;
-    } catch (Exception $e) {
-        my_passwordless_auth_log("Exception during decryption: " . $e->getMessage(), 'error');
-        return false;
-    }
+function my_passwordless_auth_decrypt_user_id($encrypted_id) {
+    return My_Passwordless_Auth_Crypto::decrypt_user_id($encrypted_id);
 }
 
 /**
- * Load environment variables from a .env file
+ * Validate the security configuration of the plugin
  * 
- * @param string $path Path to .env file
- * @return bool True if the file was loaded, false otherwise
+ * @return array Array of security status and any issues
  */
-function my_passwordless_auth_load_env($path) {
-    if (!file_exists($path)) {
-        return false;
+function my_passwordless_auth_validate_security() {
+    $issues = [];
+    $status = 'secure';
+    
+    // Check if crypto system is available
+    if (!My_Passwordless_Auth_Crypto::is_system_secure()) {
+        $issues[] = 'Cryptographic system is not properly configured';
+        $status = 'insecure';
     }
     
-    $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        // Skip comments
-        if (strpos(trim($line), '#') === 0) {
-            continue;
-        }
-        
-        // Parse line
-        if (strpos($line, '=') !== false) {
-            list($name, $value) = explode('=', $line, 2);
-            $name = trim($name);
-            $value = trim($value);
-            
-            // Remove quotes if present
-            if (strpos($value, '"') === 0 && strrpos($value, '"') === strlen($value) - 1) {
-                $value = substr($value, 1, -1);
-            } elseif (strpos($value, "'") === 0 && strrpos($value, "'") === strlen($value) - 1) {
-                $value = substr($value, 1, -1);
-            }
-            
-            // Set as environment variable and in our custom global array
-            putenv("{$name}={$value}");
-            $GLOBALS['my_passwordless_env'][$name] = $value;
+    // Check WordPress salts are defined and not default
+    $salts = [
+        'AUTH_KEY', 'SECURE_AUTH_KEY', 'LOGGED_IN_KEY', 'NONCE_KEY',
+        'AUTH_SALT', 'SECURE_AUTH_SALT', 'LOGGED_IN_SALT', 'NONCE_SALT'
+    ];
+    
+    foreach ($salts as $salt) {
+        if (!defined($salt) || constant($salt) === 'put your unique phrase here') {
+            $issues[] = "WordPress salt '$salt' is not properly configured";
+            $status = 'insecure';
         }
     }
     
-    return true;
+    // Test basic encryption/decryption
+    $test_data = 'test_encryption_' . time();
+    $encrypted = My_Passwordless_Auth_Crypto::encrypt_for_storage($test_data);
+    $decrypted = My_Passwordless_Auth_Crypto::decrypt_from_storage($encrypted);
+    
+    if ($decrypted !== $test_data) {
+        $issues[] = 'Encryption/decryption test failed';
+        $status = 'insecure';
+    }
+    
+    return [
+        'status' => $status,
+        'issues' => $issues,
+        'crypto_available' => My_Passwordless_Auth_Crypto::is_system_secure()
+    ];
 }
 
-/**
- * Get an environment variable value with fallback
- * 
- * @param string $key Environment variable key
- * @param mixed $default Default value if not found
- * @return mixed Environment variable value or default
- */
-function my_passwordless_auth_get_env($key, $default = null) {
-    // Check our custom global array first
-    if (isset($GLOBALS['my_passwordless_env'][$key])) {
-        return $GLOBALS['my_passwordless_env'][$key];
-    }
-    
-    // Try getenv()
-    $value = getenv($key);
-    if ($value !== false) {
-        return $value;
-    }
-    
-    // Try WordPress salts as fallback for encryption keys
-    if (strpos($key, 'PWLESS_KEY') !== false && defined('SECURE_AUTH_KEY')) {
-        return SECURE_AUTH_KEY;
-    }
-    if (strpos($key, 'PWLESS_IV') !== false && defined('SECURE_AUTH_SALT')) {
-        return substr(SECURE_AUTH_SALT, 0, 16);
-    }
-    
-    return $default;
-}
+

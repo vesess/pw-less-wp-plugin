@@ -35,7 +35,11 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.disabled = true;
         
         // Send AJAX request
-        const formData = new FormData(form);        const data = new URLSearchParams();
+        const formData = new FormData(form);
+        // Add the specific registration nonce to the form data
+        formData.append('registration_nonce', passwordlessAuth.registration_nonce);
+        
+        const data = new URLSearchParams();
         for (const pair of formData) {
             data.append(pair[0], pair[1]);
         }
@@ -56,6 +60,15 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.success) {
                 // Show success message
                 messagesContainer.innerHTML = '<div class="message success-message">' + response.data + '</div>';
+                
+                // Update URL with registration success parameter and nonce for visual feedback
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('registered', '1');
+                currentUrl.searchParams.set('_wpnonce', passwordlessAuth.registration_feedback_nonce);
+                
+                // Update URL without refreshing the page
+                window.history.replaceState({}, '', currentUrl.toString());
+                
                 // Clear form inputs
                 form.reset();
             } else {

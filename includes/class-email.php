@@ -41,20 +41,38 @@ class My_Passwordless_Auth_Email {
      * @param int $user_id The user ID.
      * @param string $verification_code The verification code.
      * @return bool Whether the email was sent successfully.
-     */
-    public function send_verification_email($user_id, $verification_code) {
+     */    public function send_verification_email($user_id, $verification_code) {
         $user = get_userdata($user_id);
         if (!$user) {
             return false;
-        }
-
-        // Fix the URL encoding issue by using a direct approach instead of add_query_arg
-        $base_url = home_url();
-        $verification_url = esc_url_raw(
-            $base_url . '?action=verify_email' . 
-            '&user_id=' . my_passwordless_auth_encrypt_user_id($user_id) . 
-            '&code=' . $verification_code
-        );        $to = $user->user_email;
+        }        
+        // Log the verification code being saved
+        my_passwordless_auth_log("Generated verification code for user ID $user_id: $verification_code", 'info');        // Use home_url() for the base URL
+        $base_url = home_url();        
+        $encrypted_user_id = my_passwordless_auth_encrypt_user_id($user_id);
+        
+        // Log full details for debugging
+        my_passwordless_auth_log("Generating verification link - User ID: $user_id", 'info');
+        my_passwordless_auth_log("Encrypted user ID: $encrypted_user_id", 'info');
+        my_passwordless_auth_log("Verification code: $verification_code", 'info');        // Build the URL manually ensuring consistent and predictable encoding
+        // Make sure base URL has no trailing slash before adding query parameters
+        $base_url = rtrim($base_url, '/');
+        
+        // Start with the action parameter
+        $verification_url = $base_url . '/?action=verify_email';
+        
+        // Add nonce for security
+        $verification_url .= '&_wpnonce=' . wp_create_nonce('verify_email_nonce');
+        
+        // Add user ID and verification code with consistent encoding
+        // Use rawurlencode to ensure + signs and other special chars are properly encoded
+        $verification_url .= '&user_id=' . rawurlencode($encrypted_user_id);
+        $verification_url .= '&code=' . rawurlencode($verification_code);
+        
+        // Log the final URL for debugging
+        my_passwordless_auth_log("Generated verification URL: $verification_url", 'info');
+        
+        $to = $user->user_email;
         $subject = '[' . esc_html(get_bloginfo('name')) . '] Verify Your Email';
           $message = sprintf(
             "Hello %s,\n\nThank you for registering! Please verify your email address by clicking the link below:\n\n%s\n\nBest regards,\n%s",
@@ -141,23 +159,32 @@ class My_Passwordless_Auth_Email {
      *
      * @param string $user_email The user's email address.
      * @return bool|string Whether the email was sent successfully.
-     */
-    public function send_magic_link($user_email) {
+     */    public function send_magic_link($user_email) {
+        my_passwordless_auth_log("Attempting to send magic link to email: $user_email", 'info');
+        
         $user = get_user_by('email', $user_email);
         if (!$user) {
             my_passwordless_auth_log("Failed to send magic link: User with email $user_email not found", 'error');
             return false;
-        }        // Check if email is verified (use the helper function to respect admin bypass)
+        }
+        
+        my_passwordless_auth_log("Found user with ID: {$user->ID}", 'info');
+        
+        // Check if email is verified (use the helper function to respect admin bypass)
         if (!my_passwordless_auth_is_email_verified($user->ID)) {
             my_passwordless_auth_log("Cannot send login link: Email not verified for user ID {$user->ID}", 'error');
             return 'unverified';
         }
         
-        $login_link = my_passwordless_auth_create_login_link($user_email);
-
+        my_passwordless_auth_log("Email is verified, proceeding to create login link", 'info');
+          $login_link = my_passwordless_auth_create_login_link($user_email);
+        
         if (!$login_link) {
+            my_passwordless_auth_log("Failed to create login link for user email: $user_email", 'error');
             return false;
         }
+        
+        my_passwordless_auth_log("Login link created successfully: " . substr($login_link, 0, 50) . "...", 'info');
 
         // Get configured expiration time
         $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);        // Get email subject from options or use default
@@ -215,8 +242,7 @@ class My_Passwordless_Auth_Email {
      * @param array $headers Email headers.
      * @param string $type Email type for logging.
      * @return bool Whether the email was sent successfully.
-     */
-    private function send_email($to, $subject, $message, $headers, $type = 'general') {
+     */    private function send_email($to, $subject, $message, $headers, $type = 'general') {
         // Log email attempt
         $log_message = sprintf(
             'Attempting to send %s email to %s via WP Mail SMTP',
@@ -231,23 +257,30 @@ class My_Passwordless_Auth_Email {
         my_passwordless_auth_log("Email subject: " . $subject);
         my_passwordless_auth_log("Email message: " . substr($message, 0, 100) . "..."); // Log first 100 chars
         
-        // Send the email using wp_mail
-        $result = wp_mail($to, $subject, $message, $headers);
-        
-        // Log the result
-        if ($result) {
-            my_passwordless_auth_log(sprintf('Email send successful for %s email to %s', sanitize_text_field($type), sanitize_email($to)));
-        } else {
-            my_passwordless_auth_log(sprintf('Email send failed for %s email to %s', sanitize_text_field($type), sanitize_email($to)), 'error');
+        try {
+            // Send the email using wp_mail
+            $result = wp_mail($to, $subject, $message, $headers);
             
-            // Try to get any error information
-            global $phpmailer;
-            if (isset($phpmailer) && $phpmailer->ErrorInfo) {
-                my_passwordless_auth_log('Email error: ' . esc_html($phpmailer->ErrorInfo), 'error');
+            // Log the result
+            if ($result) {
+                my_passwordless_auth_log(sprintf('Email send successful for %s email to %s', sanitize_text_field($type), sanitize_email($to)));
+            } else {
+                my_passwordless_auth_log(sprintf('Email send failed for %s email to %s', sanitize_text_field($type), sanitize_email($to)), 'error');
+                
+                // Try to get any error information
+                global $phpmailer;
+                if (isset($phpmailer) && $phpmailer->ErrorInfo) {
+                    my_passwordless_auth_log('Email error: ' . $phpmailer->ErrorInfo, 'error');
+                } else {
+                    my_passwordless_auth_log('Email send failed but no error information available', 'error');
+                }
             }
+            
+            return $result;
+        } catch (Exception $e) {
+            my_passwordless_auth_log('Exception when sending email: ' . $e->getMessage(), 'error');
+            return false;
         }
-        
-        return $result;
     }
 
     /**

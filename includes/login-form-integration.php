@@ -30,8 +30,7 @@ class My_Passwordless_Auth_Login_Integration {
         // Add custom CSS to position the passwordless login after standard login button
         add_action('login_enqueue_scripts', array($this, 'add_custom_login_css'));
     }
-    
-    /**
+      /**
      * Add admin settings for the integration
      */
     public function add_admin_settings() {        add_settings_field(
@@ -42,38 +41,8 @@ class My_Passwordless_Auth_Login_Integration {
             'my_passwordless_auth_general'
         );
         
-        // Make sure it's registered in the whitelist
-        register_setting('my_passwordless_auth_options', 'my_passwordless_auth_options', array($this, 'sanitize_settings'));
-    }
-    
-    /**
-     * Sanitize the plugin's settings
-     *
-     * @param array $input The submitted settings
-     * @return array Sanitized settings
-     */
-    public function sanitize_settings($input) {
-        $sanitized = array();
-        
-        // Sanitize enable_wp_login_integration checkbox
-        if (isset($input['enable_wp_login_integration'])) {
-            $sanitized['enable_wp_login_integration'] = ($input['enable_wp_login_integration'] === 'yes') ? 'yes' : 'no';
-        } else {
-            $sanitized['enable_wp_login_integration'] = 'no';
-        }
-        
-        // Preserve other existing settings
-        $existing_options = get_option('my_passwordless_auth_options', array());
-        foreach ($existing_options as $key => $value) {
-            if (!isset($sanitized[$key])) {
-                $sanitized[$key] = $value;
-            }
-        }
-        
-        return $sanitized;
-    }
-    
-    /**
+        // Note: Sanitization is handled by the main admin class
+    }    /**
      * Render the admin setting field
      */
     public function render_wp_login_integration_field() {
@@ -156,8 +125,7 @@ class My_Passwordless_Auth_Login_Integration {
         $ajax_url = admin_url('admin-ajax.php');
         ?>
         <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add click handler to the passwordless login button on main login form
+        document.addEventListener('DOMContentLoaded', function() {            // Add click handler to the passwordless login button on main login form
             var pwlessBtn = document.querySelector('#pwless-login-btn');
             var usernameField = document.querySelector('#user_login');
             var messagesContainer = document.querySelector('#pwless-messages');
@@ -174,43 +142,71 @@ class My_Passwordless_Auth_Login_Integration {
                         messagesContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">Please enter your username or email address in the field above.</div>';
                         return;
                     }
+                      // Save button text before changing it
+                    var btnTextBeforeSending = 'Log In with Email Code';
                     
-                    // Disable button                    var originalBtnText = pwlessBtn.textContent;
+                    // Disable button
                     pwlessBtn.textContent = 'Sending...';
                     pwlessBtn.disabled = true;
+                    
+                    // Set a timeout to re-enable button as a fallback
+                    var timeoutId = setTimeout(function() {
+           
+                        pwlessBtn.textContent = btnTextBeforeSending;
+                        pwlessBtn.disabled = false;
+                    }, 10000); // 10 seconds timeout
                     
                     // Create form data
                     var data = new URLSearchParams({
                         'action': 'process_passwordless_login',
                         'passwordless_login_nonce': nonce,
                         'user_input': userInput
-                    }).toString();
-                    
-                    // Send AJAX request
+                    }).toString();// Send AJAX request
+               
                     fetch('<?php echo esc_url($ajax_url); ?>', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded'
                         },
                         body: data
-                    })
-                    .then(response => response.json())
-                    .then(response => {
-                        // Re-enable button
-                        pwlessBtn.textContent = originalBtnText;
-                        pwlessBtn.disabled = false;
+                    })                    .then(response => {
+                    
                         
-                        if (response.success) {
-                            messagesContainer.innerHTML = '<div style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-bottom: 15px;">' + response.data + '</div>';
-                        } else {
-                            messagesContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">' + response.data + '</div>';
+                        // Clear the timeout since we got a response
+                        clearTimeout(timeoutId);
+                          // Always re-enable button first, regardless of response
+                        pwlessBtn.textContent = btnTextBeforeSending;
+                        pwlessBtn.disabled = false;
+                 
+                        
+                        // Check if response is ok
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok: ' + response.status);
                         }
+                        return response.text(); // Get as text first to debug
                     })
-                    .catch(error => {
-                        pwlessBtn.textContent = originalBtnText;
+                    .then(responseText => {
+                     
+                        try {
+                            var response = JSON.parse(responseText);
+   
+                            
+                            if (response.success) {
+                                messagesContainer.innerHTML = '<div style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-bottom: 15px;">' + response.data + '</div>';
+                            } else {
+                                messagesContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">' + response.data + '</div>';
+                            }
+                        } catch (parseError) {
+
+                            messagesContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">Server response error. Please try again.</div>';
+                        }
+                    })                    .catch(error => {
+               
+                        // Clear the timeout since we're handling the error
+                        clearTimeout(timeoutId);                        // Ensure button is always re-enabled
+                        pwlessBtn.textContent = btnTextBeforeSending;
                         pwlessBtn.disabled = false;
                         messagesContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">An error occurred. Please try again.</div>';
-                        console.error('Error:', error);
                     });
                 });
             }
@@ -232,8 +228,10 @@ class My_Passwordless_Auth_Login_Integration {
                         messagesLostContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">Please enter your username or email address in the field above.</div>';
                         return;
                     }
+                      // Save button text before changing it
+                    var lostBtnTextBeforeSending = pwlessBtnLost.textContent;
                     
-                    // Disable button                    var originalBtnText = pwlessBtnLost.textContent;
+                    // Disable button
                     pwlessBtnLost.textContent = 'Sending...';
                     pwlessBtnLost.disabled = true;
                     
@@ -243,8 +241,7 @@ class My_Passwordless_Auth_Login_Integration {
                         'passwordless_login_nonce': nonce,
                         'user_input': userInput
                     }).toString();
-                    
-                    // Send AJAX request
+                      // Send AJAX request
                     fetch('<?php echo esc_url($ajax_url); ?>', {
                         method: 'POST',
                         headers: {
@@ -252,23 +249,28 @@ class My_Passwordless_Auth_Login_Integration {
                         },
                         body: data
                     })
-                    .then(response => response.json())
-                    .then(response => {
-                        // Re-enable button
-                        pwlessBtnLost.textContent = originalBtnText;
+                    .then(response => {                        // Always re-enable button first
+                        pwlessBtnLost.textContent = lostBtnTextBeforeSending;
                         pwlessBtnLost.disabled = false;
                         
+                        // Check if response is ok
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok: ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(response => {
                         if (response.success) {
                             messagesLostContainer.innerHTML = '<div style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-bottom: 15px;">' + response.data + '</div>';
                         } else {
                             messagesLostContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">' + response.data + '</div>';
                         }
                     })
-                    .catch(error => {
-                        pwlessBtnLost.textContent = originalBtnText;
+                    .catch(error => {                        // Ensure button is always re-enabled
+                        pwlessBtnLost.textContent = lostBtnTextBeforeSending;
                         pwlessBtnLost.disabled = false;
                         messagesLostContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">An error occurred. Please try again.</div>';
-                        console.error('Error:', error);
+                      
                     });
                 });
             }
