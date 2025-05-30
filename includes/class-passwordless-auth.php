@@ -379,14 +379,24 @@ class My_Passwordless_Auth
                 array('response' => 429, 'back_link' => true)
             );
             return;
+        }        // Process the magic login directly instead of calling an external function
+        if (!isset($_GET['uid']) || !isset($_GET['token'])) {
+            my_passwordless_auth_log("Magic login failed - missing uid or token parameters", 'error');
+            return false;
         }
 
-        // Process the magic login directly instead of calling an external function
-        if (!isset($_GET['uid']) || !isset($_GET['token'])) {
-            return false;
-        }        my_passwordless_auth_log("Processing magic login request with uid: " . sanitize_text_field(wp_unslash($_GET['uid'])));
+        my_passwordless_auth_log("=== MAGIC LOGIN DEBUG START ===", 'info');
+        my_passwordless_auth_log("Processing magic login request with uid: " . sanitize_text_field(wp_unslash($_GET['uid'])), 'info');
 
-        $uid = sanitize_text_field(wp_unslash($_GET['uid']));        $user_id = my_passwordless_auth_decrypt_user_id($uid);        if ($user_id === false) {
+        $uid = sanitize_text_field(wp_unslash($_GET['uid']));
+        $token_param = sanitize_text_field(wp_unslash($_GET['token']));
+        
+        my_passwordless_auth_log("Raw UID parameter: $uid", 'info');
+        my_passwordless_auth_log("Raw token parameter: $token_param", 'info');
+        
+        $user_id = my_passwordless_auth_decrypt_user_id($uid);
+        
+        my_passwordless_auth_log("User ID decryption result: " . ($user_id === false ? 'FAILED' : $user_id), 'info');if ($user_id === false) {
             if (isset($_SESSION)) {
                 $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? (int) $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
             }
@@ -399,12 +409,12 @@ class My_Passwordless_Auth
                 array('response' => 403, 'back_link' => true)
             );
             return;
-        }
-
-        my_passwordless_auth_log("Successfully decrypted user ID: $user_id");
+        }        my_passwordless_auth_log("Successfully decrypted user ID: $user_id");
 
         // Get stored token data for this user
-        $stored_data = get_user_meta($user_id, 'passwordless_auth_login_token', true);        if (!$stored_data || !is_array($stored_data)) {
+        $stored_data = get_user_meta($user_id, 'passwordless_auth_login_token', true);
+
+        if (!$stored_data || !is_array($stored_data)) {
             if (isset($_SESSION)) {
                 $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? (int) $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
             }
@@ -419,7 +429,14 @@ class My_Passwordless_Auth
             return;
         }        // Decrypt token from URL
         $token_param = sanitize_text_field(wp_unslash($_GET['token']));
-        $token = my_passwordless_auth_decrypt_token_from_url($token_param);          if (!$token) {
+        
+        
+        $token = my_passwordless_auth_decrypt_token_from_url($token_param);
+        
+       
+        if ($token !== false) {
+            my_passwordless_auth_log("Decrypted token preview: " . substr($token, 0, 20) . '...', 'info');
+        }if (!$token) {
             if (isset($_SESSION)) {
                 $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? (int) $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
             }
@@ -438,7 +455,6 @@ class My_Passwordless_Auth
                 $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? (int) $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
             }
             
-            my_passwordless_auth_log("Magic login failed - token data format invalid for user ID: $user_id", 'error');
             $error = new WP_Error('invalid_token', 'Invalid login link. Please request a new one.');
             wp_die(
                 esc_html($error->get_error_message()),
@@ -446,13 +462,13 @@ class My_Passwordless_Auth
                 array('response' => 403, 'back_link' => true)
             );
             return;
-        }
+        }        // Decrypt the stored token for comparison
+        $stored_token = my_passwordless_auth_decrypt_token_from_storage($stored_data['token']);
+        
+       
 
-        $encrypted_token_for_comparison = my_passwordless_auth_encrypt_token($token);
-
-        // Check if token matches the stored encrypted token
-        if ($stored_data['token'] !== $encrypted_token_for_comparison) {
-            my_passwordless_auth_log("Magic login failed - token mismatch for user ID: $user_id", 'error');
+        // Check if token matches by comparing the decrypted tokens directly
+        if ($stored_token === false || $stored_token !== $token) {
             $error = new WP_Error('invalid_token', 'Invalid login link. Please request a new one.');
             wp_die(
                 esc_html($error->get_error_message()),
@@ -460,11 +476,10 @@ class My_Passwordless_Auth
                 array('response' => 403, 'back_link' => true)
             );
             return;
-        }
-
-        // Check if token has expired
+        }        // Check if token has expired
         if (time() > $stored_data['expiration']) {
-            my_passwordless_auth_log("Magic login failed - token expired for user ID: $user_id", 'error');
+            my_passwordless_auth_log("Magic login failed - token expired for user", 'error');
+            my_passwordless_auth_log("Current time: " . time() . ", Token expiration: " . $stored_data['expiration'], 'info');
             delete_user_meta($user_id, 'passwordless_auth_login_token');
             $error = new WP_Error('expired_token', 'This login link has expired. Please request a new one.');
             wp_die(

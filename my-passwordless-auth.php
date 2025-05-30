@@ -19,23 +19,15 @@ define('MY_PASSWORDLESS_AUTH_VERSION', '1.0.0');
 define('MY_PASSWORDLESS_AUTH_PATH', plugin_dir_path(__FILE__));
 define('MY_PASSWORDLESS_AUTH_URL', plugin_dir_url(__FILE__));
 
-// Initialize global environment variable array
-$GLOBALS['my_passwordless_env'] = array();
-
 // Include helper functions
 require_once plugin_dir_path(__FILE__) . 'includes/helpers.php';
+
+// Include secure crypto class
+require_once plugin_dir_path(__FILE__) . 'includes/class-crypto.php';
 
 // Include admin profile extensions and account deletion functionality
 require_once plugin_dir_path(__FILE__) . 'includes/admin-profile-extension.php';
 require_once plugin_dir_path(__FILE__) . 'includes/account-deletion-handlers.php';
-
-// Try to load environment variables - first from WordPress root directory
-$env_paths = array(
-    ABSPATH . '.env',                        // WordPress root
-    dirname(ABSPATH) . '/.env',              // One level above WordPress root
-    MY_PASSWORDLESS_AUTH_PATH . '.env',      // Plugin directory
-    dirname(MY_PASSWORDLESS_AUTH_PATH) . '/.env'  // One level above plugin directory
-);
 
 
 /**

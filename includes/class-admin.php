@@ -175,12 +175,30 @@ class My_Passwordless_Auth_Admin {
     
     /**
      * Render the settings page.
-     */
-    public function render_settings_page() {
+     */    public function render_settings_page() {
         if (!current_user_can('manage_options')) {
             return;
-        }        ?>        <div class="wrap">
+        }
+
+        // Check security status
+        $security_status = my_passwordless_auth_validate_security();
+        ?>
+        <div class="wrap">
             <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+            
+            <?php if ($security_status['status'] !== 'secure'): ?>
+            <div class="notice notice-error">
+                <h3>Security Issues Detected</h3>
+                <ul>
+                    <?php foreach ($security_status['issues'] as $issue): ?>
+                        <li><?php echo esc_html($issue); ?></li>
+                    <?php endforeach; ?>
+                </ul>
+                <p><strong>Please address these issues before using this plugin in production.</strong></p>
+            </div>
+        
+            <?php endif; ?>
+            
             <form action="options.php" method="post">
                 <?php
                 settings_fields('my_passwordless_auth_options');
