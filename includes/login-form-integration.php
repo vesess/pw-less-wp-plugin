@@ -30,8 +30,7 @@ class My_Passwordless_Auth_Login_Integration {
         // Add custom CSS to position the passwordless login after standard login button
         add_action('login_enqueue_scripts', array($this, 'add_custom_login_css'));
     }
-    
-    /**
+      /**
      * Add admin settings for the integration
      */
     public function add_admin_settings() {        add_settings_field(
@@ -42,38 +41,8 @@ class My_Passwordless_Auth_Login_Integration {
             'my_passwordless_auth_general'
         );
         
-        // Make sure it's registered in the whitelist
-        register_setting('my_passwordless_auth_options', 'my_passwordless_auth_options', array($this, 'sanitize_settings'));
-    }
-    
-    /**
-     * Sanitize the plugin's settings
-     *
-     * @param array $input The submitted settings
-     * @return array Sanitized settings
-     */
-    public function sanitize_settings($input) {
-        $sanitized = array();
-        
-        // Sanitize enable_wp_login_integration checkbox
-        if (isset($input['enable_wp_login_integration'])) {
-            $sanitized['enable_wp_login_integration'] = ($input['enable_wp_login_integration'] === 'yes') ? 'yes' : 'no';
-        } else {
-            $sanitized['enable_wp_login_integration'] = 'no';
-        }
-        
-        // Preserve other existing settings
-        $existing_options = get_option('my_passwordless_auth_options', array());
-        foreach ($existing_options as $key => $value) {
-            if (!isset($sanitized[$key])) {
-                $sanitized[$key] = $value;
-            }
-        }
-        
-        return $sanitized;
-    }
-    
-    /**
+        // Note: Sanitization is handled by the main admin class
+    }    /**
      * Render the admin setting field
      */
     public function render_wp_login_integration_field() {

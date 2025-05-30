@@ -67,6 +67,16 @@ function my_passwordless_auth_get_template_url($template, $args = [])
  */
 function my_passwordless_auth_log($message, $level = 'info', $display = false)
 {
+    // Check if logging is enabled unless we're forcing display to user
+    if (!$display) {
+        $options = get_option('my_passwordless_auth_options', array());
+        $logging_enabled = isset($options['show_auth_logs_menu']) && $options['show_auth_logs_menu'] === 'yes';
+        
+        // If logging is not enabled, don't log
+        if (!$logging_enabled) {
+            return;
+        }
+    }
 
     // Store log in transient for admin dashboard viewing
     $logs = get_transient('my_passwordless_auth_logs') ?: [];

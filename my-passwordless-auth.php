@@ -320,6 +320,15 @@ function my_passwordless_auth_add_admin_page() {
         return;
     }
     
+    // Get plugin options to check if auth logs menu should be shown
+    $options = get_option('my_passwordless_auth_options', array());
+    $show_auth_logs = isset($options['show_auth_logs_menu']) && $options['show_auth_logs_menu'] === 'yes';
+    
+    // Only add the menu if the setting is enabled
+    if (!$show_auth_logs) {
+        return;
+    }
+    
     add_submenu_page(
         'options-general.php',       // Parent slug (Settings menu)
         'Passwordless Auth Logs',    // Page title
@@ -490,25 +499,3 @@ if (!function_exists('my_passwordless_auth_get_option')) {
         return isset($options[$key]) ? $options[$key] : $default;
     }
 }
-
-// Helper function for logging (in case it's not in helpers.php)
-if (!function_exists('my_passwordless_auth_log')) {
-    function my_passwordless_auth_log($message, $level = 'info', $force = false) {
-        $logs = get_transient('my_passwordless_auth_logs') ?: [];
-        $logs[] = [
-            'time' => current_time('mysql'),
-            'message' => $message,
-            'level' => $level,
-        ];
-        
-        // Keep only the last 100 log entries
-        if (count($logs) > 100) {
-            $logs = array_slice($logs, -100);
-        }
-        
-        set_transient('my_passwordless_auth_logs', $logs, 30 * DAY_IN_SECONDS);
-    }
-}
-
-
-// Navigation menu filtering has been moved to includes/navbar-filter.php
