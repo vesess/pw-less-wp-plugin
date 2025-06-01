@@ -10,7 +10,6 @@
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  */
 
-// If this file is called directly, abort.
 if (!defined('WPINC')) {
     die;
 }
@@ -266,7 +265,8 @@ function my_passwordless_auth_handle_verification() {
                 ),
                 home_url('/login/')
             ));
-            exit;        } else {
+            exit;        
+        } else {
             // Code matches, update user as verified
             my_passwordless_auth_log("Verification code matches for user ID: $user_id - proceeding with verification", 'info');
             
@@ -297,7 +297,8 @@ function my_passwordless_auth_handle_verification() {
                 ),
                 home_url('/login/')
             );
-              wp_safe_redirect($redirect_url);            exit;
+              wp_safe_redirect($redirect_url);           
+              exit;
             }
         }
     }

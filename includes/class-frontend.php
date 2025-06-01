@@ -3,18 +3,12 @@
  * Handles frontend UI integration.
  */
 class My_Passwordless_Auth_Frontend {
-    /**
-     * Initialize the class and set its hooks.
-     */
     public function init()
     {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_styles'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
     }
 
-    /**
-     * Enqueue scripts and styles for the plugin
-     */
     public function enqueue_styles() {
     // Only enqueue styles when our shortcodes are present
     global $post;
@@ -52,7 +46,7 @@ class My_Passwordless_Auth_Frontend {
             MY_PASSWORDLESS_AUTH_VERSION . '.' . time()
         );
         wp_enqueue_style('my-passwordless-auth-common-style');
-    }    // Profile page shortcode has been removed
+    }
 }
 
     /**
@@ -111,7 +105,7 @@ class My_Passwordless_Auth_Frontend {
                     'registration_feedback_nonce' => wp_create_nonce('passwordless_registration_feedback')
                 )
             );
-        }        // Profile page shortcode has been removed
+        }
     }    /**
      * Render login form via shortcode.
      */      public function login_form_shortcode() {
@@ -137,7 +131,5 @@ class My_Passwordless_Auth_Frontend {
         ob_start();
         include MY_PASSWORDLESS_AUTH_PATH . 'public/partials/registration-form.php';
         return ob_get_clean();
-    }      /**
-     * Profile page functionality has been removed
-     */
+    }
 }

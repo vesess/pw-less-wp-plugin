@@ -13,11 +13,15 @@ if (!get_option('users_can_register')) {
 
 // Check if a success message should be displayed for registration feedback
 $success_message = '';
+$raw_registered = '';
+
 if (isset($_GET['registered'])) {
     // Verify nonce if provided, otherwise only allow safe parameter
     $is_valid_request = false;
     if (isset($_GET['_wpnonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'passwordless_registration_feedback')) {
-        $is_valid_request = true;    } else {
+        $is_valid_request = true;
+        $raw_registered = sanitize_text_field(wp_unslash($_GET['registered']));
+    } else {
         // Still allow the "registered" parameter without nonce if it only contains '1' (safe value)
         // Properly sanitize the input
         $raw_registered = sanitize_text_field(wp_unslash($_GET['registered']));
@@ -26,15 +30,12 @@ if (isset($_GET['registered'])) {
         }
     }
       if ($is_valid_request) {
-        // We can reuse the already sanitized value instead of sanitizing again
         if ($raw_registered === '1') {
             $success_message = 'Registration successful! Please check your email for verification instructions.';
         }
     }
 }
 
-// CSS is now loaded via class-frontend.php
-// Define theme compatibility class at the beginning where it's needed
 $options = get_option('my_passwordless_auth_options', []);
 $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme_styles'] === 'yes' ? 'theme-compat' : '';
 ?>

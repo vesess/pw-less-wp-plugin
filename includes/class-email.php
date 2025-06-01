@@ -46,16 +46,13 @@ class My_Passwordless_Auth_Email {
         if (!$user) {
             return false;
         }        
-        // Log the verification code being saved
-        my_passwordless_auth_log("Generated verification code for user ID $user_id: $verification_code", 'info');        // Use home_url() for the base URL
+       
         $base_url = home_url();        
         $encrypted_user_id = my_passwordless_auth_encrypt_user_id($user_id);
         
         // Log full details for debugging
         my_passwordless_auth_log("Generating verification link - User ID: $user_id", 'info');
         my_passwordless_auth_log("Encrypted user ID: $encrypted_user_id", 'info');
-        my_passwordless_auth_log("Verification code: $verification_code", 'info');        // Build the URL manually ensuring consistent and predictable encoding
-        // Make sure base URL has no trailing slash before adding query parameters
         $base_url = rtrim($base_url, '/');
         
         // Start with the action parameter
@@ -68,9 +65,6 @@ class My_Passwordless_Auth_Email {
         // Use rawurlencode to ensure + signs and other special chars are properly encoded
         $verification_url .= '&user_id=' . rawurlencode($encrypted_user_id);
         $verification_url .= '&code=' . rawurlencode($verification_code);
-        
-        // Log the final URL for debugging
-        my_passwordless_auth_log("Generated verification URL: $verification_url", 'info');
         
         $to = $user->user_email;
         $subject = '[' . esc_html(get_bloginfo('name')) . '] Verify Your Email';
@@ -187,7 +181,8 @@ class My_Passwordless_Auth_Email {
         my_passwordless_auth_log("Login link created successfully: " . substr($login_link, 0, 50) . "...", 'info');
 
         // Get configured expiration time
-        $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);        // Get email subject from options or use default
+        $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);        
+        // Get email subject from options or use default
         $options = get_option('my_passwordless_auth_options', []);
         $subject = isset($options['email_subject']) ? sanitize_text_field($options['email_subject']) : '';
         if (empty($subject)) {

@@ -6,7 +6,7 @@
  * Provides the backend functionality that was previously in the class-profile.php file
  */
 
-// If this file is called directly, abort.
+
 if (!defined('WPINC')) {
     die;
 }
@@ -25,13 +25,13 @@ add_action('init', 'my_passwordless_auth_init_account_deletion');
  * Sends a verification code to the user's email
  */
 function my_passwordless_auth_request_deletion_code() {
-    // Verify nonce
+
     if (!check_ajax_referer('delete_account_nonce', 'nonce', false)) {
         wp_send_json_error('Security check failed.');
         return;
     }
     
-    // Get current user
+
     $current_user = wp_get_current_user();
     if (!($current_user instanceof WP_User)) {
         wp_send_json_error('You must be logged in to delete your account.');
@@ -63,12 +63,12 @@ function my_passwordless_auth_request_deletion_code() {
  * Verifies the confirmation code and then deletes the account
  */
 function my_passwordless_auth_delete_account() {
-    // Verify nonce
+
     if (!check_ajax_referer('delete_account_nonce', 'nonce', false)) {
         wp_send_json_error('Security check failed.');
         return;
     }
-      // Get confirmation code from request
+
     $confirmation_code = isset($_POST['confirmation_code']) ? sanitize_text_field(wp_unslash($_POST['confirmation_code'])) : '';
     if (empty($confirmation_code)) {
         wp_send_json_error('Please provide the verification code.');
@@ -86,7 +86,7 @@ function my_passwordless_auth_delete_account() {
     $stored_code = get_user_meta($current_user->ID, 'account_deletion_code', true);
     $code_timestamp = get_user_meta($current_user->ID, 'account_deletion_code_timestamp', true);
     
-    // Check if code exists and is valid
+
     if (empty($stored_code)) {
         wp_send_json_error('No verification code found. Please request a new code.');
         return;

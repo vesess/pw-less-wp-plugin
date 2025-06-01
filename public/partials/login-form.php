@@ -3,7 +3,6 @@
  * Passwordless login form template
  */
 
-// If this file is called directly, abort.
 if (!defined('WPINC')) {
     die;
 }
@@ -46,7 +45,6 @@ if (isset($_REQUEST['redirect_to'])) {
         // Sanitize first using esc_url_raw since it's a URL
         $raw_redirect = esc_url_raw(wp_unslash($_REQUEST['redirect_to']));
         if (strpos($raw_redirect, 'http') !== 0 || strpos($raw_redirect, home_url()) === 0) {
-            // If it's a relative URL or starts with home_url, consider it safe
             $is_valid_redirect = true;
         }
     }
@@ -65,7 +63,6 @@ if (empty($redirect_to)) {
 $options = get_option('my_passwordless_auth_options', []);
 $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme_styles'] === 'yes' ? 'theme-compat' : '';
 
-// CSS is now loaded via class-frontend.php
 ?>
 
 <div class="passwordless-container passwordless-login-container <?php echo esc_attr($theme_compat_class); ?>">
@@ -84,7 +81,6 @@ $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme
                 Send Login Link
             </button>
         </div>
-        <?php /* Moved login-register-link outside the form */ ?>
     </form>
       <p class="passwordless-info">
         Enter your email address and we'll send you a link to log in.
