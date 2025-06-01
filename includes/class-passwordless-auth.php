@@ -7,7 +7,6 @@
  * public-facing site hooks.
  */
 
-// If this file is called directly, abort.
 if (!defined('WPINC')) {
     die;
 }
@@ -42,8 +41,8 @@ class My_Passwordless_Auth
         $this->define_frontend_hooks();
         $this->define_admin_hooks();
         $this->define_email_hooks();
-        $this->define_url_blocker_hooks(); // Add URL blocker hooks
-        $this->define_login_integration_hooks(); // Add login integration hooks
+        $this->define_url_blocker_hooks();
+        $this->define_login_integration_hooks();
     }
 
     /**
@@ -124,7 +123,6 @@ class My_Passwordless_Auth
         $this->loader->add_action('init', $frontend, 'init');        // Register shortcodes through the loader
         $this->loader->add_shortcode('passwordless_login', $frontend, 'login_form_shortcode');
         $this->loader->add_shortcode('passwordless_registration', $frontend, 'registration_form_shortcode');
-        // Profile page shortcode has been removed
     }
 
     /**

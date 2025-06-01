@@ -3,9 +3,6 @@
  * Handles admin functionality.
  */
 class My_Passwordless_Auth_Admin {
-    /**
-     * Initialize the class and set its hooks.
-     */
     public function init() {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
@@ -102,14 +99,6 @@ class My_Passwordless_Auth_Admin {
             'my_passwordless_auth_main'
         );
         
-        // To be added in the future
-        // add_settings_field(
-        //     'email_from_address',
-        //     'Email From Address',
-        //     array($this, 'email_from_address_callback'),
-        //     'my-passwordless-auth',
-        //     'my_passwordless_auth_main'
-        // );
           add_settings_field(
             'code_expiration',
             'Login Code Expiration (minutes)',

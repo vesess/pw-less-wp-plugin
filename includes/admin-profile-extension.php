@@ -3,7 +3,7 @@
  * Adds account deletion functionality to the WordPress admin profile page.
  */
 
-// If this file is called directly, abort.
+
 if (!defined('WPINC')) {
     die;
 }
@@ -110,7 +110,8 @@ function my_passwordless_auth_add_profile_fields() {
                 var confirmationCode = $('#deletion-confirmation-code').val();
                 
                 // Validate code
-                if (!confirmationCode) {                    messagesContainer.html('<div class="notice notice-error inline"><p>Please enter the verification code.</p></div>');
+                if (!confirmationCode) {                  
+                    messagesContainer.html('<div class="notice notice-error inline"><p>Please enter the verification code.</p></div>');
                     return;
                 }
                 
@@ -127,7 +128,8 @@ function my_passwordless_auth_add_profile_fields() {
                 
                 $.ajax({
                     url: ajaxurl,
-                    type: 'POST',                    data: {
+                    type: 'POST',                    
+                    data: {
                         action: 'delete_account',
                         confirmation_code: confirmationCode,
                         nonce: '<?php echo esc_js(wp_create_nonce('delete_account_nonce')); ?>'

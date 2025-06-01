@@ -2,12 +2,7 @@
 /**
  * Secure cryptographic functions for passwordless authentication
  * 
- * This class provides secure encryption/decryption functions suitable for
- * open-source WordPress plugins. It follows cryptographic best practices:
- * - Uses random IVs for each encryption operation
- * - Proper key derivation using WordPress salts
- * - Secure memory handling
- * - No hardcoded secrets
+ * This class provides secure encryption/decryption functions
  */
 
 defined('ABSPATH') or die('Direct access not allowed');

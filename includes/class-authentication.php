@@ -4,9 +4,6 @@
  * This work is done by helper functions
  */
 class My_Passwordless_Auth_Authentication {
-    /**
-     * Initialize the class and set its hooks.
-     */
     public function init() {
         add_action('wp_ajax_nopriv_send_login_code', array($this, 'send_login_code'));
         add_action('wp_ajax_nopriv_verify_login_code', array($this, 'verify_login_code'));
