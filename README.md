@@ -89,3 +89,29 @@ This plugin is licensed under the GPL v2 or later.
 ## Credits
 
 Developed by [Vesess](https://www.vesess.com/)
+
+## Privacy Policy
+
+### Data Collection & Usage
+
+My Passwordless Auth plugin collects and processes the following user data:
+
+1. **Email Addresses**: Used solely for authentication purposes to send login links to users.
+2. **IP Addresses**: Temporarily stored for security purposes to prevent abuse of the authentication system.
+3. **Login Timestamps**: Recorded to maintain security logs and monitor for suspicious login activity.
+
+All collected data is stored exclusively in your WordPress database and is not shared with third parties or external services. Authentication tokens are temporarily stored and automatically expire after login completion or a predefined timeout period.
+
+### Data Retention
+
+- Email addresses are retained as long as the user account exists in your WordPress installation.
+- IP addresses and authentication tokens are stored temporarily and purged after successful authentication or expiration (typically 24 hours).
+- Login timestamps are retained in logs for security monitoring purposes.
+
+### Third-Party Services
+
+This plugin does not send any user data to external services. All authentication processes occur within your WordPress installation.
+
+### User Rights
+
+Site administrators can view and manage all stored authentication data through the WordPress admin interface. Individual users can request data export or deletion through your site's standard WordPress privacy tools.
