@@ -118,8 +118,12 @@ function my_passwordless_auth_delete_account() {
     // Log the deletion for reference
     my_passwordless_auth_log("User account deleted: ID {$user_id}, email {$user_email}", 'info');
     
-    // Delete the user
-    require_once(ABSPATH . 'wp-admin/includes/user.php');
+    // Load WordPress user administration functions if not already available
+    // This is the WordPress-compliant way per WordPress Plugin Guidelines
+    if (!function_exists('wp_delete_user')) {
+        require_once ABSPATH . 'wp-admin/includes/user.php';
+    }
+    
     $deleted = wp_delete_user($user_id);
     
     if ($deleted) {
