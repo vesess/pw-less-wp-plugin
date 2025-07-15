@@ -213,7 +213,3 @@ class My_Passwordless_Auth_Login_Integration {
         }
     }
 }
-
-// Initialize the login integration
-$login_integration = new My_Passwordless_Auth_Login_Integration();
-$login_integration->init();
