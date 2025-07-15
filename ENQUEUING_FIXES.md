@@ -11,11 +11,6 @@ This document outlines the changes made to properly implement WordPress script a
 - Handles passwordless login button functionality on WordPress login page
 - Supports both main login form and lost password form scenarios
 
-#### `/public/js/admin-profile-extension.js`
-- Moved inline JavaScript from `includes/admin-profile-extension.php`
-- Handles account deletion functionality in WordPress admin profile
-- Uses jQuery for AJAX requests with proper error handling
-
 #### `/public/js/console-debug.js`
 - Centralizes console logging functionality
 - Provides global `passwordlessAuthLog()` function

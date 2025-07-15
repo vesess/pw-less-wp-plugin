@@ -19,7 +19,6 @@ foreach ($users as $user) {
     delete_user_meta($user->ID, 'passwordless_login_code_timestamp');
     delete_user_meta($user->ID, 'email_verified');
     delete_user_meta($user->ID, 'email_verification_code');
-    delete_user_meta($user->ID, 'account_deletion_code');
 }
 
 // Clear any scheduled hooks

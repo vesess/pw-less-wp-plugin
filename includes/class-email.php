@@ -84,34 +84,6 @@ class My_Passwordless_Auth_Email {
     }
 
     /**
-     * Send account deletion confirmation code.
-     *
-     * @param int $user_id The user ID.
-     * @param string $confirmation_code The confirmation code.
-     * @return bool Whether the email was sent successfully.
-     */
-    public function send_deletion_confirmation($user_id, $confirmation_code) {
-        $user = get_userdata($user_id);
-        if (!$user) {
-            return false;
-        }        $to = $user->user_email;
-        $subject = '[' . esc_html(get_bloginfo('name')) . '] Confirm Account Deletion';
-          $message = sprintf(
-            "Hello %s,\n\nWe received a request to delete your account. To confirm, use the following code:\n\n%s\n\nIf you did not request this, please ignore this email.\n\nBest regards,\n%s",
-            esc_html($user->display_name),
-            esc_html($confirmation_code),
-            esc_html(get_bloginfo('name'))
-        );
-        
-        $headers = array(
-            'Content-Type: text/plain; charset=UTF-8',
-            'From: ' . $this->get_from_name() . ' <' . $this->get_from_email() . '>',
-        );
-
-        return $this->send_email($to, $subject, $message, $headers, 'deletion');
-    }
-
-    /**
      * Send email change verification code.
      *
      * @param int $user_id The user ID.

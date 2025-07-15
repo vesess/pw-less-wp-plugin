@@ -89,12 +89,11 @@ class My_Passwordless_Auth
     }    /**
      * Register profile related hooks.
      * 
-     * Most profile functionality has been removed, 
-     * but we need to keep the account deletion functionality.
+     * Profile functionality has been removed.
      */
     private function define_profile_hooks()
     {
-        // Initialize the profile class for account deletion functionality
+        // Profile functionality has been removed
         $profile = new My_Passwordless_Auth_Profile();
         $this->loader->add_action('init', $profile, 'init');
     }

@@ -6,13 +6,10 @@
  */
 class My_Passwordless_Auth_Profile {    /**
      * Initialize the class.
-     * Most profile functionality has been removed, but account deletion handlers remain.
+     * Profile functionality has been completely removed.
      */
     public function init() {
-        // Profile page UI functionality has been completely removed
-        // But we need to keep the AJAX handlers for backwards compatibility
-        add_action('wp_ajax_delete_account', array($this, 'delete_account'));
-        add_action('wp_ajax_request_deletion_code', array($this, 'request_deletion_code'));
+        // All profile functionality has been removed
     }/**
      * This method was previously used to update user profile information.
      * Profile functionality has been removed from the plugin.
@@ -31,27 +28,5 @@ class My_Passwordless_Auth_Profile {    /**
     public function request_email_verification() {
         // Functionality removed
         wp_send_json_error('This feature has been removed. Please use the WordPress profile page.');
-    }    /**
-     * This method was previously used to delete a user account.
-     * Account deletion is now handled through account-deletion-handlers.php
-     * This method remains for backwards compatibility.
-     * 
-     * @see account-deletion-handlers.php
-     */
-    public function delete_account() {
-        // Just pass the request to the new handler
-        my_passwordless_auth_delete_account();
-    }
-
-    /**
-     * This method was previously used to request account deletion code.
-     * Account deletion is now handled through account-deletion-handlers.php
-     * This method remains for backwards compatibility.
-     * 
-     * @see account-deletion-handlers.php
-     */
-    public function request_deletion_code() {
-        // Just pass the request to the new handler
-        my_passwordless_auth_request_deletion_code();
     }
 }

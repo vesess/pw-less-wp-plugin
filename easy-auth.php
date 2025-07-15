@@ -23,10 +23,6 @@ require_once plugin_dir_path(__FILE__) . 'includes/helpers.php';
 // Include secure crypto class
 require_once plugin_dir_path(__FILE__) . 'includes/class-crypto.php';
 
-// Include admin profile extensions and account deletion functionality
-require_once plugin_dir_path(__FILE__) . 'includes/admin-profile-extension.php';
-require_once plugin_dir_path(__FILE__) . 'includes/account-deletion-handlers.php';
-
 
 /**
  * The core plugin class that is used to define internationalization,
