@@ -14,11 +14,32 @@ class My_Passwordless_Auth_Registration {
     /**
      * Register a new user.
      */    public function register_new_user() {
+        // Check user capabilities for registration first
+        if (!current_user_can('read')) {
+            // For non-logged in users, we allow registration if WordPress allows it
+            if (!get_option('users_can_register')) {
+                wp_send_json_error('Registration is currently disabled.');
+                return;
+            }
+        }
+
+        // Check rate limiting
+        $security = new My_Passwordless_Auth_Security();
+        $ip_address = My_Passwordless_Auth_Security::get_client_ip();
+        $block_time = $security->record_registration_attempt($ip_address);
+        
+        if ($block_time !== false) {
+            $minutes = ceil($block_time / 60);
+            wp_send_json_error(sprintf('Too many registration attempts. Please try again in %d minutes.', $minutes));
+            return;
+        }
+
         // Check nonce - verify both the legacy nonce and the new registration-specific nonce
+        // This check happens immediately before processing POST data
         $is_valid_nonce = false;
         
-        // Check legacy nonce field
-        if (check_ajax_referer('registration_nonce', 'nonce', false)) {
+        // Check legacy nonce field using wp_verify_nonce for consistent security
+        if (isset($_POST['nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'registration_nonce')) {
             $is_valid_nonce = true;
         }
         
@@ -33,16 +54,8 @@ class My_Passwordless_Auth_Registration {
             return;
         }
 
-        // Check rate limiting
-        $security = new My_Passwordless_Auth_Security();
-        $ip_address = My_Passwordless_Auth_Security::get_client_ip();
-        $block_time = $security->record_registration_attempt($ip_address);
-        
-        if ($block_time !== false) {
-            $minutes = ceil($block_time / 60);
-            wp_send_json_error(sprintf('Too many registration attempts. Please try again in %d minutes.', $minutes));
-            return;
-        }        $email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
+        // Now process POST data immediately after nonce validation
+        $email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
         $username = isset($_POST['username']) ? sanitize_user(wp_unslash($_POST['username'])) : '';
         $display_name = isset($_POST['display_name']) ? sanitize_text_field(wp_unslash($_POST['display_name'])) : '';
 

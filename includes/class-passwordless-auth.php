@@ -328,10 +328,12 @@ class My_Passwordless_Auth
         // Sanitize the action parameter
         $action = sanitize_text_field(wp_unslash($_GET['action']));
         
+        // Only handle our specific magic_login action
         if ($action !== 'magic_login') {
             return;
         }
-          // Verify nonce for security
+
+        // Verify nonce for security - only for our magic_login action
         if (!isset($_GET['_wpnonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'magic_login_nonce')) {
             my_passwordless_auth_log("Magic login failed - invalid nonce", 'error');
             wp_die(

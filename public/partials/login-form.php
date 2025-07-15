@@ -15,20 +15,20 @@ if (isset($_GET['sent'])) {
     // Verify nonce if provided, otherwise only allow safe "sent" parameter
     $is_valid_request = false;
     if (isset($_GET['_wpnonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'passwordless_login_feedback')) {
-        $is_valid_request = true;    } else {
+        $is_valid_request = true;
+        $sent_value = sanitize_text_field(wp_unslash($_GET['sent']));
+    } else {
         // Still allow the "sent" parameter without nonce if it only contains '1' (safe value)
         // Sanitize input first
         $raw_sent = sanitize_text_field(wp_unslash($_GET['sent']));
         if ($raw_sent === '1') {
             $is_valid_request = true;
+            $sent_value = '1';
         }
     }
     
-    if ($is_valid_request) {
-        $sent_value = sanitize_text_field(wp_unslash($_GET['sent']));
-        if ($sent_value === '1') {
-            $success_message = 'Login link sent! Please check your email.';
-        }
+    if ($is_valid_request && $sent_value === '1') {
+        $success_message = 'Login link sent! Please check your email.';
     }
 }
 

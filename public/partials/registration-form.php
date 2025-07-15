@@ -29,10 +29,9 @@ if (isset($_GET['registered'])) {
             $is_valid_request = true;
         }
     }
-      if ($is_valid_request) {
-        if ($raw_registered === '1') {
-            $success_message = 'Registration successful! Please check your email for verification instructions.';
-        }
+      
+    if ($is_valid_request && $raw_registered === '1') {
+        $success_message = 'Registration successful! Please check your email for verification instructions.';
     }
 }
 

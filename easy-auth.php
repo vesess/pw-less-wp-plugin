@@ -105,10 +105,11 @@ function my_passwordless_auth_handle_verification() {
     if (isset($_GET['action'])) {
         $action = sanitize_text_field(wp_unslash($_GET['action']));
         
+        // Only handle our specific verify_email action
         if ($action === 'verify_email') {
             my_passwordless_auth_log('Email verification request detected', 'info');
             
-            // Verify nonce for security
+            // Verify nonce for security - only for our verify_email action
             if (!isset($_GET['_wpnonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'verify_email_nonce')) {
                 my_passwordless_auth_log("Email verification failed - invalid nonce", 'error');
                 wp_safe_redirect(add_query_arg(
@@ -120,7 +121,8 @@ function my_passwordless_auth_handle_verification() {
                 ));
                 exit;
             }
-              if (!isset($_GET['user_id']) || !isset($_GET['code'])) {
+            
+            if (!isset($_GET['user_id']) || !isset($_GET['code'])) {
                 my_passwordless_auth_log('Missing required verification parameters', 'error', true);
                 wp_safe_redirect(add_query_arg(
                     array(

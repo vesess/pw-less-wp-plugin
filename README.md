@@ -15,7 +15,7 @@ My Passwordless Authentication offers a modern, secure way to log in to WordPres
 
 * **Passwordless Login**: Users log in using their email address and a one-time verification code
 * **Custom Registration**: Includes custom registration form with email verification
-* **User Profile Management**: Users can update their information and delete their accounts
+* **User Profile Management**: Users can update their information through the WordPress admin profile
 * **Email Notifications**: Customizable email notifications for various user actions
 * **Shortcodes**: Easy implementation with ready-to-use shortcodes
 * **Developer Friendly**: Hooks and filters for extending functionality
