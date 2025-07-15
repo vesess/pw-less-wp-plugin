@@ -13,9 +13,9 @@ if (!defined('WPINC')) {
     die;
 }
 
-define('MY_PASSWORDLESS_AUTH_VERSION', '1.0.0');
-define('MY_PASSWORDLESS_AUTH_PATH', plugin_dir_path(__FILE__));
-define('MY_PASSWORDLESS_AUTH_URL', plugin_dir_url(__FILE__));
+define('VESESS_EASYAUTH_VERSION', '1.0.0');
+define('VESESS_EASYAUTH_PATH', plugin_dir_path(__FILE__));
+define('VESESS_EASYAUTH_URL', plugin_dir_url(__FILE__));
 
 // Include helper functions
 require_once plugin_dir_path(__FILE__) . 'includes/helpers.php';
@@ -28,38 +28,38 @@ require_once plugin_dir_path(__FILE__) . 'includes/class-crypto.php';
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
-require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-passwordless-auth.php';
+require_once VESESS_EASYAUTH_PATH . 'includes/class-passwordless-auth.php';
 
 /**
  * Load the wp-login.php integration
  */
-require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/login-form-integration.php';
+require_once VESESS_EASYAUTH_PATH . 'includes/login-form-integration.php';
 
 /**
  * Load the navbar filter functionality
  */
-require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/navbar-filter.php';
+require_once VESESS_EASYAUTH_PATH . 'includes/navbar-filter.php';
 
 /**
  * Begins execution of the plugin.
  */
-function run_my_passwordless_auth() {
-    $plugin = new My_Passwordless_Auth();
+function vesess_easyauth_run() {
+    $plugin = new VESESS_EASYAUTH();
     $plugin->run();
 }
 
 /**
  * Load plugin text domain. This is commented out for now since languages folder is not included.
  */
-// function my_passwordless_auth_load_textdomain() {
+// function vesess_easyauth_load_textdomain() {
 //     load_plugin_textdomain('vesess_easyauth', false, dirname(plugin_basename(__FILE__)) . '/languages/');
 // }
-// add_action('plugins_loaded', 'my_passwordless_auth_load_textdomain');
+// add_action('plugins_loaded', 'vesess_easyauth_load_textdomain');
 
 /**
  * Add action links to the Plugins page
  */
-function my_passwordless_auth_plugin_action_links($links) {    $settings_link = '<a href="' . admin_url('options-general.php?page=vesess_easyauth') . '">Settings</a>';
+function vesess_easyauth_plugin_action_links($links) {    $settings_link = '<a href="' . admin_url('options-general.php?page=vesess_easyauth') . '">Settings</a>';
     $docs_link = '<a href="https://vesess.com" target="_blank">Documentation</a>';
     $support_link = '<a href="https://vesess.com" target="_blank">Support</a>';
     
@@ -68,10 +68,10 @@ function my_passwordless_auth_plugin_action_links($links) {    $settings_link = 
     
     return $links;
 }
-add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'my_passwordless_auth_plugin_action_links');
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'vesess_easyauth_plugin_action_links');
 
 // Run the plugin
-run_my_passwordless_auth();
+vesess_easyauth_run();
 
 /**
  * Core functionality for Passwordless Authentication plugin
@@ -80,17 +80,17 @@ run_my_passwordless_auth();
 /**
  * Initialize the plugin and set up hooks
  */
-function my_passwordless_auth_init() {
+function vesess_easyauth_init() {
     // Hook for processing email verification
-    add_action('template_redirect', 'my_passwordless_auth_handle_verification');
+    add_action('template_redirect', 'vesess_easyauth_handle_verification');
     
 }
-add_action('init', 'my_passwordless_auth_init');
+add_action('init', 'vesess_easyauth_init');
 
 /**
  * Helper function to check if we're on the WordPress login page
  */
-function my_passwordless_auth_is_login_page() {
+function vesess_easyauth_is_login_page() {
     return in_array($GLOBALS['pagenow'], array('wp-login.php', 'wp-register.php'));
 }
 
@@ -101,7 +101,7 @@ function my_passwordless_auth_is_login_page() {
 /**
  * Handle the email verification process - Centralized handler for all verification requests
  */
-function my_passwordless_auth_handle_verification() {
+function vesess_easyauth_handle_verification() {
     if (isset($_GET['action'])) {
         $action = sanitize_text_field(wp_unslash($_GET['action']));
         
@@ -139,13 +139,13 @@ function my_passwordless_auth_handle_verification() {
         vesess_easyauth_log("Processing encrypted user ID: $encrypted_user_id", 'info');
         
         // Decrypt the user ID - handle potential URL encoding issues
-        $user_id = my_passwordless_auth_decrypt_user_id($encrypted_user_id);
+        $user_id = vesess_easyauth_decrypt_user_id($encrypted_user_id);
           
         if ($user_id === false) {
             // Try with common URL encoding replacements
             $modified_id = str_replace(' ', '+', $encrypted_user_id);
             vesess_easyauth_log("Retrying with modified user ID: $modified_id", 'info');
-            $user_id = my_passwordless_auth_decrypt_user_id($modified_id);
+            $user_id = vesess_easyauth_decrypt_user_id($modified_id);
             
             if ($user_id === false) {
                 vesess_easyauth_log("Failed to decrypt user ID: $encrypted_user_id", 'error', true);
@@ -275,12 +275,12 @@ function my_passwordless_auth_handle_verification() {
             vesess_easyauth_log("Email verified successfully for user ID: $user_id", 'info', true);
             
             // Force user login after verification if configured to do so
-            if (my_passwordless_auth_get_option('auto_login_after_verification', true)) {
+            if (vesess_easyauth_get_option('auto_login_after_verification', true)) {
                 wp_set_current_user($user_id);
                 wp_set_auth_cookie($user_id);
                 
                 // Get redirect URL from options or use admin dashboard
-                $redirect_url = my_passwordless_auth_get_option('verification_success_url', admin_url());
+                $redirect_url = vesess_easyauth_get_option('verification_success_url', admin_url());
                 
                 // Redirect to dashboard or custom page
                 wp_safe_redirect($redirect_url);
@@ -305,7 +305,7 @@ function my_passwordless_auth_handle_verification() {
 /**
  * Add a new admin page to view logs
  */
-function my_passwordless_auth_add_admin_page() {
+function vesess_easyauth_add_admin_page() {
     // Check if the current user has sufficient permissions
     if (!current_user_can('manage_options')) {
         return;
@@ -330,7 +330,7 @@ function my_passwordless_auth_add_admin_page() {
     );
 }
 // Hook into the admin menu with the correct priority
-add_action('admin_menu', 'my_passwordless_auth_add_admin_page', 99);
+add_action('admin_menu', 'vesess_easyauth_add_admin_page', 99);
 
 /**
  * Render the logs admin page
@@ -397,7 +397,7 @@ function vesess_easyauth_logs_page() {
 }
 
 // Add script to display console logs on the frontend login page
-function my_passwordless_auth_add_login_debug() {
+function vesess_easyauth_add_login_debug() {
     if (isset($_GET['verification'])) {
         $status = sanitize_text_field(wp_unslash($_GET['verification']));
           // Check for nonce - only display debug info if nonce is valid
@@ -414,16 +414,16 @@ function my_passwordless_auth_add_login_debug() {
             // Enqueue debug script
             wp_enqueue_script(
                 'vesess_easyauth-console-debug',
-                MY_PASSWORDLESS_AUTH_URL . 'public/js/console-debug.js',
+                VESESS_EASYAUTH_URL . 'public/js/console-debug.js',
                 array(),
-                MY_PASSWORDLESS_AUTH_VERSION,
+                VESESS_EASYAUTH_VERSION,
                 true
             );
             
             // Localize the debug data
             wp_localize_script(
                 'vesess_easyauth-console-debug',
-                'passwordlessAuthDebug',
+                'vesessEasyAuth',
                 array(
                     'status' => $status
                 )
@@ -442,8 +442,8 @@ function my_passwordless_auth_add_login_debug() {
         }
     }
 }
-add_action('login_footer', 'my_passwordless_auth_add_login_debug');
-add_action('wp_footer', 'my_passwordless_auth_add_login_debug');
+add_action('login_footer', 'vesess_easyauth_add_login_debug');
+add_action('wp_footer', 'vesess_easyauth_add_login_debug');
 
 // Add admin notification for easier log access
 function Vesess_Easyauth_Admin_notices() {
@@ -482,8 +482,8 @@ function Vesess_Easyauth_Admin_notices() {
 add_action('admin_notices', 'Vesess_Easyauth_Admin_notices');
 
 // Register activation hook to create initial options
-register_activation_hook(__FILE__, 'my_passwordless_auth_activate');
-function my_passwordless_auth_activate() {
+register_activation_hook(__FILE__, 'vesess_easyauth_activate');
+function vesess_easyauth_activate() {
     // Create default options if they don't exist
     if (!get_option('vesess_easyauth_options')) {
         add_option('vesess_easyauth_options', [
@@ -497,8 +497,8 @@ function my_passwordless_auth_activate() {
 }
 
 // Helper function to get plugin options with defaults
-if (!function_exists('my_passwordless_auth_get_option')) {
-    function my_passwordless_auth_get_option($key, $default = null) {
+if (!function_exists('vesess_easyauth_get_option')) {
+    function vesess_easyauth_get_option($key, $default = null) {
         $options = get_option('vesess_easyauth_options', []);
         return isset($options[$key]) ? $options[$key] : $default;
     }

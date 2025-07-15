@@ -2,7 +2,7 @@
 /**
  * Handles global security functionality.
  */
-class My_Passwordless_Auth_Security {
+class Vesess_Easyauth_Security {
     const MAX_LOGIN_ATTEMPTS = 5; // Maximum login attempts per time window
     const MAX_REGISTRATION_ATTEMPTS = 3; // Maximum registration attempts per time window
     const MAX_LOGIN_REQUESTS = 3; // Maximum login link requests per time window
@@ -58,7 +58,7 @@ class My_Passwordless_Auth_Security {
             return $block_time;
         }
 
-        $attempts = get_transient('passwordless_auth_login_attempts');
+        $attempts = get_transient('vesess_easyauth_login_attempts');
         if (!$attempts) {
             $attempts = array();
         }
@@ -81,7 +81,7 @@ class My_Passwordless_Auth_Security {
         // If successful, clear the attempts
         if ($success) {
             unset($attempts[$ip_address]);
-            set_transient('passwordless_auth_login_attempts', $attempts, self::ATTEMPT_WINDOW);
+            set_transient('vesess_easyauth_login_attempts', $attempts, self::ATTEMPT_WINDOW);
             return false;
         }
 
@@ -92,7 +92,7 @@ class My_Passwordless_Auth_Security {
         }
 
         // Save attempts
-        set_transient('passwordless_auth_login_attempts', $attempts, self::ATTEMPT_WINDOW);
+        set_transient('vesess_easyauth_login_attempts', $attempts, self::ATTEMPT_WINDOW);
         return false;
     }
 
@@ -110,7 +110,7 @@ class My_Passwordless_Auth_Security {
             return $block_time;
         }
 
-        $requests = get_transient('passwordless_auth_login_requests');
+        $requests = get_transient('vesess_easyauth_login_requests');
         if (!$requests) {
             $requests = array();
         }
@@ -137,7 +137,7 @@ class My_Passwordless_Auth_Security {
         }
 
         // Save requests
-        set_transient('passwordless_auth_login_requests', $requests, self::ATTEMPT_WINDOW);
+        set_transient('vesess_easyauth_login_requests', $requests, self::ATTEMPT_WINDOW);
         return false;
     }
 
@@ -154,7 +154,7 @@ class My_Passwordless_Auth_Security {
             return $block_time;
         }
 
-        $attempts = get_transient('passwordless_auth_registration_attempts');
+        $attempts = get_transient('vesess_easyauth_registration_attempts');
         if (!$attempts) {
             $attempts = array();
         }
@@ -176,7 +176,7 @@ class My_Passwordless_Auth_Security {
         }
 
         // Save attempts
-        set_transient('passwordless_auth_registration_attempts', $attempts, self::ATTEMPT_WINDOW);
+        set_transient('vesess_easyauth_registration_attempts', $attempts, self::ATTEMPT_WINDOW);
         return false;
     }
 
@@ -204,36 +204,36 @@ class My_Passwordless_Auth_Security {
         $cutoff_time = time() - self::ATTEMPT_WINDOW;
 
         // Clean up login attempts
-        $attempts = get_transient('passwordless_auth_login_attempts');
+        $attempts = get_transient('vesess_easyauth_login_attempts');
         if ($attempts) {
             foreach ($attempts as $ip => $data) {
                 if ($data['first_attempt'] < $cutoff_time) {
                     unset($attempts[$ip]);
                 }
             }
-            set_transient('passwordless_auth_login_attempts', $attempts, self::ATTEMPT_WINDOW);
+            set_transient('vesess_easyauth_login_attempts', $attempts, self::ATTEMPT_WINDOW);
         }
 
         // Clean up login requests
-        $requests = get_transient('passwordless_auth_login_requests');
+        $requests = get_transient('vesess_easyauth_login_requests');
         if ($requests) {
             foreach ($requests as $ip => $data) {
                 if ($data['first_request'] < $cutoff_time) {
                     unset($requests[$ip]);
                 }
             }
-            set_transient('passwordless_auth_login_requests', $requests, self::ATTEMPT_WINDOW);
+            set_transient('vesess_easyauth_login_requests', $requests, self::ATTEMPT_WINDOW);
         }
 
         // Clean up registration attempts
-        $reg_attempts = get_transient('passwordless_auth_registration_attempts');
+        $reg_attempts = get_transient('vesess_easyauth_registration_attempts');
         if ($reg_attempts) {
             foreach ($reg_attempts as $ip => $data) {
                 if ($data['first_attempt'] < $cutoff_time) {
                     unset($reg_attempts[$ip]);
                 }
             }
-            set_transient('passwordless_auth_registration_attempts', $reg_attempts, self::ATTEMPT_WINDOW);
+            set_transient('vesess_easyauth_registration_attempts', $reg_attempts, self::ATTEMPT_WINDOW);
         }
 
         // Clean up expired IP blocks

@@ -6,18 +6,18 @@
     'use strict';
     
     // Expose global logging function
-    window.passwordlessAuthLog = function(message, level) {
+    window.vesessEasyAuthLog = function(message, level) {
         level = level || 'log';
         var method = level === 'error' ? 'error' : (level === 'warning' ? 'warn' : 'log');
         console[method]('EasyAuth: ' + message);
     };
     
     // Log verification status if present
-    if (typeof passwordlessAuthDebug !== 'undefined') {
+    if (typeof vesessEasyAuth !== 'undefined') {
         console.group('Passwordless Auth - Verification Process');
-        console.log('Verification status: ' + passwordlessAuthDebug.status);
+        console.log('Verification status: ' + vesessEasyAuth.status);
         
-        switch(passwordlessAuthDebug.status) {
+        switch(vesessEasyAuth.status) {
             case 'success':
                 console.log('Email successfully verified!');
                 break;

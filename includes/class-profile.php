@@ -4,7 +4,7 @@
  * It has been completely refactored with all functionality moved to the WordPress admin profile.
  * Keeping the class for compatibility with other plugin components.
  */
-class My_Passwordless_Auth_Profile {    /**
+class Vesess_Easyauth_Profile {    /**
      * Initialize the class.
      * Profile functionality has been completely removed.
      */

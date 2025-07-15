@@ -7,7 +7,7 @@
 
 defined('ABSPATH') or die('Direct access not allowed');
 
-class My_Passwordless_Auth_Crypto {
+class Vesess_Easyauth_Crypto {
     
     private const CIPHER = 'aes-256-cbc';
     private const KEY_LENGTH = 32; // 256 bits
@@ -217,7 +217,7 @@ class My_Passwordless_Auth_Crypto {
         // Use proper key derivation with password stretching
         return hash_pbkdf2(
             'sha256',
-            'my_passwordless_auth_storage',
+            'vesess_easyauth_storage',
             $salt_material,
             self::PBKDF2_ITERATIONS,
             self::KEY_LENGTH,
@@ -237,7 +237,7 @@ class My_Passwordless_Auth_Crypto {
         // Use proper key derivation with password stretching
         return hash_pbkdf2(
             'sha256',
-            'my_passwordless_auth_url',
+            'vesess_easyauth_url',
             $salt_material,
             self::PBKDF2_ITERATIONS,
             self::KEY_LENGTH,

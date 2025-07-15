@@ -11,14 +11,14 @@ if (!defined('WPINC')) {
     die;
 }
 
-class My_Passwordless_Auth
+class VESESS_EASYAUTH
 {
 
     /**
      * The loader that's responsible for maintaining and registering all hooks that power
      * the plugin.
      *
-     * @var My_Passwordless_Auth_Loader
+     * @var Vesess_Easyauth_Loader
      */
     protected $loader;
 
@@ -33,7 +33,7 @@ class My_Passwordless_Auth
      * Define the core functionality of the plugin.
      */    public function __construct()
     {
-        $this->version = MY_PASSWORDLESS_AUTH_VERSION;
+        $this->version = VESESS_EASYAUTH_VERSION;
         $this->load_dependencies();
         $this->define_security_hooks();
         $this->define_registration_hooks();
@@ -53,18 +53,18 @@ class My_Passwordless_Auth
          * The class responsible for orchestrating the actions and filters of the
          * core plugin.
          */
-        require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-passwordless-auth-loader.php';
+        require_once VESESS_EASYAUTH_PATH . 'includes/class-passwordless-auth-loader.php';
 
-        require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-registration.php';
-        require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-profile.php';
-        require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-frontend.php';
-        require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-admin.php';
-        require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-email.php';
-        require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-url-blocker.php'; // Include URL blocker class
-        require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/helpers.php';
-        require_once MY_PASSWORDLESS_AUTH_PATH . 'includes/class-security.php'; // Include Security class
+        require_once VESESS_EASYAUTH_PATH . 'includes/class-registration.php';
+        require_once VESESS_EASYAUTH_PATH . 'includes/class-profile.php';
+        require_once VESESS_EASYAUTH_PATH . 'includes/class-frontend.php';
+        require_once VESESS_EASYAUTH_PATH . 'includes/class-admin.php';
+        require_once VESESS_EASYAUTH_PATH . 'includes/class-email.php';
+        require_once VESESS_EASYAUTH_PATH . 'includes/class-url-blocker.php'; // Include URL blocker class
+        require_once VESESS_EASYAUTH_PATH . 'includes/helpers.php';
+        require_once VESESS_EASYAUTH_PATH . 'includes/class-security.php'; // Include Security class
 
-        $this->loader = new My_Passwordless_Auth_Loader();
+        $this->loader = new Vesess_Easyauth_Loader();
     }
 
 
@@ -74,7 +74,7 @@ class My_Passwordless_Auth
      */
     private function define_security_hooks()
     {
-        $security = new My_Passwordless_Auth_Security();
+        $security = new Vesess_Easyauth_Security();
         $this->loader->add_action('init', $security, 'init');
     }
 
@@ -83,7 +83,7 @@ class My_Passwordless_Auth
      */
     private function define_registration_hooks()
     {
-        $registration = new My_Passwordless_Auth_Registration();
+        $registration = new Vesess_Easyauth_Registration();
 
         $this->loader->add_action('init', $registration, 'init');
     }    /**
@@ -94,7 +94,7 @@ class My_Passwordless_Auth
     private function define_profile_hooks()
     {
         // Profile functionality has been removed
-        $profile = new My_Passwordless_Auth_Profile();
+        $profile = new Vesess_Easyauth_Profile();
         $this->loader->add_action('init', $profile, 'init');
     }
 
@@ -103,7 +103,7 @@ class My_Passwordless_Auth
      */
     private function define_frontend_hooks()
     {
-        $frontend = new My_Passwordless_Auth_Frontend();
+        $frontend = new Vesess_Easyauth_Frontend();
 
         $this->loader->add_action('init', $frontend, 'init');        // Register shortcodes through the loader
         $this->loader->add_shortcode('vesess_easyauth_login', $frontend, 'login_form_shortcode');
@@ -126,7 +126,7 @@ class My_Passwordless_Auth
      */
     private function define_url_blocker_hooks()
     {
-        $url_blocker = new My_Passwordless_Auth_URL_Blocker();
+        $url_blocker = new Vesess_Easyauth_URL_Blocker();
 
         $this->loader->add_action('init', $url_blocker, 'init');
     }
@@ -136,8 +136,8 @@ class My_Passwordless_Auth
      */
     private function define_login_integration_hooks()
     {
-        if (class_exists('My_Passwordless_Auth_Login_Integration')) {
-            $login_integration = new My_Passwordless_Auth_Login_Integration();
+        if (class_exists('Vesess_Easyauth_Login_Integration')) {
+            $login_integration = new Vesess_Easyauth_Login_Integration();
             $this->loader->add_action('init', $login_integration, 'init');
         }
     }
@@ -288,8 +288,8 @@ class My_Passwordless_Auth
     private function handle_magic_link_sending($user, $user_email) 
     {
         // Check rate limiting for login requests
-        $security = new My_Passwordless_Auth_Security();
-        $ip_address = My_Passwordless_Auth_Security::get_client_ip();
+        $security = new Vesess_Easyauth_Security();
+        $ip_address = Vesess_Easyauth_Security::get_client_ip();
         $block_time = $security->record_login_request($ip_address, $user_email);
         
         if ($block_time !== false) {
@@ -301,7 +301,7 @@ class My_Passwordless_Auth
         }
 
         // Generate and send magic login link
-        $email_class = new My_Passwordless_Auth_Email();
+        $email_class = new Vesess_Easyauth_Email();
         $sent = $email_class->send_magic_link($user_email);
 
         if ($sent === false) {
@@ -348,8 +348,8 @@ class My_Passwordless_Auth
         vesess_easyauth_log("Magic login process initiated from class-passwordless-auth.php");
 
         // Check rate limiting for magic login attempts
-        $security = new My_Passwordless_Auth_Security();
-        $ip_address = My_Passwordless_Auth_Security::get_client_ip();
+        $security = new Vesess_Easyauth_Security();
+        $ip_address = Vesess_Easyauth_Security::get_client_ip();
         $block_time = $security->is_ip_blocked($ip_address);
           if ($block_time !== false) {            $minutes = ceil($block_time / 60);            $error_message = sprintf('Too many login attempts. Please try again in %d minutes.', $minutes);
             wp_die(
@@ -373,11 +373,11 @@ class My_Passwordless_Auth
         vesess_easyauth_log("Raw UID parameter: $uid", 'info');
         vesess_easyauth_log("Raw token parameter: $token_param", 'info');
         
-        $user_id = my_passwordless_auth_decrypt_user_id($uid);
+        $user_id = vesess_easyauth_decrypt_user_id($uid);
         
         vesess_easyauth_log("User ID decryption result: " . ($user_id === false ? 'FAILED' : $user_id), 'info');if ($user_id === false) {
             if (isset($_SESSION)) {
-                $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? (int) $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
+                $_SESSION['vesess_easyauth_failed_attempts'] = isset($_SESSION['vesess_easyauth_failed_attempts']) ? (int) $_SESSION['vesess_easyauth_failed_attempts'] + 1 : 1;
             }
             
             vesess_easyauth_log("Magic login failed - could not decrypt user ID from: $uid", 'error');
@@ -392,11 +392,11 @@ class My_Passwordless_Auth
         vesess_easyauth_log("Successfully decrypted user ID: $user_id");
 
         // Get stored token data for this user
-        $stored_data = get_user_meta($user_id, 'passwordless_auth_login_token', true);
+        $stored_data = get_user_meta($user_id, 'vesess_easyauth_login_token', true);
 
         if (!$stored_data || !is_array($stored_data)) {
             if (isset($_SESSION)) {
-                $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? (int) $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
+                $_SESSION['vesess_easyauth_failed_attempts'] = isset($_SESSION['vesess_easyauth_failed_attempts']) ? (int) $_SESSION['vesess_easyauth_failed_attempts'] + 1 : 1;
             }
             
             vesess_easyauth_log("Magic login failed - no token stored for user ID: $user_id", 'error');
@@ -411,14 +411,14 @@ class My_Passwordless_Auth
         $token_param = sanitize_text_field(wp_unslash($_GET['token']));
         
         
-        $token = my_passwordless_auth_decrypt_token_from_url($token_param);
+        $token = vesess_easyauth_decrypt_token_from_url($token_param);
         
        
         if ($token !== false) {
             vesess_easyauth_log("Decrypted token preview: " . substr($token, 0, 20) . '...', 'info');
         }if (!$token) {
             if (isset($_SESSION)) {
-                $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? (int) $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
+                $_SESSION['vesess_easyauth_failed_attempts'] = isset($_SESSION['vesess_easyauth_failed_attempts']) ? (int) $_SESSION['vesess_easyauth_failed_attempts'] + 1 : 1;
             }
             
             vesess_easyauth_log("Magic login failed - could not decrypt token from URL", 'error');
@@ -432,7 +432,7 @@ class My_Passwordless_Auth
         }        // Check if token data is properly formatted
         if (!isset($stored_data['token']) || !isset($stored_data['expiration'])) {
             if (isset($_SESSION)) {
-                $_SESSION['passwordless_auth_failed_attempts'] = isset($_SESSION['passwordless_auth_failed_attempts']) ? (int) $_SESSION['passwordless_auth_failed_attempts'] + 1 : 1;
+                $_SESSION['vesess_easyauth_failed_attempts'] = isset($_SESSION['vesess_easyauth_failed_attempts']) ? (int) $_SESSION['vesess_easyauth_failed_attempts'] + 1 : 1;
             }
             
             $error = new WP_Error('invalid_token', 'Invalid login link. Please request a new one.');
@@ -443,7 +443,7 @@ class My_Passwordless_Auth
             );
             return;
         }        // Decrypt the stored token for comparison
-        $stored_token = my_passwordless_auth_decrypt_token_from_storage($stored_data['token']);
+        $stored_token = vesess_easyauth_decrypt_token_from_storage($stored_data['token']);
         
        
 
@@ -460,7 +460,7 @@ class My_Passwordless_Auth
         if (time() > $stored_data['expiration']) {
             vesess_easyauth_log("Magic login failed - token expired for user", 'error');
             vesess_easyauth_log("Current time: " . time() . ", Token expiration: " . $stored_data['expiration'], 'info');
-            delete_user_meta($user_id, 'passwordless_auth_login_token');
+            delete_user_meta($user_id, 'vesess_easyauth_login_token');
             $error = new WP_Error('expired_token', 'This login link has expired. Please request a new one.');
             wp_die(
                 esc_html($error->get_error_message()),
@@ -484,7 +484,7 @@ class My_Passwordless_Auth
         }
 
         // Delete the token as it's no longer needed
-        delete_user_meta($user_id, 'passwordless_auth_login_token');
+        delete_user_meta($user_id, 'vesess_easyauth_login_token');
 
         // Log the user in
         wp_clear_auth_cookie();
@@ -494,10 +494,10 @@ class My_Passwordless_Auth
         vesess_easyauth_log("User ID: $user_id successfully logged in via magic link");
 
         // Fire action for other plugins
-        do_action('my_passwordless_auth_after_magic_login', $user);        // Success! Redirect to requested page or default
+        do_action('vesess_easyauth_after_magic_login', $user);        // Success! Redirect to requested page or default
         $redirect_to = isset($_GET['redirect_to']) ? esc_url_raw(wp_unslash($_GET['redirect_to'])) : '';
         if (empty($redirect_to)) {
-            $redirect_to = my_passwordless_auth_get_option('login_redirect', home_url());
+            $redirect_to = vesess_easyauth_get_option('login_redirect', home_url());
         }
 
         $redirect_to = apply_filters('vesess_easyauth_login_redirect', $redirect_to);
@@ -510,9 +510,9 @@ class My_Passwordless_Auth
     /**
      * The reference to the class that orchestrates the hooks with the plugin.
      *
-     * @return My_Passwordless_Auth_Loader Orchestrates the hooks of the plugin.
+     * @return Vesess_Easyauth_Loader Orchestrates the hooks of the plugin.
      */
-    public function get_loader(): My_Passwordless_Auth_Loader
+    public function get_loader(): Vesess_Easyauth_Loader
     {
         return $this->loader;
     }

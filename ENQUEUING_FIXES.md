@@ -13,7 +13,7 @@ This document outlines the changes made to properly implement WordPress script a
 
 #### `/public/js/console-debug.js`
 - Centralizes console logging functionality
-- Provides global `passwordlessAuthLog()` function
+- Provides global `vesessEasyAuthLog()` function
 - Handles verification process debugging output
 
 #### `/public/js/navbar-filter.js`

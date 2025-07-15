@@ -10,7 +10,7 @@ if (!defined('WPINC')) {
 /**
  * Class to handle integration with the standard WordPress login form
  */
-class My_Passwordless_Auth_Login_Integration {
+class Vesess_Easyauth_Login_Integration {
     /**
      * Initialize the class and set its hooks
      */
@@ -44,7 +44,7 @@ class My_Passwordless_Auth_Login_Integration {
             'Enable Admin Login Integration',
             array($this, 'render_wp_login_integration_field'),
             'vesess_easyauth',
-            'my_passwordless_auth_general'
+            'vesess_easyauth_general'
         );
     }
 
@@ -131,9 +131,9 @@ class My_Passwordless_Auth_Login_Integration {
         // Enqueue the login form integration script
         wp_enqueue_script(
             'vesess_easyauth-login-integration',
-            MY_PASSWORDLESS_AUTH_URL . 'public/js/login-form-integration.js',
+            VESESS_EASYAUTH_URL . 'public/js/login-form-integration.js',
             array('jquery'),
-            MY_PASSWORDLESS_AUTH_VERSION,
+            VESESS_EASYAUTH_VERSION,
             true
         );
         
@@ -160,9 +160,9 @@ class My_Passwordless_Auth_Login_Integration {
         // Enqueue login form integration styles
         wp_enqueue_style(
             'vesess_easyauth-login-integration',
-            MY_PASSWORDLESS_AUTH_URL . 'public/css/login-form-integration.css',
+            VESESS_EASYAUTH_URL . 'public/css/login-form-integration.css',
             array(),
-            MY_PASSWORDLESS_AUTH_VERSION
+            VESESS_EASYAUTH_VERSION
         );
     }
 
@@ -196,7 +196,7 @@ class My_Passwordless_Auth_Login_Integration {
         }
 
         // Generate and send login link
-        $login_link = my_passwordless_auth_create_login_link($user->user_email);
+        $login_link = vesess_easyauth_create_login_link($user->user_email);
         
         if ($login_link) {
             // Send email with login link

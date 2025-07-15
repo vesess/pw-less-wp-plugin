@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class My_Passwordless_Auth_URL_Blocker {
+class Vesess_Easyauth_URL_Blocker {
     
     private $logged_in_blocked_urls = array();
     private $logged_out_blocked_urls = array();

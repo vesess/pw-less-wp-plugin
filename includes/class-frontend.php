@@ -2,7 +2,7 @@
 /**
  * Handles frontend UI integration.
  */
-class My_Passwordless_Auth_Frontend {
+class Vesess_Easyauth_Frontend {
     public function init()
     {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_styles'));
@@ -21,18 +21,18 @@ class My_Passwordless_Auth_Frontend {
     // Common styles for all shortcodes (variables and shared styles)
     wp_register_style(
         'vesess_easyauth-common-style',
-        MY_PASSWORDLESS_AUTH_URL . 'public/css/common.css',
+        VESESS_EASYAUTH_URL . 'public/css/common.css',
         array(),
-        MY_PASSWORDLESS_AUTH_VERSION . '.' . time()
+        VESESS_EASYAUTH_VERSION . '.' . time()
     );
 
     // Check for login form shortcode
     if (has_shortcode($content, 'vesess_easyauth_login')) {
         wp_enqueue_style(
             'vesess_easyauth-login-style',
-            MY_PASSWORDLESS_AUTH_URL . 'public/css/login-form.css',
+            VESESS_EASYAUTH_URL . 'public/css/login-form.css',
             array('vesess_easyauth-common-style'),
-            MY_PASSWORDLESS_AUTH_VERSION . '.' . time()
+            VESESS_EASYAUTH_VERSION . '.' . time()
         );
         wp_enqueue_style('vesess_easyauth-common-style');
     }
@@ -41,9 +41,9 @@ class My_Passwordless_Auth_Frontend {
     if (has_shortcode($content, 'vesess_easyauth_registration')) {
         wp_enqueue_style(
             'vesess_easyauth-registration-style',
-            MY_PASSWORDLESS_AUTH_URL . 'public/css/registration-form.css',
+            VESESS_EASYAUTH_URL . 'public/css/registration-form.css',
             array('vesess_easyauth-common-style'),
-            MY_PASSWORDLESS_AUTH_VERSION . '.' . time()
+            VESESS_EASYAUTH_VERSION . '.' . time()
         );
         wp_enqueue_style('vesess_easyauth-common-style');
     }
@@ -65,9 +65,9 @@ class My_Passwordless_Auth_Frontend {
         if (has_shortcode($content, 'vesess_easyauth_login')) {
             wp_enqueue_script(
                 'vesess_easyauth-login-script',
-                MY_PASSWORDLESS_AUTH_URL . 'public/js/login-form.js',
+                VESESS_EASYAUTH_URL . 'public/js/login-form.js',
                 array('jquery'),
-                MY_PASSWORDLESS_AUTH_VERSION . '.' . time(),
+                VESESS_EASYAUTH_VERSION . '.' . time(),
                 true
             );
               // Pass AJAX URL and nonces to script
@@ -88,9 +88,9 @@ class My_Passwordless_Auth_Frontend {
         if (has_shortcode($content, 'vesess_easyauth_registration')) {
             wp_enqueue_script(
                 'vesess_easyauth-registration-script',
-                MY_PASSWORDLESS_AUTH_URL . 'public/js/registration-form.js',
+                VESESS_EASYAUTH_URL . 'public/js/registration-form.js',
                 array('jquery'),
-                MY_PASSWORDLESS_AUTH_VERSION . '.' . time(),
+                VESESS_EASYAUTH_VERSION . '.' . time(),
                 true
             );
             
@@ -116,7 +116,7 @@ class My_Passwordless_Auth_Frontend {
         // CSS and JS are now handled by the enqueue methods
         
         ob_start();
-        include MY_PASSWORDLESS_AUTH_PATH . 'public/partials/login-form.php';
+        include VESESS_EASYAUTH_PATH . 'public/partials/login-form.php';
         return ob_get_clean();
     }
       /**
@@ -129,7 +129,7 @@ class My_Passwordless_Auth_Frontend {
         // CSS and JS are now handled by the enqueue methods
         
         ob_start();
-        include MY_PASSWORDLESS_AUTH_PATH . 'public/partials/registration-form.php';
+        include VESESS_EASYAUTH_PATH . 'public/partials/registration-form.php';
         return ob_get_clean();
     }
 }

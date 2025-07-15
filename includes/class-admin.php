@@ -32,9 +32,9 @@ class Vesess_Easyauth_Admin {
         
         wp_enqueue_style(
             'vesess_easyauth-admin',
-            MY_PASSWORDLESS_AUTH_URL . 'assets/css/admin.css',
+            VESESS_EASYAUTH_URL . 'assets/css/admin.css',
             array(),
-            MY_PASSWORDLESS_AUTH_VERSION
+            VESESS_EASYAUTH_VERSION
         );
     }    /**
      * Register plugin settings.
@@ -47,7 +47,7 @@ class Vesess_Easyauth_Admin {
         );
         
         add_settings_section(
-            'my_passwordless_auth_general',
+            'vesess_easyauth_general',
             'General Settings',
             array($this, 'settings_section_callback_general'),
             'vesess_easyauth'
@@ -58,7 +58,7 @@ class Vesess_Easyauth_Admin {
             'Redirect After Login',
             array($this, 'render_login_redirect_field'),
             'vesess_easyauth',
-            'my_passwordless_auth_general'
+            'vesess_easyauth_general'
         );
 
         add_settings_field(
@@ -66,7 +66,7 @@ class Vesess_Easyauth_Admin {
             'User Home URL',
             array($this, 'render_user_home_url_field'),
             'vesess_easyauth',
-            'my_passwordless_auth_general'
+            'vesess_easyauth_general'
         );
         
         add_settings_field(
@@ -74,7 +74,7 @@ class Vesess_Easyauth_Admin {
             'Email Subject',
             array($this, 'render_email_subject_field'),
             'vesess_easyauth',
-            'my_passwordless_auth_general'
+            'vesess_easyauth_general'
         );
         
         add_settings_field(
@@ -82,10 +82,10 @@ class Vesess_Easyauth_Admin {
             'Email Template',
             array($this, 'render_email_template_field'),
             'vesess_easyauth',
-            'my_passwordless_auth_general'
+            'vesess_easyauth_general'
         );
         add_settings_section(
-            'my_passwordless_auth_main',
+            'vesess_easyauth_main',
             'Main Settings',
             array($this, 'settings_section_callback_main'),
             'vesess_easyauth'
@@ -96,7 +96,7 @@ class Vesess_Easyauth_Admin {
             'Email From Name',
             array($this, 'email_from_name_callback'),
             'vesess_easyauth',
-            'my_passwordless_auth_main'
+            'vesess_easyauth_main'
         );
         
           add_settings_field(
@@ -104,7 +104,7 @@ class Vesess_Easyauth_Admin {
             'Login Code Expiration (minutes)',
             array($this, 'code_expiration_callback'),
             'vesess_easyauth',
-            'my_passwordless_auth_main'
+            'vesess_easyauth_main'
         );
         
         // Theme compatibility setting
@@ -113,7 +113,7 @@ class Vesess_Easyauth_Admin {
             'Use Theme Styling',
             array($this, 'render_theme_styles_field'),
             'vesess_easyauth',
-            'my_passwordless_auth_general'
+            'vesess_easyauth_general'
         );
         
         // Auth Logs menu visibility setting
@@ -122,7 +122,7 @@ class Vesess_Easyauth_Admin {
             'Show Auth Logs Menu',
             array($this, 'render_show_auth_logs_field'),
             'vesess_easyauth',
-            'my_passwordless_auth_general'
+            'vesess_easyauth_general'
         );
     }
 
@@ -170,7 +170,7 @@ class Vesess_Easyauth_Admin {
         }
 
         // Check security status
-        $security_status = my_passwordless_auth_validate_security();
+        $security_status = vesess_easyauth_validate_security();
         ?>
         <div class="wrap">
             <h1><?php echo esc_html(get_admin_page_title()); ?></h1>

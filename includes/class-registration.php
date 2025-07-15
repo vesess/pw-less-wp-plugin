@@ -2,7 +2,7 @@
 /**
  * Handles user registration functionality.
  */
-class My_Passwordless_Auth_Registration {
+class Vesess_Easyauth_Registration {
     /**
      * Initialize the class and set its hooks.
      */
@@ -24,8 +24,8 @@ class My_Passwordless_Auth_Registration {
         }
 
         // Check rate limiting
-        $security = new My_Passwordless_Auth_Security();
-        $ip_address = My_Passwordless_Auth_Security::get_client_ip();
+        $security = new Vesess_Easyauth_Security();
+        $ip_address = Vesess_Easyauth_Security::get_client_ip();
         $block_time = $security->record_registration_attempt($ip_address);
         
         if ($block_time !== false) {
@@ -105,7 +105,7 @@ class My_Passwordless_Auth_Registration {
         update_user_meta($user_id, 'email_verification_code', trim($verification_code));
 
         // Send verification email
-        $email_class = new My_Passwordless_Auth_Email();
+        $email_class = new Vesess_Easyauth_Email();
         $email_sent = $email_class->send_verification_email($user_id, $verification_code);
 
         if ($email_sent) {

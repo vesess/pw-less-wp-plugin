@@ -2,7 +2,7 @@
 /**
  * Handles email functionality.
  */
-class My_Passwordless_Auth_Email {
+class Vesess_Easyauth_Email {
     /**
      * Send a login code via email.
      *
@@ -17,7 +17,7 @@ class My_Passwordless_Auth_Email {
         }
 
         // Get configured expiration time
-        $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);        $to = $user->user_email;
+        $expiration_minutes = (int) vesess_easyauth_get_option('code_expiration', 15);        $to = $user->user_email;
         $subject = '[' . esc_html(get_bloginfo('name')) . '] Your Login Code';
           $message = sprintf(
             "Hello %s,\n\nYour login code is: %s\n\nThis code will expire in %d minutes.\n\nBest regards,\n%s",
@@ -48,7 +48,7 @@ class My_Passwordless_Auth_Email {
         }        
        
         $base_url = home_url();        
-        $encrypted_user_id = my_passwordless_auth_encrypt_user_id($user_id);
+        $encrypted_user_id = vesess_easyauth_encrypt_user_id($user_id);
         
         // Log full details for debugging
         vesess_easyauth_log("Generating verification link - User ID: $user_id", 'info');
@@ -98,7 +98,7 @@ class My_Passwordless_Auth_Email {
         }
 
         // Get configured expiration time
-        $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);        // Send to the current email address, not the new one
+        $expiration_minutes = (int) vesess_easyauth_get_option('code_expiration', 15);        // Send to the current email address, not the new one
         $to = $user->user_email;
         $subject = '[' . esc_html(get_bloginfo('name')) . '] Verify Your Email Change';
           $message = sprintf(
@@ -137,13 +137,13 @@ class My_Passwordless_Auth_Email {
         vesess_easyauth_log("Found user with ID: {$user->ID}", 'info');
         
         // Check if email is verified (use the helper function to respect admin bypass)
-        if (!my_passwordless_auth_is_email_verified($user->ID)) {
+        if (!vesess_easyauth_is_email_verified($user->ID)) {
             vesess_easyauth_log("Cannot send login link: Email not verified for user ID {$user->ID}", 'error');
             return 'unverified';
         }
         
         vesess_easyauth_log("Email is verified, proceeding to create login link", 'info');
-          $login_link = my_passwordless_auth_create_login_link($user_email);
+          $login_link = vesess_easyauth_create_login_link($user_email);
         
         if (!$login_link) {
             vesess_easyauth_log("Failed to create login link for user email: $user_email", 'error');
@@ -153,7 +153,7 @@ class My_Passwordless_Auth_Email {
         vesess_easyauth_log("Login link created successfully: " . substr($login_link, 0, 50) . "...", 'info');
 
         // Get configured expiration time
-        $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);        
+        $expiration_minutes = (int) vesess_easyauth_get_option('code_expiration', 15);        
         // Get email subject from options or use default
         $options = get_option('vesess_easyauth_options', []);
         $subject = isset($options['email_subject']) ? sanitize_text_field($options['email_subject']) : '';
@@ -189,9 +189,9 @@ class My_Passwordless_Auth_Email {
         );
         
         // Apply filters to allow customization
-        $subject = apply_filters('my_passwordless_auth_email_subject', $subject, $user);
-        $message = apply_filters('my_passwordless_auth_email_message', $message, $user, $login_link);
-        $headers = apply_filters('my_passwordless_auth_email_headers', $headers, $user);
+        $subject = apply_filters('vesess_easyauth_email_subject', $subject, $user);
+        $message = apply_filters('vesess_easyauth_email_message', $message, $user, $login_link);
+        $headers = apply_filters('vesess_easyauth_email_headers', $headers, $user);
         
         // Convert line breaks to <br> for HTML emails
         $message = nl2br($message);

@@ -22,7 +22,7 @@ foreach ($users as $user) {
 }
 
 // Clear any scheduled hooks
-$timestamp = wp_next_scheduled('my_passwordless_auth_cleanup_codes');
+$timestamp = wp_next_scheduled('vesess_easyauth_cleanup_codes');
 if ($timestamp) {
-    wp_unschedule_event($timestamp, 'my_passwordless_auth_cleanup_codes');
+    wp_unschedule_event($timestamp, 'vesess_easyauth_cleanup_codes');
 }
