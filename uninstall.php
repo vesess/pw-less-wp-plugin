@@ -9,14 +9,14 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 }
 
 // Delete plugin options
-delete_option('my_passwordless_auth_options');
+delete_option('vesess_easyauth_options');
 
 // Remove plugin user meta
 $users = get_users();
 
 foreach ($users as $user) {
-    delete_user_meta($user->ID, 'passwordless_login_code');
-    delete_user_meta($user->ID, 'passwordless_login_code_timestamp');
+    delete_user_meta($user->ID, 'vesess_easyauth_login_code');
+    delete_user_meta($user->ID, 'vesess_easyauth_login_code_timestamp');
     delete_user_meta($user->ID, 'email_verified');
     delete_user_meta($user->ID, 'email_verification_code');
 }

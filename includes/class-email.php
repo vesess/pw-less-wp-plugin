@@ -51,8 +51,8 @@ class My_Passwordless_Auth_Email {
         $encrypted_user_id = my_passwordless_auth_encrypt_user_id($user_id);
         
         // Log full details for debugging
-        my_passwordless_auth_log("Generating verification link - User ID: $user_id", 'info');
-        my_passwordless_auth_log("Encrypted user ID: $encrypted_user_id", 'info');
+        vesess_easyauth_log("Generating verification link - User ID: $user_id", 'info');
+        vesess_easyauth_log("Encrypted user ID: $encrypted_user_id", 'info');
         $base_url = rtrim($base_url, '/');
         
         // Start with the action parameter
@@ -126,36 +126,36 @@ class My_Passwordless_Auth_Email {
      * @param string $user_email The user's email address.
      * @return bool|string Whether the email was sent successfully.
      */    public function send_magic_link($user_email) {
-        my_passwordless_auth_log("Attempting to send magic link to email: $user_email", 'info');
+        vesess_easyauth_log("Attempting to send magic link to email: $user_email", 'info');
         
         $user = get_user_by('email', $user_email);
         if (!$user) {
-            my_passwordless_auth_log("Failed to send magic link: User with email $user_email not found", 'error');
+            vesess_easyauth_log("Failed to send magic link: User with email $user_email not found", 'error');
             return false;
         }
         
-        my_passwordless_auth_log("Found user with ID: {$user->ID}", 'info');
+        vesess_easyauth_log("Found user with ID: {$user->ID}", 'info');
         
         // Check if email is verified (use the helper function to respect admin bypass)
         if (!my_passwordless_auth_is_email_verified($user->ID)) {
-            my_passwordless_auth_log("Cannot send login link: Email not verified for user ID {$user->ID}", 'error');
+            vesess_easyauth_log("Cannot send login link: Email not verified for user ID {$user->ID}", 'error');
             return 'unverified';
         }
         
-        my_passwordless_auth_log("Email is verified, proceeding to create login link", 'info');
+        vesess_easyauth_log("Email is verified, proceeding to create login link", 'info');
           $login_link = my_passwordless_auth_create_login_link($user_email);
         
         if (!$login_link) {
-            my_passwordless_auth_log("Failed to create login link for user email: $user_email", 'error');
+            vesess_easyauth_log("Failed to create login link for user email: $user_email", 'error');
             return false;
         }
         
-        my_passwordless_auth_log("Login link created successfully: " . substr($login_link, 0, 50) . "...", 'info');
+        vesess_easyauth_log("Login link created successfully: " . substr($login_link, 0, 50) . "...", 'info');
 
         // Get configured expiration time
         $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);        
         // Get email subject from options or use default
-        $options = get_option('my_passwordless_auth_options', []);
+        $options = get_option('vesess_easyauth_options', []);
         $subject = isset($options['email_subject']) ? sanitize_text_field($options['email_subject']) : '';
         if (empty($subject)) {
             $subject = 'Login link for ' . esc_html(get_bloginfo('name'));
@@ -217,12 +217,12 @@ class My_Passwordless_Auth_Email {
             sanitize_email($to)
         );
         
-        my_passwordless_auth_log($log_message);
+        vesess_easyauth_log($log_message);
         
         // Debugging: Log the full email content
-        my_passwordless_auth_log("Email headers: " . json_encode($headers));
-        my_passwordless_auth_log("Email subject: " . $subject);
-        my_passwordless_auth_log("Email message: " . substr($message, 0, 100) . "..."); // Log first 100 chars
+        vesess_easyauth_log("Email headers: " . json_encode($headers));
+        vesess_easyauth_log("Email subject: " . $subject);
+        vesess_easyauth_log("Email message: " . substr($message, 0, 100) . "..."); // Log first 100 chars
         
         try {
             // Send the email using wp_mail
@@ -230,22 +230,22 @@ class My_Passwordless_Auth_Email {
             
             // Log the result
             if ($result) {
-                my_passwordless_auth_log(sprintf('Email send successful for %s email to %s', sanitize_text_field($type), sanitize_email($to)));
+                vesess_easyauth_log(sprintf('Email send successful for %s email to %s', sanitize_text_field($type), sanitize_email($to)));
             } else {
-                my_passwordless_auth_log(sprintf('Email send failed for %s email to %s', sanitize_text_field($type), sanitize_email($to)), 'error');
+                vesess_easyauth_log(sprintf('Email send failed for %s email to %s', sanitize_text_field($type), sanitize_email($to)), 'error');
                 
                 // Try to get any error information
                 global $phpmailer;
                 if (isset($phpmailer) && $phpmailer->ErrorInfo) {
-                    my_passwordless_auth_log('Email error: ' . $phpmailer->ErrorInfo, 'error');
+                    vesess_easyauth_log('Email error: ' . $phpmailer->ErrorInfo, 'error');
                 } else {
-                    my_passwordless_auth_log('Email send failed but no error information available', 'error');
+                    vesess_easyauth_log('Email send failed but no error information available', 'error');
                 }
             }
             
             return $result;
         } catch (Exception $e) {
-            my_passwordless_auth_log('Exception when sending email: ' . $e->getMessage(), 'error');
+            vesess_easyauth_log('Exception when sending email: ' . $e->getMessage(), 'error');
             return false;
         }
     }
@@ -256,7 +256,7 @@ class My_Passwordless_Auth_Email {
      * @return string
      */
     private function get_from_name() {
-        $options = get_option('my_passwordless_auth_options');
+        $options = get_option('vesess_easyauth_options');
         return isset($options['email_from_name']) ? esc_html($options['email_from_name']) : esc_html(get_bloginfo('name'));
     }
 
@@ -266,7 +266,7 @@ class My_Passwordless_Auth_Email {
      * @return string
      */
     private function get_from_email() {
-        $options = get_option('my_passwordless_auth_options');
+        $options = get_option('vesess_easyauth_options');
         return isset($options['email_from_address']) ? sanitize_email($options['email_from_address']) : sanitize_email(get_bloginfo('admin_email'));
     }
 }

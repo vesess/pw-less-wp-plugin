@@ -9,7 +9,7 @@ A WordPress plugin that provides passwordless authentication via email verificat
 
 ## Description
 
-My Passwordless Authentication offers a modern, secure way to log in to WordPress sites without using passwords. Instead, users receive one-time verification codes via email.
+EasyAuth offers a modern, secure way to log in to WordPress sites without using passwords. Instead, users receive one-time verification codes via email.
 
 ### Key Features
 
@@ -26,7 +26,7 @@ My Passwordless Authentication offers a modern, secure way to log in to WordPres
 
 ## Installation
 
-1. Upload the plugin files to the `/wp-content/plugins/my-passwordless-auth` directory, or install through the WordPress plugins screen
+1. Upload the plugin files to the `/wp-content/plugins/vesess_easyauth` directory, or install through the WordPress plugins screen
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Go to Settings → Passwordless Auth to configure the plugin:
    * Set up the "User Home URL" to match your site's base URL structure
@@ -42,8 +42,8 @@ My Passwordless Authentication offers a modern, secure way to log in to WordPres
 
 ### Available Shortcodes
 
-* `[passwordless_login]` - Displays the login form
-* `[passwordless_registration]` - Displays the registration form
+* `[vesess_easyauth_login]` - Displays the login form
+* `[vesess_easyauth_registration]` - Displays the registration form
 
 ## Security Benefits
 
@@ -94,7 +94,7 @@ Developed by [Vesess](https://www.vesess.com/)
 
 ### Data Collection & Usage
 
-My Passwordless Auth plugin collects and processes the following user data:
+EasyAuth plugin collects and processes the following user data:
 
 1. **Email Addresses**: Used solely for authentication purposes to send login links to users.
 2. **IP Addresses**: Temporarily stored for security purposes to prevent abuse of the authentication system.

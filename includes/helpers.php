@@ -8,12 +8,12 @@
  * Get the plugin option with a fallback default value.
  *
  * @param string $key The option key.
- * @para        my_passwordless_auth_log("Generated login token for user ID: $user_id, expires: " . gmdate('Y-m-d H:i:s', $expiration)); mixed $default The default value.
+ * @para        vesess_easyauth_log("Generated login token for user ID: $user_id, expires: " . gmdate('Y-m-d H:i:s', $expiration)); mixed $default The default value.
  * @return mixed The option value.
  */
 function my_passwordless_auth_get_option($key, $default = '')
 {
-    $options = get_option('my_passwordless_auth_options');
+    $options = get_option('vesess_easyauth_options');
     return isset($options[$key]) ? $options[$key] : $default;
 }
 
@@ -65,11 +65,11 @@ function my_passwordless_auth_get_template_url($template, $args = [])
  * @param string $level The log level (info, warning, error).
  * @param bool $display Whether to display the message to the user.
  */
-function my_passwordless_auth_log($message, $level = 'info', $display = false)
+function vesess_easyauth_log($message, $level = 'info', $display = false)
 {
     // Check if logging is enabled unless we're forcing display to user
     if (!$display) {
-        $options = get_option('my_passwordless_auth_options', array());
+        $options = get_option('vesess_easyauth_options', array());
         $logging_enabled = isset($options['show_auth_logs_menu']) && $options['show_auth_logs_menu'] === 'yes';
         
         // If logging is not enabled, don't log
@@ -79,7 +79,7 @@ function my_passwordless_auth_log($message, $level = 'info', $display = false)
     }
 
     // Store log in transient for admin dashboard viewing
-    $logs = get_transient('my_passwordless_auth_logs') ?: [];
+    $logs = get_transient('vesess_easyauth_logs') ?: [];
     $logs[] = [
         'time' => current_time('mysql'),
         'message' => $message,
@@ -91,14 +91,14 @@ function my_passwordless_auth_log($message, $level = 'info', $display = false)
         array_shift($logs);
     }
 
-    set_transient('my_passwordless_auth_logs', $logs, DAY_IN_SECONDS);
+    set_transient('vesess_easyauth_logs', $logs, DAY_IN_SECONDS);
 
     // Log to browser console (only works when rendering a page)
     if (!defined('DOING_AJAX') || !DOING_AJAX) {
         $console_action = function () use ($message, $level) {
             // Enqueue console debug script
             wp_enqueue_script(
-                'my-passwordless-auth-console-debug',
+                'vesess_easyauth-console-debug',
                 MY_PASSWORDLESS_AUTH_URL . 'public/js/console-debug.js',
                 array(),
                 MY_PASSWORDLESS_AUTH_VERSION,
@@ -107,7 +107,7 @@ function my_passwordless_auth_log($message, $level = 'info', $display = false)
             
             // Use inline script to log the specific message
             wp_add_inline_script(
-                'my-passwordless-auth-console-debug',
+                'vesess_easyauth-console-debug',
                 'window.passwordlessAuthLog("' . esc_js($message) . '", "' . esc_js($level === 'error' ? 'error' : ($level === 'warning' ? 'warning' : 'log')) . '");'
             );
         };
@@ -128,13 +128,13 @@ function my_passwordless_auth_log($message, $level = 'info', $display = false)
             add_action('wp_footer', function () use ($message, $notice_type) {
                 // Enqueue frontend notice styles
                 wp_enqueue_style(
-                    'my-passwordless-auth-frontend-notices',
+                    'vesess_easyauth-frontend-notices',
                     MY_PASSWORDLESS_AUTH_URL . 'public/css/frontend-notices.css',
                     array(),
                     MY_PASSWORDLESS_AUTH_VERSION
                 );
                 
-                echo '<div class="my-passwordless-auth-notice my-passwordless-auth-notice-' . esc_attr($notice_type) . '">' .
+                echo '<div class="vesess_easyauth-auth-notice' . esc_attr($notice_type) . '">' .
                     esc_html($message) .
                     '</div>';
             });
@@ -154,7 +154,7 @@ if (!function_exists('my_passwordless_auth_create_login_link')) {
         $user = get_user_by('email', $user_email);
 
         if (!$user) {
-            my_passwordless_auth_log("Failed to create login link: User with email $user_email not found", 'error');
+            vesess_easyauth_log("Failed to create login link: User with email $user_email not found", 'error');
             return false;
         }
 
@@ -168,7 +168,7 @@ if (!function_exists('my_passwordless_auth_create_login_link')) {
             '&_wpnonce=' . wp_create_nonce('magic_login_nonce')
         );
 
-        my_passwordless_auth_log("Magic login link created for user ID: {$user->ID}");
+        vesess_easyauth_log("Magic login link created for user ID: {$user->ID}");
         return $login_link;
     }
 }
@@ -199,7 +199,7 @@ if (!function_exists('my_passwordless_auth_generate_login_token')) {
             'expiration' => $expiration
         ];        update_user_meta($user_id, 'passwordless_auth_login_token', $token_data);
 
-        my_passwordless_auth_log("Generated login token for user ID: $user_id, expires: " . gmdate('Y-m-d H:i:s', $expiration));
+        vesess_easyauth_log("Generated login token for user ID: $user_id, expires: " . gmdate('Y-m-d H:i:s', $expiration));
 
         return $encrypted_token_for_url; // Return token encrypted for URL use
     }

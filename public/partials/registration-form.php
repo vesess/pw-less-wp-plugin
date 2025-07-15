@@ -18,7 +18,7 @@ $raw_registered = '';
 if (isset($_GET['registered'])) {
     // Verify nonce if provided, otherwise only allow safe parameter
     $is_valid_request = false;
-    if (isset($_GET['_wpnonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'passwordless_registration_feedback')) {
+    if (isset($_GET['_wpnonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'vesess_easyauth_registration_feedback')) {
         $is_valid_request = true;
         $raw_registered = sanitize_text_field(wp_unslash($_GET['registered']));
     } else {
@@ -35,7 +35,7 @@ if (isset($_GET['registered'])) {
     }
 }
 
-$options = get_option('my_passwordless_auth_options', []);
+$options = get_option('vesess_easyauth_options', []);
 $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme_styles'] === 'yes' ? 'theme-compat' : '';
 ?>
 <div class="passwordless-container registration-form-container <?php echo esc_attr($theme_compat_class); ?>">
@@ -45,7 +45,7 @@ $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme
     <div class="message success-message"><?php echo esc_html($success_message); ?></div>
     <?php endif; ?>
     
-    <form id="passwordless-registration-form" class="passwordless-form <?php echo esc_attr($theme_compat_class); ?>">
+    <form id="vesess_easyauth-registration-form" class="passwordless-form <?php echo esc_attr($theme_compat_class); ?>">
         <div class="messages"></div>
           <div class="form-row">
             <label for="email">Email Address <span class="required">*</span></label>

@@ -94,12 +94,12 @@ class My_Passwordless_Auth_Registration {
         $verification_code = preg_replace('/[^a-zA-Z0-9]/', '', $verification_code);
         
         // Log the generated code for debugging
-        my_passwordless_auth_log("Generated verification code for new user (ID: $user_id): $verification_code");
+        vesess_easyauth_log("Generated verification code for new user (ID: $user_id): $verification_code");
         
         // Make sure the code is stored exactly as it is
-        my_passwordless_auth_log("Storing verification code in user_meta for user ID $user_id: $verification_code", 'info');
-        my_passwordless_auth_log("Verification code length: " . strlen($verification_code), 'info');
-        my_passwordless_auth_log("Verification code hex: " . bin2hex($verification_code), 'info');
+        vesess_easyauth_log("Storing verification code in user_meta for user ID $user_id: $verification_code", 'info');
+        vesess_easyauth_log("Verification code length: " . strlen($verification_code), 'info');
+        vesess_easyauth_log("Verification code hex: " . bin2hex($verification_code), 'info');
         
         // Store the verification code - make sure it's stored exactly as generated
         update_user_meta($user_id, 'email_verification_code', trim($verification_code));

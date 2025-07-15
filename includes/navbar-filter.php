@@ -87,7 +87,7 @@ function my_passwordless_auth_navbar_css() {
     
     // Enqueue navbar filter CSS
     wp_enqueue_style(
-        'my-passwordless-auth-navbar-filter',
+        'vesess_easyauth-navbar-filter',
         MY_PASSWORDLESS_AUTH_URL . 'public/css/navbar-filter.css',
         array(),
         MY_PASSWORDLESS_AUTH_VERSION
@@ -98,7 +98,7 @@ function my_passwordless_auth_navbar_css() {
     
     // Enqueue navbar filter JavaScript for additional dynamic handling
     wp_enqueue_script(
-        'my-passwordless-auth-navbar-filter',
+        'vesess_easyauth-navbar-filter',
         MY_PASSWORDLESS_AUTH_URL . 'public/js/navbar-filter.js',
         array(),
         MY_PASSWORDLESS_AUTH_VERSION,
@@ -107,7 +107,7 @@ function my_passwordless_auth_navbar_css() {
     
     // Use inline script to add the body class
     wp_add_inline_script(
-        'my-passwordless-auth-navbar-filter',
+        'vesess_easyauth-navbar-filter',
         'document.addEventListener("DOMContentLoaded", function() { document.body.classList.add("' . esc_js($body_class) . '"); });'
     );
 }

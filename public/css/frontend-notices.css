@@ -1,23 +1,23 @@
 /* Frontend notice styles */
-.my-passwordless-auth-notice {
+.vesess_easyauth-auth-notice {
     padding: 10px 15px;
     margin: 15px 0;
     border-radius: 3px;
 }
 
-.my-passwordless-auth-notice-success {
+.vesess_easyauth-notice-success {
     background-color: #dff0d8;
     color: #3c763d;
     border: 1px solid #d6e9c6;
 }
 
-.my-passwordless-auth-notice-warning {
+.vesess_easyauth-notice-warning {
     background-color: #fcf8e3;
     color: #8a6d3b;
     border: 1px solid #faebcc;
 }
 
-.my-passwordless-auth-notice-error {
+.vesess_easyauth-notice-error {
     background-color: #f2dede;
     color: #a94442;
     border: 1px solid #ebccd1;

@@ -14,7 +14,7 @@ $success_message = '';
 if (isset($_GET['sent'])) {
     // Verify nonce if provided, otherwise only allow safe "sent" parameter
     $is_valid_request = false;
-    if (isset($_GET['_wpnonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'passwordless_login_feedback')) {
+    if (isset($_GET['_wpnonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'vesess_easyauth_login_feedback')) {
         $is_valid_request = true;
         $sent_value = sanitize_text_field(wp_unslash($_GET['sent']));
     } else {
@@ -60,7 +60,7 @@ if (empty($redirect_to)) {
 }
 
 // Define theme compatibility class at the beginning where it's needed
-$options = get_option('my_passwordless_auth_options', []);
+$options = get_option('vesess_easyauth_options', []);
 $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme_styles'] === 'yes' ? 'theme-compat' : '';
 
 ?>
@@ -76,7 +76,7 @@ $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme
             <input type="hidden" name="redirect_to" value="<?php echo esc_attr($redirect_to); ?>" />
             <input type="hidden" name="action" value="process_login" />
             <input type="hidden" name="redirect_nonce" value="<?php echo esc_attr(wp_create_nonce('passwordless_redirect')); ?>" />
-            <?php wp_nonce_field('passwordless-login-nonce', 'passwordless_login_nonce'); ?>
+            <?php wp_nonce_field('passwordless-login-nonce', 'vesess_easyauth_login_nonce'); ?>
             <button type="submit" name="wp-submit" id="wp-submit" class="button-primary">
                 Send Login Link
             </button>

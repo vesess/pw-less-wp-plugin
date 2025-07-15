@@ -25,7 +25,7 @@ class My_Passwordless_Auth_Security {
      * @return bool|int Returns false if not blocked, or seconds remaining if blocked
      */
     public function is_ip_blocked($ip_address) {
-        $blocked_ips = get_transient('passwordless_auth_blocked_ips');
+        $blocked_ips = get_transient('vesess_easyauth_blocked_ips');
         if (!$blocked_ips || !is_array($blocked_ips)) {
             return false;
         }
@@ -37,7 +37,7 @@ class My_Passwordless_Auth_Security {
             }
             // Block expired, remove it
             unset($blocked_ips[$ip_address]);
-            set_transient('passwordless_auth_blocked_ips', $blocked_ips, DAY_IN_SECONDS);
+            set_transient('vesess_easyauth_blocked_ips', $blocked_ips, DAY_IN_SECONDS);
         }
 
         return false;
@@ -186,15 +186,15 @@ class My_Passwordless_Auth_Security {
      * @param string $ip_address The IP address to block
      */
     private function block_ip($ip_address) {
-        $blocked_ips = get_transient('passwordless_auth_blocked_ips');
+        $blocked_ips = get_transient('vesess_easyauth_blocked_ips');
         if (!$blocked_ips || !is_array($blocked_ips)) {
             $blocked_ips = array();
         }
 
         $blocked_ips[$ip_address] = time() + self::LOCKOUT_DURATION;
-        set_transient('passwordless_auth_blocked_ips', $blocked_ips, DAY_IN_SECONDS);
+        set_transient('vesess_easyauth_blocked_ips', $blocked_ips, DAY_IN_SECONDS);
 
-        my_passwordless_auth_log("IP address {$ip_address} has been blocked for " . (self::LOCKOUT_DURATION / 60) . " minutes", 'warning');
+        vesess_easyauth_log("IP address {$ip_address} has been blocked for " . (self::LOCKOUT_DURATION / 60) . " minutes", 'warning');
     }
 
     /**
@@ -237,14 +237,14 @@ class My_Passwordless_Auth_Security {
         }
 
         // Clean up expired IP blocks
-        $blocked_ips = get_transient('passwordless_auth_blocked_ips');
+        $blocked_ips = get_transient('vesess_easyauth_blocked_ips');
         if ($blocked_ips) {
             foreach ($blocked_ips as $ip => $expiry) {
                 if (time() > $expiry) {
                     unset($blocked_ips[$ip]);
                 }
             }
-            set_transient('passwordless_auth_blocked_ips', $blocked_ips, DAY_IN_SECONDS);
+            set_transient('vesess_easyauth_blocked_ips', $blocked_ips, DAY_IN_SECONDS);
         }
     }
 

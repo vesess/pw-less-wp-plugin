@@ -20,32 +20,32 @@ class My_Passwordless_Auth_Frontend {
     
     // Common styles for all shortcodes (variables and shared styles)
     wp_register_style(
-        'my-passwordless-auth-common-style',
+        'vesess_easyauth-common-style',
         MY_PASSWORDLESS_AUTH_URL . 'public/css/common.css',
         array(),
         MY_PASSWORDLESS_AUTH_VERSION . '.' . time()
     );
 
     // Check for login form shortcode
-    if (has_shortcode($content, 'passwordless_login')) {
+    if (has_shortcode($content, 'vesess_easyauth_login')) {
         wp_enqueue_style(
-            'my-passwordless-auth-login-style',
+            'vesess_easyauth-login-style',
             MY_PASSWORDLESS_AUTH_URL . 'public/css/login-form.css',
-            array('my-passwordless-auth-common-style'),
+            array('vesess_easyauth-common-style'),
             MY_PASSWORDLESS_AUTH_VERSION . '.' . time()
         );
-        wp_enqueue_style('my-passwordless-auth-common-style');
+        wp_enqueue_style('vesess_easyauth-common-style');
     }
 
     // Check for registration form shortcode
-    if (has_shortcode($content, 'passwordless_registration')) {
+    if (has_shortcode($content, 'vesess_easyauth_registration')) {
         wp_enqueue_style(
-            'my-passwordless-auth-registration-style',
+            'vesess_easyauth-registration-style',
             MY_PASSWORDLESS_AUTH_URL . 'public/css/registration-form.css',
-            array('my-passwordless-auth-common-style'),
+            array('vesess_easyauth-common-style'),
             MY_PASSWORDLESS_AUTH_VERSION . '.' . time()
         );
-        wp_enqueue_style('my-passwordless-auth-common-style');
+        wp_enqueue_style('vesess_easyauth-common-style');
     }
 }
 
@@ -62,9 +62,9 @@ class My_Passwordless_Auth_Frontend {
         $content = $post->post_content;
         
         // Check for login form shortcode
-        if (has_shortcode($content, 'passwordless_login')) {
+        if (has_shortcode($content, 'vesess_easyauth_login')) {
             wp_enqueue_script(
-                'my-passwordless-auth-login-script',
+                'vesess_easyauth-login-script',
                 MY_PASSWORDLESS_AUTH_URL . 'public/js/login-form.js',
                 array('jquery'),
                 MY_PASSWORDLESS_AUTH_VERSION . '.' . time(),
@@ -72,22 +72,22 @@ class My_Passwordless_Auth_Frontend {
             );
               // Pass AJAX URL and nonces to script
             wp_localize_script(
-                'my-passwordless-auth-login-script',
+                'vesess_easyauth-login-script',
                 'passwordlessAuth',
                 array(
                     'ajax_url' => admin_url('admin-ajax.php'),
                     'nonce' => wp_create_nonce('passwordless-auth-nonce'),
                     'login_nonce' => wp_create_nonce('passwordless-login-nonce'),
                     'redirect_nonce' => wp_create_nonce('passwordless_redirect'),
-                    'feedback_nonce' => wp_create_nonce('passwordless_login_feedback')
+                    'feedback_nonce' => wp_create_nonce('vesess_easyauth_login_feedback')
                 )
             );
         }
 
         // Check for registration form shortcode
-        if (has_shortcode($content, 'passwordless_registration')) {
+        if (has_shortcode($content, 'vesess_easyauth_registration')) {
             wp_enqueue_script(
-                'my-passwordless-auth-registration-script',
+                'vesess_easyauth-registration-script',
                 MY_PASSWORDLESS_AUTH_URL . 'public/js/registration-form.js',
                 array('jquery'),
                 MY_PASSWORDLESS_AUTH_VERSION . '.' . time(),
@@ -96,13 +96,13 @@ class My_Passwordless_Auth_Frontend {
             
             // Pass AJAX URL and nonce to script
             wp_localize_script(
-                'my-passwordless-auth-registration-script',
+                'vesess_easyauth-registration-script',
                 'passwordlessAuth',
                 array(
                     'ajax_url' => admin_url('admin-ajax.php'),
                     'nonce' => wp_create_nonce('passwordless-auth-nonce'),
                     'registration_nonce' => wp_create_nonce('passwordless-registration-nonce'),
-                    'registration_feedback_nonce' => wp_create_nonce('passwordless_registration_feedback')
+                    'registration_feedback_nonce' => wp_create_nonce('vesess_easyauth_registration_feedback')
                 )
             );
         }

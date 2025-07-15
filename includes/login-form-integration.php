@@ -16,10 +16,10 @@ class My_Passwordless_Auth_Login_Integration {
      */
     public function init() {
         // Add passwordless login button to login form
-        add_action('login_form', array($this, 'add_passwordless_login_button'));
+        add_action('login_form', array($this, 'add_vesess_easyauth_login_button'));
         
         // Add passwordless login option to lost password form
-        add_action('lostpassword_form', array($this, 'add_passwordless_login_button_lostpw'));
+        add_action('lostpassword_form', array($this, 'add_vesess_easyauth_login_button_lostpw'));
         
         // Add inline login form with AJAX functionality to the login page
         add_action('login_footer', array($this, 'add_inline_login_form'));
@@ -31,8 +31,8 @@ class My_Passwordless_Auth_Login_Integration {
         add_action('admin_init', array($this, 'add_admin_settings'));
         
         // Handle the AJAX request for passwordless login
-        add_action('wp_ajax_nopriv_process_passwordless_login', array($this, 'handle_passwordless_login_ajax'));
-        add_action('wp_ajax_process_passwordless_login', array($this, 'handle_passwordless_login_ajax'));
+        add_action('wp_ajax_nopriv_process_vesess_easyauth_login', array($this, 'handle_vesess_easyauth_login_ajax'));
+        add_action('wp_ajax_process_vesess_easyauth_login', array($this, 'handle_vesess_easyauth_login_ajax'));
     }
 
     /**
@@ -43,7 +43,7 @@ class My_Passwordless_Auth_Login_Integration {
             'enable_wp_login_integration',
             'Enable Admin Login Integration',
             array($this, 'render_wp_login_integration_field'),
-            'my-passwordless-auth',
+            'vesess_easyauth',
             'my_passwordless_auth_general'
         );
     }
@@ -52,10 +52,10 @@ class My_Passwordless_Auth_Login_Integration {
      * Render the admin setting field
      */
     public function render_wp_login_integration_field() {
-        $options = get_option('my_passwordless_auth_options');
+        $options = get_option('vesess_easyauth_options');
         $checked = isset($options['enable_wp_login_integration']) ? $options['enable_wp_login_integration'] === 'yes' : true;
         ?>
-        <input type="checkbox" name="my_passwordless_auth_options[enable_wp_login_integration]" value="yes" <?php checked($checked); ?> />
+        <input type="checkbox" name="vesess_easyauth_options[enable_wp_login_integration]" value="yes" <?php checked($checked); ?> />
         <p class="description">Add passwordless login option to the WordPress login screen (wp-login.php)</p>
         <?php
     }
@@ -64,7 +64,7 @@ class My_Passwordless_Auth_Login_Integration {
      * Check if admin login integration is enabled
      */
     public function is_integration_enabled() {
-        $options = get_option('my_passwordless_auth_options', []);
+        $options = get_option('vesess_easyauth_options', []);
         
         // If the option doesn't exist yet (first installation), default to true
         if (!isset($options['enable_wp_login_integration'])) {
@@ -77,7 +77,7 @@ class My_Passwordless_Auth_Login_Integration {
     /**
      * Add passwordless login button to the login form
      */
-    public function add_passwordless_login_button() {
+    public function add_vesess_easyauth_login_button() {
         if (!$this->is_integration_enabled()) {
             return;
         }
@@ -92,7 +92,7 @@ class My_Passwordless_Auth_Login_Integration {
             </button>
             
             <!-- Hidden form fields for the passwordless login -->
-            <input type="hidden" name="passwordless_login_nonce" id="passwordless_login_nonce" value="<?php echo esc_attr($nonce); ?>">
+            <input type="hidden" name="vesess_easyauth_login_nonce" id="vesess_easyauth_login_nonce" value="<?php echo esc_attr($nonce); ?>">
             <div id="pwless-messages" style="margin-top: 10px;"></div>
         </div>
         <?php
@@ -101,7 +101,7 @@ class My_Passwordless_Auth_Login_Integration {
     /**
      * Add passwordless login option to the lost password form
      */
-    public function add_passwordless_login_button_lostpw() {
+    public function add_vesess_easyauth_login_button_lostpw() {
         if (!$this->is_integration_enabled()) {
             return;
         }
@@ -114,7 +114,7 @@ class My_Passwordless_Auth_Login_Integration {
             <button type="button" id="pwless-login-btn-lost" class="button button-primary" style="display: block; width: 100%; text-align: center; padding: 10px 0;">
                 Use Passwordless Login Instead
             </button>
-            <input type="hidden" name="passwordless_login_nonce_lost" id="passwordless_login_nonce_lost" value="<?php echo esc_attr($nonce); ?>">
+            <input type="hidden" name="vesess_easyauth_login_nonce_lost" id="vesess_easyauth_login_nonce_lost" value="<?php echo esc_attr($nonce); ?>">
             <div id="pwless-messages-lost" style="margin-top: 10px;"></div>
         </div>
         <?php
@@ -130,7 +130,7 @@ class My_Passwordless_Auth_Login_Integration {
         
         // Enqueue the login form integration script
         wp_enqueue_script(
-            'my-passwordless-auth-login-integration',
+            'vesess_easyauth-login-integration',
             MY_PASSWORDLESS_AUTH_URL . 'public/js/login-form-integration.js',
             array('jquery'),
             MY_PASSWORDLESS_AUTH_VERSION,
@@ -139,7 +139,7 @@ class My_Passwordless_Auth_Login_Integration {
         
         // Localize script with AJAX data
         wp_localize_script(
-            'my-passwordless-auth-login-integration',
+            'vesess_easyauth-login-integration',
             'passwordlessLoginIntegration',
             array(
                 'ajax_url' => admin_url('admin-ajax.php'),
@@ -159,7 +159,7 @@ class My_Passwordless_Auth_Login_Integration {
         
         // Enqueue login form integration styles
         wp_enqueue_style(
-            'my-passwordless-auth-login-integration',
+            'vesess_easyauth-login-integration',
             MY_PASSWORDLESS_AUTH_URL . 'public/css/login-form-integration.css',
             array(),
             MY_PASSWORDLESS_AUTH_VERSION
@@ -169,9 +169,9 @@ class My_Passwordless_Auth_Login_Integration {
     /**
      * Handle AJAX request for passwordless login
      */
-    public function handle_passwordless_login_ajax() {
+    public function handle_vesess_easyauth_login_ajax() {
         // Verify nonce
-        if (!isset($_POST['passwordless_login_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['passwordless_login_nonce'])), 'passwordless-login-nonce')) {
+        if (!isset($_POST['vesess_easyauth_login_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['vesess_easyauth_login_nonce'])), 'passwordless-login-nonce')) {
             wp_send_json_error('Invalid security token');
             return;
         }

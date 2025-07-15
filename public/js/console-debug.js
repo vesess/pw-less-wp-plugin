@@ -9,7 +9,7 @@
     window.passwordlessAuthLog = function(message, level) {
         level = level || 'log';
         var method = level === 'error' ? 'error' : (level === 'warning' ? 'warn' : 'log');
-        console[method]('My Passwordless Auth: ' + message);
+        console[method]('EasyAuth: ' + message);
     };
     
     // Log verification status if present

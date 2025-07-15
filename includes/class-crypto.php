@@ -56,7 +56,7 @@ class My_Passwordless_Auth_Crypto {
             return $combined;
             
         } catch (Exception $e) {
-            error_log('My Passwordless Auth: Encryption failed - ' . $e->getMessage());
+            error_log('EasyAuth: Encryption failed - ' . $e->getMessage());
             return false;
         }
     }
@@ -103,7 +103,7 @@ class My_Passwordless_Auth_Crypto {
             return $decrypted;
             
         } catch (Exception $e) {
-            error_log('My Passwordless Auth: Decryption failed - ' . $e->getMessage());
+            error_log('EasyAuth: Decryption failed - ' . $e->getMessage());
             return false;
         }
     }
@@ -151,7 +151,7 @@ class My_Passwordless_Auth_Crypto {
             return $result;
             
         } catch (Exception $e) {
-            error_log('My Passwordless Auth: URL encryption failed - ' . $e->getMessage());
+            error_log('EasyAuth: URL encryption failed - ' . $e->getMessage());
             return false;
         }
     }
@@ -200,7 +200,7 @@ class My_Passwordless_Auth_Crypto {
             return $decrypted;
             
         } catch (Exception $e) {
-            error_log('My Passwordless Auth: URL decryption failed - ' . $e->getMessage());
+            error_log('EasyAuth: URL decryption failed - ' . $e->getMessage());
             return false;
         }
     }
