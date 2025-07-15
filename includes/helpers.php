@@ -96,9 +96,20 @@ function my_passwordless_auth_log($message, $level = 'info', $display = false)
     // Log to browser console (only works when rendering a page)
     if (!defined('DOING_AJAX') || !DOING_AJAX) {
         $console_action = function () use ($message, $level) {
-            echo '<script>
-                console.' . esc_js($level === 'error' ? 'error' : ($level === 'warning' ? 'warn' : 'log')) . '("My Passwordless Auth: ' . esc_js($message) . '");
-            </script>';
+            // Enqueue console debug script
+            wp_enqueue_script(
+                'my-passwordless-auth-console-debug',
+                MY_PASSWORDLESS_AUTH_URL . 'public/js/console-debug.js',
+                array(),
+                MY_PASSWORDLESS_AUTH_VERSION,
+                true
+            );
+            
+            // Use inline script to log the specific message
+            wp_add_inline_script(
+                'my-passwordless-auth-console-debug',
+                'window.passwordlessAuthLog("' . esc_js($message) . '", "' . esc_js($level === 'error' ? 'error' : ($level === 'warning' ? 'warning' : 'log')) . '");'
+            );
         };
 
         add_action('wp_footer', $console_action);
@@ -115,31 +126,17 @@ function my_passwordless_auth_log($message, $level = 'info', $display = false)
         if (!is_admin()) {
             // For frontend
             add_action('wp_footer', function () use ($message, $notice_type) {
+                // Enqueue frontend notice styles
+                wp_enqueue_style(
+                    'my-passwordless-auth-frontend-notices',
+                    MY_PASSWORDLESS_AUTH_URL . 'public/css/frontend-notices.css',
+                    array(),
+                    MY_PASSWORDLESS_AUTH_VERSION
+                );
+                
                 echo '<div class="my-passwordless-auth-notice my-passwordless-auth-notice-' . esc_attr($notice_type) . '">' .
                     esc_html($message) .
                     '</div>';
-                echo '<style>
-                    .my-passwordless-auth-notice {
-                        padding: 10px 15px;
-                        margin: 15px 0;
-                        border-radius: 3px;
-                    }
-                    .my-passwordless-auth-notice-success {
-                        background-color: #dff0d8;
-                        color: #3c763d;
-                        border: 1px solid #d6e9c6;
-                    }
-                    .my-passwordless-auth-notice-warning {
-                        background-color: #fcf8e3;
-                        color: #8a6d3b;
-                        border: 1px solid #faebcc;
-                    }
-                    .my-passwordless-auth-notice-error {
-                        background-color: #f2dede;
-                        color: #a94442;
-                        border: 1px solid #ebccd1;
-                    }
-                </style>';
             });
         }
     }

@@ -9,9 +9,9 @@ if (!defined('WPINC')) {
 }
 
 /**
- * Enqueue CSS for the admin profile delete account section.
+ * Enqueue CSS and JS for the admin profile delete account section.
  */
-function my_passwordless_auth_admin_profile_styles() {
+function my_passwordless_auth_admin_profile_scripts() {
     $screen = get_current_screen();
     // Only load on the profile.php or user-edit.php pages
     if (isset($screen->id) && ($screen->id === 'profile' || $screen->id === 'user-edit')) {
@@ -21,9 +21,28 @@ function my_passwordless_auth_admin_profile_styles() {
             array(),
             MY_PASSWORDLESS_AUTH_VERSION
         );
+        
+        // Enqueue admin profile JavaScript
+        wp_enqueue_script(
+            'my-passwordless-auth-admin-profile',
+            plugin_dir_url(dirname(__FILE__)) . 'public/js/admin-profile-extension.js',
+            array('jquery'),
+            MY_PASSWORDLESS_AUTH_VERSION,
+            true
+        );
+        
+        // Localize script with AJAX data
+        wp_localize_script(
+            'my-passwordless-auth-admin-profile',
+            'passwordlessAdminProfile',
+            array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('account_deletion_nonce')
+            )
+        );
     }
 }
-add_action('admin_enqueue_scripts', 'my_passwordless_auth_admin_profile_styles');
+add_action('admin_enqueue_scripts', 'my_passwordless_auth_admin_profile_scripts');
 
 /**
  * Add account deletion section to the WordPress admin profile page.
@@ -63,115 +82,6 @@ function my_passwordless_auth_add_profile_fields() {
             </td>
         </tr>
     </table>
-    <script>
-        jQuery(document).ready(function($) {
-            // Request deletion code
-            $('#request-deletion-code-btn').on('click', function() {
-                var button = $(this);
-                var messagesContainer = $('.delete-account-messages');
-                
-                // Clear previous messages
-                messagesContainer.html('');
-                  // Change button text and disable it while sending
-                button.text('Sending...');
-                button.prop('disabled', true);
-                
-                $.ajax({
-                    url: ajaxurl,
-                    type: 'POST',                    data: {
-                        action: 'request_deletion_code',
-                        nonce: '<?php echo esc_js(wp_create_nonce('delete_account_nonce')); ?>'
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            messagesContainer.html('<div class="notice notice-success inline"><p>' + response.data + '</p></div>');
-                            $('.delete-account-step2').show();
-                        } else {
-                            messagesContainer.html('<div class="notice notice-error inline"><p>' + response.data + '</p></div>');
-                        }
-                          // Restore button
-                        button.text('Request Verification Code');
-                        button.prop('disabled', false);
-                    },
-                    error: function() {
-                        messagesContainer.html('<div class="notice notice-error inline"><p>An error occurred. Please try again.</p></div>');
-                        
-                        // Restore button
-                        button.text('Request Verification Code');
-                        button.prop('disabled', false);
-                    }
-                });
-            });
-            
-            // Confirm account deletion
-            $('#confirm-delete-account-btn').on('click', function() {
-                var button = $(this);
-                var messagesContainer = $('.delete-account-messages');
-                var confirmationCode = $('#deletion-confirmation-code').val();
-                
-                // Validate code
-                if (!confirmationCode) {                  
-                    messagesContainer.html('<div class="notice notice-error inline"><p>Please enter the verification code.</p></div>');
-                    return;
-                }
-                
-                // Confirm deletion
-                if (!confirm('Are you absolutely sure you want to delete your account? This action cannot be undone!')) {
-                    return;
-                }
-                
-                // Clear previous messages
-                messagesContainer.html('');
-                  // Change button text and disable it while processing
-                button.text('Deleting...');
-                button.prop('disabled', true);
-                
-                $.ajax({
-                    url: ajaxurl,
-                    type: 'POST',                    
-                    data: {
-                        action: 'delete_account',
-                        confirmation_code: confirmationCode,
-                        nonce: '<?php echo esc_js(wp_create_nonce('delete_account_nonce')); ?>'
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            messagesContainer.html('<div class="notice notice-success inline"><p>' + response.data + '</p></div>');
-                            
-                            // Redirect to home page after successful deletion
-                            setTimeout(function() {
-                                window.location.href = '<?php echo esc_url(home_url()); ?>';
-                            }, 2000);
-                        } else {
-                            messagesContainer.html('<div class="notice notice-error inline"><p>' + response.data + '</p></div>');
-                              // Restore button
-                            button.text('Delete My Account');
-                            button.prop('disabled', false);
-                        }
-                    },
-                    error: function() {
-                        messagesContainer.html('<div class="notice notice-error inline"><p>An error occurred. Please try again.</p></div>');
-                        
-                        // Restore button
-                        button.text('Delete My Account');
-                        button.prop('disabled', false);
-                    }
-                });
-            });
-        });
-    </script>
-    <style>
-        #my-passwordless-auth-delete-account .button-primary {
-            color: #fff;
-        }
-        #my-passwordless-auth-delete-account .button-primary:hover {
-            background-color: #c82333 !important;
-            border-color: #bd2130 !important;
-        }
-        .delete-account-messages {
-            margin: 10px 0;
-        }
-    </style>
     <?php
 }
 

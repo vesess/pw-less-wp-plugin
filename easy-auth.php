@@ -384,7 +384,11 @@ function my_passwordless_auth_logs_page() {
                 if (wp_verify_nonce($nonce, 'clear_auth_logs')) {
                     delete_transient('my_passwordless_auth_logs');
                     echo '<div class="updated"><p>Logs cleared.</p></div>';
-                    echo '<script>window.location.reload();</script>';
+                    // Use wp_add_inline_script instead of direct echo
+                    add_action('admin_footer', function() {
+                        wp_enqueue_script('jquery');
+                        wp_add_inline_script('jquery', 'window.location.reload();');
+                    });
                 }
             }
             ?>
@@ -408,14 +412,23 @@ function my_passwordless_auth_add_login_debug() {
         // 1. Nonce is valid, OR
         // 2. User is an admin (for backward compatibility with existing links)
         if ($nonce_valid || current_user_can('manage_options')) {
-            echo '<script>
-            console.group("Passwordless Auth - Verification Process");
-            console.log("Verification status: ' . esc_js($status) . '");
-            ' . ($status === 'success' ? 'console.log("Email successfully verified!");' : '') . '
-            ' . ($status === 'failed' ? 'console.error("Email verification failed. Invalid or expired code.");' : '') . '
-            ' . ($status === 'invalid' ? 'console.error("Invalid verification request.");' : '') . '
-            ' . ($status === 'invalid_user' ? 'console.error("User not found.");' : '') . '            console.groupEnd();
-        </script>';
+            // Enqueue debug script
+            wp_enqueue_script(
+                'my-passwordless-auth-console-debug',
+                MY_PASSWORDLESS_AUTH_URL . 'public/js/console-debug.js',
+                array(),
+                MY_PASSWORDLESS_AUTH_VERSION,
+                true
+            );
+            
+            // Localize the debug data
+            wp_localize_script(
+                'my-passwordless-auth-console-debug',
+                'passwordlessAuthDebug',
+                array(
+                    'status' => $status
+                )
+            );
         }
         
         // Add visual feedback

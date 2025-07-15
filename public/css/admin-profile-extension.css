@@ -26,9 +26,23 @@
     padding: 8px 12px;
 }
 
+.delete-account-messages {
+    margin: 10px 0;
+}
+
 /* Input field for verification code */
 #deletion-confirmation-code {
     width: 200px;
+}
+
+/* Additional button styling for consistent behavior */
+#my-passwordless-auth-delete-account .button-primary {
+    color: #fff;
+}
+
+#my-passwordless-auth-delete-account .button-primary:hover {
+    background-color: #c82333 !important;
+    border-color: #bd2130 !important;
 }
 
 /* Animation for step transitions */

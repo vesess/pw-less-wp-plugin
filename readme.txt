@@ -1,5 +1,5 @@
 === EasyAuth ===
-Contributors: Sachithra Vidmal Pinnaduwa, Jaliya Navoda
+Contributors: vesseslabs
 Tags: authentication, passwordless, login
 Requires at least: 5.0
 Tested up to: 6.8

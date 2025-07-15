@@ -85,130 +85,31 @@ function my_passwordless_auth_navbar_css() {
         return;
     }
     
-    // Different CSS based on login status
-    if (is_user_logged_in()) {
-        // When logged in: Hide login and sign-up links
-        ?>
-        <style type="text/css">
-            /* Hide menu items with login or sign-up text when logged in */
-            li a:contains("login"), li a:contains("Login"),
-            li a:contains("sign-up"), li a:contains("sign-up"),
-            li a:contains("register"), li a:contains("Register"),
-            li a[href*="/login/"], li a[href*="/sign-up/"], li a[href*="/register/"] {
-                display: none !important;
-            }
-            
-            /* Hide parent li elements */
-            li:has(a[href*="/login/"]),
-            li:has(a[href*="/sign-up/"]),
-            li:has(a[href*="/register/"]),
-            nav li a[href*="/login/"],
-            nav li a[href*="/sign-up/"],
-            nav li a[href*="/register/"],
-            .menu li a[href*="/login/"],
-            .menu li a[href*="/sign-up/"],
-            .menu li a[href*="/register/"],
-            .menu-item a[href*="/login/"],
-            .menu-item a[href*="/sign-up/"],
-            .menu-item a[href*="/register/"] {
-                display: none !important;
-            }
-        </style>
-        <?php
-    } else {
-        // When not logged in: Hide profile links
-        ?>
-        <style type="text/css">
-            /* Hide menu items with profile text when not logged in */
-            li a:contains("profile"), li a:contains("Profile"),
-            li a[href*="/profile/"] {
-                display: none !important;
-            }
-            
-            /* Hide parent li elements */
-            li:has(a[href*="/profile/"]),
-            nav li a[href*="/profile/"],
-            .menu li a[href*="/profile/"],
-            .menu-item a[href*="/profile/"] {
-                display: none !important;
-            }
-        </style>
-        <?php
-    }
+    // Enqueue navbar filter CSS
+    wp_enqueue_style(
+        'my-passwordless-auth-navbar-filter',
+        MY_PASSWORDLESS_AUTH_URL . 'public/css/navbar-filter.css',
+        array(),
+        MY_PASSWORDLESS_AUTH_VERSION
+    );
     
-    ?>
-    <script type="text/javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get login status
-        var isLoggedIn = <?php echo is_user_logged_in() ? 'true' : 'false'; ?>;
-        
-        // Terms to look for based on login status
-        var termsToHide = isLoggedIn ? 
-            ['login', 'sign-up', 'register'] : 
-            ['profile'];
-            
-        var pathsToHide = isLoggedIn ? 
-            ['/login/', '/sign-up/', '/register/'] : 
-            ['/profile/'];
-        
-        function hideMenuItems() {
-            var menuLinks = document.querySelectorAll('li a');
-            
-            for (var i = 0; i < menuLinks.length; i++) {
-                var linkText = menuLinks[i].textContent.toLowerCase();
-                var linkHref = menuLinks[i].getAttribute('href') || '';
-                var shouldHide = false;
-                
-                // Check text content
-                for (var j = 0; j < termsToHide.length; j++) {
-                    if (linkText.indexOf(termsToHide[j]) !== -1) {
-                        shouldHide = true;
-                        break;
-                    }
-                }
-                
-                // Check href
-                if (!shouldHide) {
-                    for (var j = 0; j < pathsToHide.length; j++) {
-                        if (linkHref.indexOf(pathsToHide[j]) !== -1) {
-                            shouldHide = true;
-                            break;
-                        }
-                    }
-                }
-                
-                // Hide if needed
-                if (shouldHide) {
-                    var parentLi = menuLinks[i].closest('li');
-                    if (parentLi) {
-                        parentLi.style.display = 'none';
-                    } else {
-                        menuLinks[i].style.display = 'none';
-                    }
-                }
-            }
-        }
-        
-        // Execute immediately
-        hideMenuItems();
-        
-        // Also run after a short delay to catch any dynamically loaded menus
-        setTimeout(hideMenuItems, 500);
-        
-        // Set up a MutationObserver to watch for DOM changes
-        if (typeof MutationObserver !== 'undefined') {
-            var observer = new MutationObserver(function() {
-                hideMenuItems();
-            });
-            
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true
-            });
-        }
-    });
-    </script>
-    <?php
+    // Add appropriate body class for CSS targeting
+    $body_class = is_user_logged_in() ? 'logged-in-hide-logout' : 'logged-out-hide-profile';
+    
+    // Enqueue navbar filter JavaScript for additional dynamic handling
+    wp_enqueue_script(
+        'my-passwordless-auth-navbar-filter',
+        MY_PASSWORDLESS_AUTH_URL . 'public/js/navbar-filter.js',
+        array(),
+        MY_PASSWORDLESS_AUTH_VERSION,
+        true
+    );
+    
+    // Use inline script to add the body class
+    wp_add_inline_script(
+        'my-passwordless-auth-navbar-filter',
+        'document.addEventListener("DOMContentLoaded", function() { document.body.classList.add("' . esc_js($body_class) . '"); });'
+    );
 }
 
 /**
