@@ -6,7 +6,7 @@
  * 1. Hide login/sign-up items when user is logged in
  * 2. Hide profile items when user is not logged in
  *
- * @package My_Passwordless_Auth
+ * @package VESESS_EASYAUTH
  */
 
 // If this file is called directly, abort.
@@ -18,7 +18,7 @@ if (!defined('WPINC')) {
  * Menu filter to hide login/sign-up items when user is logged in
  * And hide profile links when user is not logged in
  */
-function my_passwordless_auth_navbar_filter($html) {
+function vesess_easyauth_navbar_filter($html) {
     // Return unchanged content if it's not a string or is empty
     if (!is_string($html) || empty($html)) {
         return $html;
@@ -79,163 +79,64 @@ function my_passwordless_auth_navbar_filter($html) {
 /**
  * Add CSS to hide menu items based on login status
  */
-function my_passwordless_auth_navbar_css() {
+function vesess_easyauth_navbar_css() {
     // Check if WordPress function exists
     if (!function_exists('is_user_logged_in')) {
         return;
     }
     
-    // Different CSS based on login status
-    if (is_user_logged_in()) {
-        // When logged in: Hide login and sign-up links
-        ?>
-        <style type="text/css">
-            /* Hide menu items with login or sign-up text when logged in */
-            li a:contains("login"), li a:contains("Login"),
-            li a:contains("sign-up"), li a:contains("sign-up"),
-            li a:contains("register"), li a:contains("Register"),
-            li a[href*="/login/"], li a[href*="/sign-up/"], li a[href*="/register/"] {
-                display: none !important;
-            }
-            
-            /* Hide parent li elements */
-            li:has(a[href*="/login/"]),
-            li:has(a[href*="/sign-up/"]),
-            li:has(a[href*="/register/"]),
-            nav li a[href*="/login/"],
-            nav li a[href*="/sign-up/"],
-            nav li a[href*="/register/"],
-            .menu li a[href*="/login/"],
-            .menu li a[href*="/sign-up/"],
-            .menu li a[href*="/register/"],
-            .menu-item a[href*="/login/"],
-            .menu-item a[href*="/sign-up/"],
-            .menu-item a[href*="/register/"] {
-                display: none !important;
-            }
-        </style>
-        <?php
-    } else {
-        // When not logged in: Hide profile links
-        ?>
-        <style type="text/css">
-            /* Hide menu items with profile text when not logged in */
-            li a:contains("profile"), li a:contains("Profile"),
-            li a[href*="/profile/"] {
-                display: none !important;
-            }
-            
-            /* Hide parent li elements */
-            li:has(a[href*="/profile/"]),
-            nav li a[href*="/profile/"],
-            .menu li a[href*="/profile/"],
-            .menu-item a[href*="/profile/"] {
-                display: none !important;
-            }
-        </style>
-        <?php
-    }
+    // Enqueue navbar filter CSS
+    wp_enqueue_style(
+        'vesess_easyauth-navbar-filter',
+        VESESS_EASYAUTH_URL . 'public/css/navbar-filter.css',
+        array(),
+        VESESS_EASYAUTH_VERSION
+    );
     
-    ?>
-    <script type="text/javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get login status
-        var isLoggedIn = <?php echo is_user_logged_in() ? 'true' : 'false'; ?>;
-        
-        // Terms to look for based on login status
-        var termsToHide = isLoggedIn ? 
-            ['login', 'sign-up', 'register'] : 
-            ['profile'];
-            
-        var pathsToHide = isLoggedIn ? 
-            ['/login/', '/sign-up/', '/register/'] : 
-            ['/profile/'];
-        
-        function hideMenuItems() {
-            var menuLinks = document.querySelectorAll('li a');
-            
-            for (var i = 0; i < menuLinks.length; i++) {
-                var linkText = menuLinks[i].textContent.toLowerCase();
-                var linkHref = menuLinks[i].getAttribute('href') || '';
-                var shouldHide = false;
-                
-                // Check text content
-                for (var j = 0; j < termsToHide.length; j++) {
-                    if (linkText.indexOf(termsToHide[j]) !== -1) {
-                        shouldHide = true;
-                        break;
-                    }
-                }
-                
-                // Check href
-                if (!shouldHide) {
-                    for (var j = 0; j < pathsToHide.length; j++) {
-                        if (linkHref.indexOf(pathsToHide[j]) !== -1) {
-                            shouldHide = true;
-                            break;
-                        }
-                    }
-                }
-                
-                // Hide if needed
-                if (shouldHide) {
-                    var parentLi = menuLinks[i].closest('li');
-                    if (parentLi) {
-                        parentLi.style.display = 'none';
-                    } else {
-                        menuLinks[i].style.display = 'none';
-                    }
-                }
-            }
-        }
-        
-        // Execute immediately
-        hideMenuItems();
-        
-        // Also run after a short delay to catch any dynamically loaded menus
-        setTimeout(hideMenuItems, 500);
-        
-        // Set up a MutationObserver to watch for DOM changes
-        if (typeof MutationObserver !== 'undefined') {
-            var observer = new MutationObserver(function() {
-                hideMenuItems();
-            });
-            
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true
-            });
-        }
-    });
-    </script>
-    <?php
+    // Add appropriate body class for CSS targeting
+    $body_class = is_user_logged_in() ? 'logged-in-hide-logout' : 'logged-out-hide-profile';
+    
+    // Enqueue navbar filter JavaScript for additional dynamic handling
+    wp_enqueue_script(
+        'vesess_easyauth-navbar-filter',
+        VESESS_EASYAUTH_URL . 'public/js/navbar-filter.js',
+        array(),
+        VESESS_EASYAUTH_VERSION,
+        true
+    );
+    
+    // Use inline script to add the body class
+    wp_add_inline_script(
+        'vesess_easyauth-navbar-filter',
+        'document.addEventListener("DOMContentLoaded", function() { document.body.classList.add("' . esc_js($body_class) . '"); });'
+    );
 }
 
 /**
  * Initialize menu filters
  */
-function my_passwordless_auth_init_navbar_filters() {
+function vesess_easyauth_init_navbar_filters() {
     // Add CSS and JS to the head
-    add_action('wp_head', 'my_passwordless_auth_navbar_css');
+    add_action('wp_head', 'vesess_easyauth_navbar_css');
     
     // Apply filter to all potential menu outputs
-    add_filter('wp_nav_menu_items', 'my_passwordless_auth_navbar_filter', 9999);
-    add_filter('wp_page_menu', 'my_passwordless_auth_navbar_filter', 9999);
+    add_filter('wp_nav_menu_items', 'vesess_easyauth_navbar_filter', 9999);
+    add_filter('wp_page_menu', 'vesess_easyauth_navbar_filter', 9999);
     add_filter('render_block', function($block_content, $block) {
         if ($block['blockName'] === 'core/navigation') {
-            return my_passwordless_auth_navbar_filter($block_content);
+            return vesess_easyauth_navbar_filter($block_content);
         }
         return $block_content;
     }, 9999, 2);
     
     // Hook into all menu-related filters
-    add_action('wp', 'my_passwordless_auth_register_all_navbar_filters');
+    add_action('wp', 'vesess_easyauth_register_all_navbar_filters');
 }
 
 /**
  * Register filter for all potential navigation hooks
  */
-function my_passwordless_auth_register_all_navbar_filters() {
+function vesess_easyauth_register_all_navbar_filters() {
     global $wp_filter;
     
     // Get all filters
@@ -247,11 +148,11 @@ function my_passwordless_auth_register_all_navbar_filters() {
             
             // Don't re-hook into filters we've already added
             if ($tag !== 'wp_nav_menu_items' && $tag !== 'wp_page_menu') {
-                add_filter($tag, 'my_passwordless_auth_navbar_filter', 9999);
+                add_filter($tag, 'vesess_easyauth_navbar_filter', 9999);
             }
         }
     }
 }
 
 // Initialize the navigation filters
-my_passwordless_auth_init_navbar_filters();
+vesess_easyauth_init_navbar_filters();

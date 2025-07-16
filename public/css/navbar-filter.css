@@ -1,0 +1,51 @@
+/* Navbar filtering styles */
+
+/* Hide logout menu items when logged in */
+.logged-in-hide-logout li a[href*="wp-login.php?action=logout"] {
+    display: none !important;
+}
+
+/* Hide login, signup, register items when logged in */
+.logged-in-hide-logout li a[href*="/login/"],
+.logged-in-hide-logout li a[href*="/sign-up/"],
+.logged-in-hide-logout li a[href*="/register/"] {
+    display: none !important;
+}
+
+/* Hide menu items containing specific text when logged in */
+.logged-in-hide-logout .menu-item-type-custom a[href*="/login/"],
+.logged-in-hide-logout .menu-item-type-custom a[href*="/sign-up/"],
+.logged-in-hide-logout .menu-item-type-custom a[href*="/register/"] {
+    display: none !important;
+}
+
+/* Hide parent li elements containing login/signup links */
+.logged-in-hide-logout li:has(a[href*="/login/"]),
+.logged-in-hide-logout li:has(a[href*="/sign-up/"]),
+.logged-in-hide-logout li:has(a[href*="/register/"]) {
+    display: none !important;
+}
+
+/* When not logged in: Hide profile links */
+.logged-out-hide-profile li a[href*="/profile/"] {
+    display: none !important;
+}
+
+/* Hide parent li elements */
+.logged-out-hide-profile li:has(a[href*="/profile/"]),
+.logged-out-hide-profile nav li a[href*="/profile/"],
+.logged-out-hide-profile .wp-block-navigation__container .wp-block-navigation-item a[href*="/profile/"] {
+    display: none !important;
+}
+
+/* Hide Account/Profile menu items when not logged in */
+.logged-out-hide-profile .wp-block-navigation__container .wp-block-navigation-item .wp-block-navigation-link__content,
+.logged-out-hide-profile .menu-item-type-custom a[href*="/profile/"] {
+    display: none !important;
+}
+
+/* Hide parent navigation items */
+.logged-out-hide-profile .wp-block-navigation__container .wp-block-navigation-item:has(.wp-block-navigation-link__content),
+.logged-out-hide-profile .menu-item:has(a[href*="/profile/"]) {
+    display: none !important;
+}

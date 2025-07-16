@@ -30,7 +30,7 @@
 }
 
 /* Form element */
-#passwordless-registration-form {
+#vesess_easyauth-registration-form {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -44,8 +44,8 @@
 }
 
 /* Input fields (email, username, display_name) */
-#passwordless-registration-form input[type="email"],
-#passwordless-registration-form input[type="text"] {
+#vesess_easyauth-registration-form input[type="email"],
+#vesess_easyauth-registration-form input[type="text"] {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -61,8 +61,8 @@
     box-sizing: border-box;
 }
 
-#passwordless-registration-form input[type="email"]::placeholder,
-#passwordless-registration-form input[type="text"]::placeholder {
+#vesess_easyauth-registration-form input[type="email"]::placeholder,
+#vesess_easyauth-registration-form input[type="text"]::placeholder {
     color: rgba(0, 0, 0, 0.6); /* Placeholder text color */
 }
 
@@ -75,7 +75,7 @@
 }
 
 /* Submit Button */
-#passwordless-registration-form input[type="submit"] {
+#vesess_easyauth-registration-form input[type="submit"] {
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -96,7 +96,7 @@
     cursor: pointer;
 }
 
-#passwordless-registration-form input[type="submit"]:hover {
+#vesess_easyauth-registration-form input[type="submit"]:hover {
     background-color: #1e293b; /* Darken a bit on hover */
 }
 
@@ -162,9 +162,9 @@
     }
 
     /* Make form and its key elements full width or constrained */
-    #passwordless-registration-form,
+    #vesess_easyauth-registration-form,
     .passwordless-form .form-row, /* Ensures input fields take available width */
-    #passwordless-registration-form input[type="submit"],
+    #vesess_easyauth-registration-form input[type="submit"],
     .login-link {
         width: 100%;
         max-width: 480px; /* Retain a max-width for form elements */
@@ -172,10 +172,10 @@
         margin-right: auto;
     }
 
-    #passwordless-registration-form input[type="email"],
-    #passwordless-registration-form input[type="text"] {
+    #vesess_easyauth-registration-form input[type="email"],
+    #vesess_easyauth-registration-form input[type="text"] {
         width: 100%; /* Already 100% of their parent form-row */
-    }    #passwordless-registration-form {
+    }    #vesess_easyauth-registration-form {
         gap: 25px; /* Adjusted gap for responsive design with labels */
     }
 
@@ -192,12 +192,12 @@
         gap: 20px; /* Further reduce gap */
     }
 
-    #passwordless-registration-form,
+    #vesess_easyauth-registration-form,
     .passwordless-form .form-row,
-    #passwordless-registration-form input[type="submit"],
+    #vesess_easyauth-registration-form input[type="submit"],
     .login-link {
         max-width: 100%; /* Allow full bleed on small screens */
-    }    #passwordless-registration-form {
+    }    #vesess_easyauth-registration-form {
         gap: 20px; /* Adjusted gap for mobile view with labels */
     }    .registration-title {
         font-size: 24px; /* Smaller title for mobile */
@@ -206,16 +206,16 @@
     /* Adjust label font size for mobile */
     .passwordless-form .form-row label {
         font-size: 14px;
-    }    #passwordless-registration-form input[type="email"],
-    #passwordless-registration-form input[type="text"],
-    #passwordless-registration-form input[type="submit"] {
+    }    #vesess_easyauth-registration-form input[type="email"],
+    #vesess_easyauth-registration-form input[type="text"],
+    #vesess_easyauth-registration-form input[type="submit"] {
         height: 50px;
         font-size: 15px;
         padding: 10px 14px; /* Adjust padding for new height */
     }
       /* Padding already set above */
 
-    #passwordless-registration-form input[type="submit"] {
+    #vesess_easyauth-registration-form input[type="submit"] {
         padding: 10px 0px; /* Adjust padding for new height */
     }
 

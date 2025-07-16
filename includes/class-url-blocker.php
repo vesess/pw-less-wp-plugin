@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class My_Passwordless_Auth_URL_Blocker {
+class Vesess_Easyauth_URL_Blocker {
     
     private $logged_in_blocked_urls = array();
     private $logged_out_blocked_urls = array();
@@ -31,18 +31,18 @@ class My_Passwordless_Auth_URL_Blocker {
      */
     public function setup_blocked_urls() {
         if (!function_exists('home_url')) {
-            //my_passwordless_auth_log("home_url function not available", 'error');
+            //vesess_easyauth_log("home_url function not available", 'error');
             return;
         }
 
         // Load options and get user_home_url
         if (function_exists('get_option')) {
-            $this->options = get_option('my_passwordless_auth_options');
+            $this->options = get_option('vesess_easyauth_options');
             $base_url = isset($this->options['user_home_url']) ? $this->options['user_home_url'] : home_url();
-            //my_passwordless_auth_log("Using base URL for blocked URLs: " . $base_url, 'info');
+            //vesess_easyauth_log("Using base URL for blocked URLs: " . $base_url, 'info');
         } else {
             $base_url = home_url();
-            //my_passwordless_auth_log("Fallback to home_url(): " . $base_url, 'info');
+            //vesess_easyauth_log("Fallback to home_url(): " . $base_url, 'info');
         }
 
         // URLs to block when user is logged in
@@ -66,15 +66,15 @@ class My_Passwordless_Auth_URL_Blocker {
         // For logged out users trying to access profile, redirect to login page
         $this->profile_redirect_url = $base_url . '/login'; // Redirect to login URL
         
-        ////my_passwordless_auth_log("Blocked URLs set up for logged in users: " . print_r($this->logged_in_blocked_urls, true), 'info');
-        ////my_passwordless_auth_log("Blocked URLs set up for logged out users: " . print_r($this->logged_out_blocked_urls, true), 'info');
+        ////vesess_easyauth_log("Blocked URLs set up for logged in users: " . print_r($this->logged_in_blocked_urls, true), 'info');
+        ////vesess_easyauth_log("Blocked URLs set up for logged out users: " . print_r($this->logged_out_blocked_urls, true), 'info');
     }    /**
      * Check if the current URL is in the blocked list
      */
     public function check_blocked_urls() {
         // Don't block admin pages
         if (function_exists('is_admin') && is_admin()) {
-            //my_passwordless_auth_log("Admin page detected, not checking URL blocking", 'info');
+            //vesess_easyauth_log("Admin page detected, not checking URL blocking", 'info');
             return;
         }
         
@@ -82,7 +82,7 @@ class My_Passwordless_Auth_URL_Blocker {
         $current_url = $this->get_current_url();
         
         // Log current URL for debugging
-        //my_passwordless_auth_log("Current URL being checked: " . $current_url, 'info');
+        //vesess_easyauth_log("Current URL being checked: " . $current_url, 'info');
         
         // Check if user is logged in
         $is_logged_in = function_exists('is_user_logged_in') && is_user_logged_in();
@@ -95,7 +95,7 @@ class My_Passwordless_Auth_URL_Blocker {
             $this->check_url_against_patterns($current_url, $this->logged_out_blocked_urls, $this->profile_redirect_url);
         }
         
-        //my_passwordless_auth_log("URL not blocked: " . $current_url, 'info');
+        //vesess_easyauth_log("URL not blocked: " . $current_url, 'info');
     }
     
     /**
@@ -113,12 +113,12 @@ class My_Passwordless_Auth_URL_Blocker {
             $pattern = $this->convert_wildcard_to_regex($blocked_url);
             
             // Log the pattern for debugging
-            //my_passwordless_auth_log("Checking URL against pattern: " . $pattern, 'info');
+            //vesess_easyauth_log("Checking URL against pattern: " . $pattern, 'info');
             
             if (preg_match($pattern, $url)) {
                 $is_logged_in = function_exists('is_user_logged_in') && is_user_logged_in();
                 $user_status = $is_logged_in ? "logged-in" : "logged-out";
-                //my_passwordless_auth_log("Blocked access to: " . $url . " (matched pattern: " . $blocked_url . ") for " . $user_status . " user", 'warning');
+                //vesess_easyauth_log("Blocked access to: " . $url . " (matched pattern: " . $blocked_url . ") for " . $user_status . " user", 'warning');
                 
                 if (function_exists('wp_redirect')) {
                     wp_redirect($redirect_url);

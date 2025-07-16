@@ -3,102 +3,105 @@
  * Integrates passwordless login with the standard WordPress login form (wp-login.php)
  */
 
-if (!defined('ABSPATH')) {
-    exit;
+if (!defined('WPINC')) {
+    die;
 }
 
 /**
  * Class to handle integration with the standard WordPress login form
  */
-class My_Passwordless_Auth_Login_Integration {
+class Vesess_Easyauth_Login_Integration {
     /**
      * Initialize the class and set its hooks
      */
     public function init() {
-        // Revert to login_form hook and we'll use CSS to position it correctly
-        add_action('login_form', array($this, 'add_passwordless_login_button'));
+        // Add passwordless login button to login form
+        add_action('login_form', array($this, 'add_vesess_easyauth_login_button'));
         
-        // Add the passwordless login option to the lost password form removed for now
-        // add_action('lostpassword_form', array($this, 'add_passwordless_login_button_lostpw'));
+        // Add passwordless login option to lost password form
+        add_action('lostpassword_form', array($this, 'add_vesess_easyauth_login_button_lostpw'));
         
         // Add inline login form with AJAX functionality to the login page
         add_action('login_footer', array($this, 'add_inline_login_form'));
         
-        // Add admin setting
+        // Add custom CSS for login form positioning
+        add_action('login_head', array($this, 'add_custom_login_css'));
+        
+        // Add admin settings
         add_action('admin_init', array($this, 'add_admin_settings'));
         
-        // Add custom CSS to position the passwordless login after standard login button
-        add_action('login_enqueue_scripts', array($this, 'add_custom_login_css'));
+        // Handle the AJAX request for passwordless login
+        add_action('wp_ajax_nopriv_process_vesess_easyauth_login', array($this, 'handle_vesess_easyauth_login_ajax'));
+        add_action('wp_ajax_process_vesess_easyauth_login', array($this, 'handle_vesess_easyauth_login_ajax'));
     }
-      /**
+
+    /**
      * Add admin settings for the integration
      */
-    public function add_admin_settings() {        add_settings_field(
+    public function add_admin_settings() {
+        add_settings_field(
             'enable_wp_login_integration',
             'Enable Admin Login Integration',
             array($this, 'render_wp_login_integration_field'),
-            'my-passwordless-auth',
-            'my_passwordless_auth_general'
+            'vesess_easyauth',
+            'vesess_easyauth_general'
         );
-        
-        // Note: Sanitization is handled by the main admin class
-    }    /**
+    }
+
+    /**
      * Render the admin setting field
      */
     public function render_wp_login_integration_field() {
-        $options = get_option('my_passwordless_auth_options');
+        $options = get_option('vesess_easyauth_options');
         $checked = isset($options['enable_wp_login_integration']) ? $options['enable_wp_login_integration'] === 'yes' : true;
         ?>
-        <input type="checkbox" name="my_passwordless_auth_options[enable_wp_login_integration]" value="yes" <?php checked($checked); ?> />
+        <input type="checkbox" name="vesess_easyauth_options[enable_wp_login_integration]" value="yes" <?php checked($checked); ?> />
         <p class="description">Add passwordless login option to the WordPress login screen (wp-login.php)</p>
         <?php
     }
-      /**
+
+    /**
      * Check if admin login integration is enabled
-     *
-     * @return bool True if enabled, false otherwise
      */
     public function is_integration_enabled() {
-        $options = get_option('my_passwordless_auth_options', []);
+        $options = get_option('vesess_easyauth_options', []);
         
         // If the option doesn't exist yet (first installation), default to true
         if (!isset($options['enable_wp_login_integration'])) {
             return true;
         }
         
-        // Otherwise, return true only if it's explicitly set to 'yes'
         return $options['enable_wp_login_integration'] === 'yes';
     }
-      /**
-     * Add passwordless login button to the WordPress login form
+
+    /**
+     * Add passwordless login button to the login form
      */
-    public function add_passwordless_login_button() {
+    public function add_vesess_easyauth_login_button() {
         if (!$this->is_integration_enabled()) {
             return;
         }
         
         // Create a nonce for security
         $nonce = wp_create_nonce('passwordless-login-nonce');
-        $ajax_url = admin_url('admin-ajax.php');
         ?>
-        <div class="pwless-login-container" style="text-align: center; margin: 15px 0;">            <p>or</p>
-            <button type="button" id="pwless-login-btn" class="button button-primary" style="display: block; width: 100%; text-align: center; padding: 10px 0; margin-bottom: 10px;">
+        <div class="pwless-login-container" style="text-align: center; margin: 15px 0;">
+            <p>or</p>
+            <button type="button" id="pwless-login-btn" class="button button-primary" style="display: block; width: 100%; text-align: center; padding: 10px 0;">
                 Log In with Email Code
             </button>
-            <p class="pwless-description" style="font-size: 13px; color: #666;">
-                No password needed: receive a login link or code via email.
-            </p>
             
             <!-- Hidden form fields for the passwordless login -->
-            <input type="hidden" name="passwordless_login_nonce" id="passwordless_login_nonce" value="<?php echo esc_attr($nonce); ?>">
+            <input type="hidden" name="vesess_easyauth_login_nonce" id="vesess_easyauth_login_nonce" value="<?php echo esc_attr($nonce); ?>">
             <div id="pwless-messages" style="margin-top: 10px;"></div>
         </div>
         <?php
     }
-      /**
+
+    /**
      * Add passwordless login option to the lost password form
      */
-    public function add_passwordless_login_button_lostpw() {
+    public function add_vesess_easyauth_login_button_lostpw() {
         if (!$this->is_integration_enabled()) {
             return;
         }
@@ -106,179 +109,45 @@ class My_Passwordless_Auth_Login_Integration {
         // Create a nonce for security
         $nonce = wp_create_nonce('passwordless-login-nonce');
         ?>
-        <div class="pwless-login-container" style="text-align: center; margin: 15px 0;">            <p>or</p>
+        <div class="pwless-login-container" style="text-align: center; margin: 15px 0;">
+            <p>or</p>
             <button type="button" id="pwless-login-btn-lost" class="button button-primary" style="display: block; width: 100%; text-align: center; padding: 10px 0;">
                 Use Passwordless Login Instead
             </button>
-            <input type="hidden" name="passwordless_login_nonce_lost" id="passwordless_login_nonce_lost" value="<?php echo esc_attr($nonce); ?>">
+            <input type="hidden" name="vesess_easyauth_login_nonce_lost" id="vesess_easyauth_login_nonce_lost" value="<?php echo esc_attr($nonce); ?>">
             <div id="pwless-messages-lost" style="margin-top: 10px;"></div>
         </div>
         <?php
     }
-      /**
-     * Add inline JavaScript for passwordless login to wp-login.php
-     */    public function add_inline_login_form() {
+
+    /**
+     * Add inline login form for passwordless authentication.
+     */
+    public function add_inline_login_form() {
         if (!$this->is_integration_enabled()) {
             return;
         }
         
-        $ajax_url = admin_url('admin-ajax.php');
-        ?>
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {            // Add click handler to the passwordless login button on main login form
-            var pwlessBtn = document.querySelector('#pwless-login-btn');
-            var usernameField = document.querySelector('#user_login');
-            var messagesContainer = document.querySelector('#pwless-messages');
-              if (pwlessBtn && usernameField) {
-                pwlessBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    // Get username or email from the username field
-                    var userInput = usernameField.value.trim();
-                    var nonce = document.querySelector('#passwordless_login_nonce').value;
-                    
-                    if (!userInput) {
-                        // Show error if field is empty
-                        messagesContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">Please enter your username or email address in the field above.</div>';
-                        return;
-                    }
-                      // Save button text before changing it
-                    var btnTextBeforeSending = 'Log In with Email Code';
-                    
-                    // Disable button
-                    pwlessBtn.textContent = 'Sending...';
-                    pwlessBtn.disabled = true;
-                    
-                    // Set a timeout to re-enable button as a fallback
-                    var timeoutId = setTimeout(function() {
-           
-                        pwlessBtn.textContent = btnTextBeforeSending;
-                        pwlessBtn.disabled = false;
-                    }, 10000); // 10 seconds timeout
-                    
-                    // Create form data
-                    var data = new URLSearchParams({
-                        'action': 'process_passwordless_login',
-                        'passwordless_login_nonce': nonce,
-                        'user_input': userInput
-                    }).toString();// Send AJAX request
-               
-                    fetch('<?php echo esc_url($ajax_url); ?>', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: data
-                    })                    .then(response => {
-                    
-                        
-                        // Clear the timeout since we got a response
-                        clearTimeout(timeoutId);
-                          // Always re-enable button first, regardless of response
-                        pwlessBtn.textContent = btnTextBeforeSending;
-                        pwlessBtn.disabled = false;
-                 
-                        
-                        // Check if response is ok
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok: ' + response.status);
-                        }
-                        return response.text(); // Get as text first to debug
-                    })
-                    .then(responseText => {
-                     
-                        try {
-                            var response = JSON.parse(responseText);
-   
-                            
-                            if (response.success) {
-                                messagesContainer.innerHTML = '<div style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-bottom: 15px;">' + response.data + '</div>';
-                            } else {
-                                messagesContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">' + response.data + '</div>';
-                            }
-                        } catch (parseError) {
-
-                            messagesContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">Server response error. Please try again.</div>';
-                        }
-                    })                    .catch(error => {
-               
-                        // Clear the timeout since we're handling the error
-                        clearTimeout(timeoutId);                        // Ensure button is always re-enabled
-                        pwlessBtn.textContent = btnTextBeforeSending;
-                        pwlessBtn.disabled = false;
-                        messagesContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">An error occurred. Please try again.</div>';
-                    });
-                });
-            }
-            
-            // Add click handler to the lost password button
-            var pwlessBtnLost = document.querySelector('#pwless-login-btn-lost');
-            var usernameLostField = document.querySelector('#user_login');  // On lost password page, the field is the same
-            var messagesLostContainer = document.querySelector('#pwless-messages-lost');
-              if (pwlessBtnLost && usernameLostField) {
-                pwlessBtnLost.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    // Get username or email from the username field
-                    var userInput = usernameLostField.value.trim();
-                    var nonce = document.querySelector('#passwordless_login_nonce_lost').value;
-                    
-                    if (!userInput) {
-                        // Show error if field is empty
-                        messagesLostContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">Please enter your username or email address in the field above.</div>';
-                        return;
-                    }
-                      // Save button text before changing it
-                    var lostBtnTextBeforeSending = pwlessBtnLost.textContent;
-                    
-                    // Disable button
-                    pwlessBtnLost.textContent = 'Sending...';
-                    pwlessBtnLost.disabled = true;
-                    
-                    // Create form data
-                    var data = new URLSearchParams({
-                        'action': 'process_passwordless_login',
-                        'passwordless_login_nonce': nonce,
-                        'user_input': userInput
-                    }).toString();
-                      // Send AJAX request
-                    fetch('<?php echo esc_url($ajax_url); ?>', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: data
-                    })
-                    .then(response => {                        // Always re-enable button first
-                        pwlessBtnLost.textContent = lostBtnTextBeforeSending;
-                        pwlessBtnLost.disabled = false;
-                        
-                        // Check if response is ok
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok: ' + response.status);
-                        }
-                        return response.json();
-                    })
-                    .then(response => {
-                        if (response.success) {
-                            messagesLostContainer.innerHTML = '<div style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-bottom: 15px;">' + response.data + '</div>';
-                        } else {
-                            messagesLostContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">' + response.data + '</div>';
-                        }
-                    })
-                    .catch(error => {                        // Ensure button is always re-enabled
-                        pwlessBtnLost.textContent = lostBtnTextBeforeSending;
-                        pwlessBtnLost.disabled = false;
-                        messagesLostContainer.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px;">An error occurred. Please try again.</div>';
-                      
-                    });
-                });
-            }
-        });
-        </script>
-        <?php
+        // Enqueue the login form integration script
+        wp_enqueue_script(
+            'vesess_easyauth-login-integration',
+            VESESS_EASYAUTH_URL . 'public/js/login-form-integration.js',
+            array('jquery'),
+            VESESS_EASYAUTH_VERSION,
+            true
+        );
+        
+        // Localize script with AJAX data
+        wp_localize_script(
+            'vesess_easyauth-login-integration',
+            'passwordlessLoginIntegration',
+            array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('passwordless-login-nonce')
+            )
+        );
     }
-    
+
     /**
      * Add custom CSS to properly position the passwordless login button
      * after the standard WordPress login button
@@ -287,30 +156,60 @@ class My_Passwordless_Auth_Login_Integration {
         if (!$this->is_integration_enabled()) {
             return;
         }
-        ?>
-        <style type="text/css">
-            /* Move the passwordless login form content below the submit button */
-            #loginform .pwless-login-container {
-                order: 100; /* High value ensures it appears after other elements */
-                margin-top: 20px !important;
-            }
+        
+        // Enqueue login form integration styles
+        wp_enqueue_style(
+            'vesess_easyauth-login-integration',
+            VESESS_EASYAUTH_URL . 'public/css/login-form-integration.css',
+            array(),
+            VESESS_EASYAUTH_VERSION
+        );
+    }
+
+    /**
+     * Handle AJAX request for passwordless login
+     */
+    public function handle_vesess_easyauth_login_ajax() {
+        // Verify nonce
+        if (!isset($_POST['vesess_easyauth_login_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['vesess_easyauth_login_nonce'])), 'passwordless-login-nonce')) {
+            wp_send_json_error('Invalid security token');
+            return;
+        }
+
+        // Get and validate user input
+        if (!isset($_POST['user_input']) || empty($_POST['user_input'])) {
+            wp_send_json_error('Please enter your email address or username');
+            return;
+        }
+
+        $user_input = sanitize_text_field(wp_unslash($_POST['user_input']));
+        
+        // Try to find user by email first, then by username
+        $user = get_user_by('email', $user_input);
+        if (!$user) {
+            $user = get_user_by('login', $user_input);
+        }
+
+        if (!$user) {
+            wp_send_json_error('User not found');
+            return;
+        }
+
+        // Generate and send login link
+        $login_link = vesess_easyauth_create_login_link($user->user_email);
+        
+        if ($login_link) {
+            // Send email with login link
+            $subject = get_bloginfo('name') . ' - Your Login Link';
+            $message = "Click here to log in: " . $login_link;
             
-            /* Make the form use flexbox for ordering elements */
-            #loginform {
-                display: flex;
-                flex-direction: column;
+            if (wp_mail($user->user_email, $subject, $message)) {
+                wp_send_json_success('Login link sent to your email address');
+            } else {
+                wp_send_json_error('Failed to send email. Please try again.');
             }
-            
-            /* Ensure the submit button appears before our content */
-            #loginform .submit {
-                order: 90;
-            }
-            
-            /* Ensure our content is not hidden if login form has overflow hidden */
-            #loginform {
-                overflow: visible !important;
-            }
-        </style>
-        <?php
+        } else {
+            wp_send_json_error('Failed to create login link. Please try again.');
+        }
     }
 }

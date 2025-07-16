@@ -1,0 +1,42 @@
+/* Login form integration styles */
+
+/* Move the passwordless login form content below the submit button */
+#loginform .pwless-login-container {
+    order: 100; /* High value ensures it appears after other elements */
+    margin-top: 20px !important;
+}
+
+/* Make the form use flexbox for ordering elements */
+#loginform {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure the submit button appears before our content */
+#loginform .submit {
+    order: 90;
+}
+
+/* Ensure our content is not hidden if login form has overflow hidden */
+#loginform {
+    overflow: visible !important;
+}
+
+/* Message styling for login integration */
+.pwless-message {
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid;
+}
+
+.pwless-message.pwless-success {
+    background-color: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.pwless-message.pwless-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}

@@ -8,12 +8,12 @@
  * Get the plugin option with a fallback default value.
  *
  * @param string $key The option key.
- * @para        my_passwordless_auth_log("Generated login token for user ID: $user_id, expires: " . gmdate('Y-m-d H:i:s', $expiration)); mixed $default The default value.
+ * @para        vesess_easyauth_log("Generated login token for user ID: $user_id, expires: " . gmdate('Y-m-d H:i:s', $expiration)); mixed $default The default value.
  * @return mixed The option value.
  */
-function my_passwordless_auth_get_option($key, $default = '')
+function vesess_easyauth_get_option($key, $default = '')
 {
-    $options = get_option('my_passwordless_auth_options');
+    $options = get_option('vesess_easyauth_options');
     return isset($options[$key]) ? $options[$key] : $default;
 }
 
@@ -23,7 +23,7 @@ function my_passwordless_auth_get_option($key, $default = '')
  * @param int $user_id The user ID.
  * @return bool Whether the email is verified or user is an admin (admins bypass verification).
  */
-function my_passwordless_auth_is_email_verified($user_id)
+function vesess_easyauth_is_email_verified($user_id)
 {
     // Check if user is an admin, if so, bypass verification check
     $user = get_user_by('id', $user_id);
@@ -40,7 +40,7 @@ function my_passwordless_auth_is_email_verified($user_id)
  *
  * @return string A unique token.
  */
-function my_passwordless_auth_generate_token()
+function vesess_easyauth_generate_token()
 {
     return bin2hex(random_bytes(16));
 }
@@ -52,9 +52,9 @@ function my_passwordless_auth_generate_token()
  * @param array $args Optional. Additional query arguments.
  * @return string The URL.
  */
-function my_passwordless_auth_get_template_url($template, $args = [])
+function vesess_easyauth_get_template_url($template, $args = [])
 {
-    $query_args = array_merge(['my_passwordless_auth_template' => $template], $args);
+    $query_args = array_merge(['vesess_easyauth_template' => $template], $args);
     return add_query_arg($query_args, home_url());
 }
 
@@ -65,11 +65,11 @@ function my_passwordless_auth_get_template_url($template, $args = [])
  * @param string $level The log level (info, warning, error).
  * @param bool $display Whether to display the message to the user.
  */
-function my_passwordless_auth_log($message, $level = 'info', $display = false)
+function vesess_easyauth_log($message, $level = 'info', $display = false)
 {
     // Check if logging is enabled unless we're forcing display to user
     if (!$display) {
-        $options = get_option('my_passwordless_auth_options', array());
+        $options = get_option('vesess_easyauth_options', array());
         $logging_enabled = isset($options['show_auth_logs_menu']) && $options['show_auth_logs_menu'] === 'yes';
         
         // If logging is not enabled, don't log
@@ -79,7 +79,7 @@ function my_passwordless_auth_log($message, $level = 'info', $display = false)
     }
 
     // Store log in transient for admin dashboard viewing
-    $logs = get_transient('my_passwordless_auth_logs') ?: [];
+    $logs = get_transient('vesess_easyauth_logs') ?: [];
     $logs[] = [
         'time' => current_time('mysql'),
         'message' => $message,
@@ -91,14 +91,25 @@ function my_passwordless_auth_log($message, $level = 'info', $display = false)
         array_shift($logs);
     }
 
-    set_transient('my_passwordless_auth_logs', $logs, DAY_IN_SECONDS);
+    set_transient('vesess_easyauth_logs', $logs, DAY_IN_SECONDS);
 
     // Log to browser console (only works when rendering a page)
     if (!defined('DOING_AJAX') || !DOING_AJAX) {
         $console_action = function () use ($message, $level) {
-            echo '<script>
-                console.' . esc_js($level === 'error' ? 'error' : ($level === 'warning' ? 'warn' : 'log')) . '("My Passwordless Auth: ' . esc_js($message) . '");
-            </script>';
+            // Enqueue console debug script
+            wp_enqueue_script(
+                'vesess_easyauth-console-debug',
+                VESESS_EASYAUTH_URL . 'public/js/console-debug.js',
+                array(),
+                VESESS_EASYAUTH_VERSION,
+                true
+            );
+            
+            // Use inline script to log the specific message
+            wp_add_inline_script(
+                'vesess_easyauth-console-debug',
+                'window.vesessEasyAuthLog("' . esc_js($message) . '", "' . esc_js($level === 'error' ? 'error' : ($level === 'warning' ? 'warning' : 'log')) . '");'
+            );
         };
 
         add_action('wp_footer', $console_action);
@@ -115,31 +126,17 @@ function my_passwordless_auth_log($message, $level = 'info', $display = false)
         if (!is_admin()) {
             // For frontend
             add_action('wp_footer', function () use ($message, $notice_type) {
-                echo '<div class="my-passwordless-auth-notice my-passwordless-auth-notice-' . esc_attr($notice_type) . '">' .
+                // Enqueue frontend notice styles
+                wp_enqueue_style(
+                    'vesess_easyauth-frontend-notices',
+                    VESESS_EASYAUTH_URL . 'public/css/frontend-notices.css',
+                    array(),
+                    VESESS_EASYAUTH_VERSION
+                );
+                
+                echo '<div class="vesess_easyauth-auth-notice' . esc_attr($notice_type) . '">' .
                     esc_html($message) .
                     '</div>';
-                echo '<style>
-                    .my-passwordless-auth-notice {
-                        padding: 10px 15px;
-                        margin: 15px 0;
-                        border-radius: 3px;
-                    }
-                    .my-passwordless-auth-notice-success {
-                        background-color: #dff0d8;
-                        color: #3c763d;
-                        border: 1px solid #d6e9c6;
-                    }
-                    .my-passwordless-auth-notice-warning {
-                        background-color: #fcf8e3;
-                        color: #8a6d3b;
-                        border: 1px solid #faebcc;
-                    }
-                    .my-passwordless-auth-notice-error {
-                        background-color: #f2dede;
-                        color: #a94442;
-                        border: 1px solid #ebccd1;
-                    }
-                </style>';
             });
         }
     }
@@ -151,27 +148,27 @@ function my_passwordless_auth_log($message, $level = 'info', $display = false)
  * @param string $user_email The user's email address
  * @return string|false Login link or false if user not found
  */
-if (!function_exists('my_passwordless_auth_create_login_link')) {
-    function my_passwordless_auth_create_login_link($user_email)
+if (!function_exists('vesess_easyauth_create_login_link')) {
+    function vesess_easyauth_create_login_link($user_email)
     {
         $user = get_user_by('email', $user_email);
 
         if (!$user) {
-            my_passwordless_auth_log("Failed to create login link: User with email $user_email not found", 'error');
+            vesess_easyauth_log("Failed to create login link: User with email $user_email not found", 'error');
             return false;
         }
 
         // Generate a secure token
-        $token = my_passwordless_auth_generate_login_token($user->ID);        // Create a login URL directly to avoid encoding issues
+        $token = vesess_easyauth_generate_login_token($user->ID);        // Create a login URL directly to avoid encoding issues
         $base_url = home_url();
         $login_link = esc_url_raw(
             $base_url . '?action=magic_login' .
-            '&uid=' . my_passwordless_auth_encrypt_user_id($user->ID) .
+            '&uid=' . vesess_easyauth_encrypt_user_id($user->ID) .
             '&token=' . $token .
             '&_wpnonce=' . wp_create_nonce('magic_login_nonce')
         );
 
-        my_passwordless_auth_log("Magic login link created for user ID: {$user->ID}");
+        vesess_easyauth_log("Magic login link created for user ID: {$user->ID}");
         return $login_link;
     }
 }
@@ -182,27 +179,27 @@ if (!function_exists('my_passwordless_auth_create_login_link')) {
  * @param int $user_id The user ID
  * @return string The encrypted token to be used in magic links
  */
-if (!function_exists('my_passwordless_auth_generate_login_token')) {
-    function my_passwordless_auth_generate_login_token($user_id)
+if (!function_exists('vesess_easyauth_generate_login_token')) {
+    function vesess_easyauth_generate_login_token($user_id)
     {
         // Generate a random token
         $token = bin2hex(random_bytes(32));
         
         // Encrypt the token for storage in database
-        $encrypted_token_for_storage = my_passwordless_auth_encrypt_token($token);
+        $encrypted_token_for_storage = vesess_easyauth_encrypt_token($token);
         
         // Encrypt the token differently for use in URLs
-        $encrypted_token_for_url = my_passwordless_auth_encrypt_token_for_url($token);
+        $encrypted_token_for_url = vesess_easyauth_encrypt_token_for_url($token);
 
         // Get the configured expiration time from settings
-        $expiration_minutes = (int) my_passwordless_auth_get_option('code_expiration', 15);
+        $expiration_minutes = (int) vesess_easyauth_get_option('code_expiration', 15);
         $expiration = time() + ($expiration_minutes * MINUTE_IN_SECONDS);
         $token_data = [
             'token' => $encrypted_token_for_storage, // Store encrypted token
             'expiration' => $expiration
-        ];        update_user_meta($user_id, 'passwordless_auth_login_token', $token_data);
+        ];        update_user_meta($user_id, 'vesess_easyauth_login_token', $token_data);
 
-        my_passwordless_auth_log("Generated login token for user ID: $user_id, expires: " . gmdate('Y-m-d H:i:s', $expiration));
+        vesess_easyauth_log("Generated login token for user ID: $user_id, expires: " . gmdate('Y-m-d H:i:s', $expiration));
 
         return $encrypted_token_for_url; // Return token encrypted for URL use
     }
@@ -214,8 +211,8 @@ if (!function_exists('my_passwordless_auth_generate_login_token')) {
  * @param string $token The plain text token
  * @return string The encrypted token
  */
-function my_passwordless_auth_encrypt_token($token) {
-    return My_Passwordless_Auth_Crypto::encrypt_for_storage($token);
+function vesess_easyauth_encrypt_token($token) {
+    return Vesess_Easyauth_Crypto::encrypt_for_storage($token);
 }
 
 /**
@@ -224,8 +221,8 @@ function my_passwordless_auth_encrypt_token($token) {
  * @param string $token The plain text token
  * @return string URL-safe encrypted token
  */
-function my_passwordless_auth_encrypt_token_for_url($token) {
-    return My_Passwordless_Auth_Crypto::encrypt_for_url($token);
+function vesess_easyauth_encrypt_token_for_url($token) {
+    return Vesess_Easyauth_Crypto::encrypt_for_url($token);
 }
 
 /**
@@ -234,8 +231,8 @@ function my_passwordless_auth_encrypt_token_for_url($token) {
  * @param string $encrypted_token The encrypted token from URL
  * @return string The original plain text token
  */
-function my_passwordless_auth_decrypt_token_from_url($encrypted_token) {
-    return My_Passwordless_Auth_Crypto::decrypt_from_url($encrypted_token);
+function vesess_easyauth_decrypt_token_from_url($encrypted_token) {
+    return Vesess_Easyauth_Crypto::decrypt_from_url($encrypted_token);
 }
 
 /**
@@ -244,8 +241,8 @@ function my_passwordless_auth_decrypt_token_from_url($encrypted_token) {
  * @param string $encrypted_token The encrypted token from storage
  * @return string|false The original plain text token or false on failure
  */
-function my_passwordless_auth_decrypt_token_from_storage($encrypted_token) {
-    return My_Passwordless_Auth_Crypto::decrypt_from_storage($encrypted_token);
+function vesess_easyauth_decrypt_token_from_storage($encrypted_token) {
+    return Vesess_Easyauth_Crypto::decrypt_from_storage($encrypted_token);
 }
 
 /**
@@ -254,8 +251,8 @@ function my_passwordless_auth_decrypt_token_from_storage($encrypted_token) {
  * @param int $user_id The user ID to encrypt
  * @return string Encrypted user ID
  */
-function my_passwordless_auth_encrypt_user_id($user_id) {
-    return My_Passwordless_Auth_Crypto::encrypt_user_id($user_id);
+function vesess_easyauth_encrypt_user_id($user_id) {
+    return Vesess_Easyauth_Crypto::encrypt_user_id($user_id);
 }
 
 /**
@@ -264,8 +261,8 @@ function my_passwordless_auth_encrypt_user_id($user_id) {
  * @param string $encrypted_id The encrypted user ID
  * @return int|false Decrypted user ID or false on failure
  */
-function my_passwordless_auth_decrypt_user_id($encrypted_id) {
-    return My_Passwordless_Auth_Crypto::decrypt_user_id($encrypted_id);
+function vesess_easyauth_decrypt_user_id($encrypted_id) {
+    return Vesess_Easyauth_Crypto::decrypt_user_id($encrypted_id);
 }
 
 /**
@@ -273,12 +270,12 @@ function my_passwordless_auth_decrypt_user_id($encrypted_id) {
  * 
  * @return array Array of security status and any issues
  */
-function my_passwordless_auth_validate_security() {
+function vesess_easyauth_validate_security() {
     $issues = [];
     $status = 'secure';
     
     // Check if crypto system is available
-    if (!My_Passwordless_Auth_Crypto::is_system_secure()) {
+    if (!Vesess_Easyauth_Crypto::is_system_secure()) {
         $issues[] = 'Cryptographic system is not properly configured';
         $status = 'insecure';
     }
@@ -298,8 +295,8 @@ function my_passwordless_auth_validate_security() {
     
     // Test basic encryption/decryption
     $test_data = 'test_encryption_' . time();
-    $encrypted = My_Passwordless_Auth_Crypto::encrypt_for_storage($test_data);
-    $decrypted = My_Passwordless_Auth_Crypto::decrypt_from_storage($encrypted);
+    $encrypted = Vesess_Easyauth_Crypto::encrypt_for_storage($test_data);
+    $decrypted = Vesess_Easyauth_Crypto::decrypt_from_storage($encrypted);
     
     if ($decrypted !== $test_data) {
         $issues[] = 'Encryption/decryption test failed';
@@ -309,7 +306,7 @@ function my_passwordless_auth_validate_security() {
     return [
         'status' => $status,
         'issues' => $issues,
-        'crypto_available' => My_Passwordless_Auth_Crypto::is_system_secure()
+        'crypto_available' => Vesess_Easyauth_Crypto::is_system_secure()
     ];
 }
 
