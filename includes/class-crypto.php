@@ -56,7 +56,9 @@ class Vesess_Easyauth_Crypto {
             return $combined;
             
         } catch (Exception $e) {
-            error_log('EasyAuth: Encryption failed - ' . $e->getMessage());
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                vesess_easyauth_log('EasyAuth: Encryption failed - ' . $e->getMessage(), 'error');
+            }
             return false;
         }
     }
@@ -103,7 +105,9 @@ class Vesess_Easyauth_Crypto {
             return $decrypted;
             
         } catch (Exception $e) {
-            error_log('EasyAuth: Decryption failed - ' . $e->getMessage());
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                vesess_easyauth_log('EasyAuth: Decryption failed - ' . $e->getMessage(), 'error');
+            }
             return false;
         }
     }
@@ -151,7 +155,9 @@ class Vesess_Easyauth_Crypto {
             return $result;
             
         } catch (Exception $e) {
-            error_log('EasyAuth: URL encryption failed - ' . $e->getMessage());
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                vesess_easyauth_log('EasyAuth: URL encryption failed - ' . $e->getMessage(), 'error');
+            }
             return false;
         }
     }
@@ -200,7 +206,9 @@ class Vesess_Easyauth_Crypto {
             return $decrypted;
             
         } catch (Exception $e) {
-            error_log('EasyAuth: URL decryption failed - ' . $e->getMessage());
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                vesess_easyauth_log('EasyAuth: URL decryption failed - ' . $e->getMessage(), 'error');
+            }
             return false;
         }
     }
