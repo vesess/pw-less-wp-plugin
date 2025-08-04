@@ -1,4 +1,4 @@
-# EasyAuth
+# VesessAuth
 
 Tested up to: 6.8
 Stable tag: 1.0.0
@@ -9,7 +9,7 @@ A WordPress plugin that provides passwordless authentication via email verificat
 
 ## Description
 
-EasyAuth offers a modern, secure way to log in to WordPress sites without using passwords. Instead, users receive one-time verification codes via email.
+VesessAuth offers a modern, secure way to log in to WordPress sites without using passwords. Instead, users receive one-time verification codes via email.
 
 ### Key Features
 
@@ -94,7 +94,7 @@ Developed by [Vesess](https://www.vesess.com/)
 
 ### Data Collection & Usage
 
-EasyAuth plugin collects and processes the following user data:
+VesessAuth plugin collects and processes the following user data:
 
 1. **Email Addresses**: Used solely for authentication purposes to send login links to users.
 2. **IP Addresses**: Temporarily stored for security purposes to prevent abuse of the authentication system.

@@ -1,6 +1,6 @@
 # WordPress Plugin Script and Style Enqueuing Fix
 
-This document outlines the changes made to properly implement WordPress script and style enqueuing in the EasyAuth plugin, replacing all inline `<script>` and `<style>` tags with proper WordPress enqueuing functions.
+This document outlines the changes made to properly implement WordPress script and style enqueuing in the VesessAuth plugin, replacing all inline `<script>` and `<style>` tags with proper WordPress enqueuing functions.
 
 ## Changes Made
 
@@ -60,7 +60,7 @@ This document outlines the changes made to properly implement WordPress script a
 - Replaced inline script with `wp_enqueue_script()` and `wp_add_inline_script()`
 - Added body class application for CSS targeting
 
-#### `easy-auth.php`
+#### `vesess-auth.php`
 - Replaced direct script echoing with `wp_add_inline_script()`
 - Updated debug functionality to use proper script enqueuing
 - Added `wp_localize_script()` for debug data
@@ -137,7 +137,7 @@ wp_localize_script(
 - `includes/admin-profile-extension.php`
 - `includes/helpers.php`
 - `includes/navbar-filter.php`
-- `easy-auth.php`
+- `vesess-auth.php`
 - `public/css/admin-profile-extension.css`
 
 ## Files Created

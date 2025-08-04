@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: EasyAuth
+ * Plugin Name: VesessAuth
  * Description: A WordPress plugin for passwordless authentication.
  * Version: 1.0.0
  * Author: Vesess

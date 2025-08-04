@@ -1,4 +1,4 @@
-=== EasyAuth ===
+=== VesessAuth ===
 Contributors: vesseslabs
 Tags: authentication, passwordless, login
 Requires at least: 5.0
@@ -11,7 +11,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Enable secure passwordless login for WordPress through magic email links. Enhance security by eliminating password vulnerabilities.
 
 == Description ==
-EasyAuth plugin provides a modern, secure authentication method for WordPress websites without requiring passwords. Instead of remembering complex passwords, users receive a secure, time-limited login link via email.
+VesessAuth plugin provides a modern, secure authentication method for WordPress websites without requiring passwords. Instead of remembering complex passwords, users receive a secure, time-limited login link via email.
 
 **Key Features:**
 
@@ -39,7 +39,7 @@ All collected data is stored exclusively in your WordPress database and is not s
 
 1. Upload the plugin files to the `/wp-content/plugins` directory, or install the plugin through the WordPress plugins screen.
 2. Activate the plugin through the 'Plugins' screen in WordPress
-3. Use the Settings -> EasyAuth screen to configure the plugin
+3. Use the Settings -> VesessAuth screen to configure the plugin
 4. The passwordless login option will appear on your login page
 
 == Frequently Asked Questions ==
@@ -75,7 +75,7 @@ Yes, the plugin can be configured to offer passwordless login as an option while
 == Upgrade Notice ==
 
 = 1.0.0 =
-First public release of EasyAuth.
+First public release of VesessAuth.
 
 == Technical Details ==
 
