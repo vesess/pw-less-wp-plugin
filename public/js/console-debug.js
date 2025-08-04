@@ -9,7 +9,7 @@
     window.vesessEasyAuthLog = function(message, level) {
         level = level || 'log';
         var method = level === 'error' ? 'error' : (level === 'warning' ? 'warn' : 'log');
-        console[method]('EasyAuth: ' + message);
+        console[method]('VesessAuth: ' + message);
     };
     
     // Log verification status if present
