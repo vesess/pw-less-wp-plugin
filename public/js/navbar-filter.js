@@ -3,7 +3,6 @@
  * Adds dynamic body classes and handles menu item filtering based on login status
  */
 document.addEventListener('DOMContentLoaded', function() {
-    // Add body class for CSS targeting (this will be set by PHP)
     // This script is mainly for fallback and additional dynamic handling
     
     // Additional dynamic menu filtering for edge cases
