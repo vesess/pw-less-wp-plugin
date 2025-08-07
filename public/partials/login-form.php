@@ -37,20 +37,17 @@ $redirect_to = '';
 
 // Get and validate redirect URL with nonce verification when provided
 if (isset($_REQUEST['redirect_to'])) {
-    // If nonce is provided, verify it
+    // Always require nonce verification for redirect URL processing
     $is_valid_redirect = false;
     if (isset($_REQUEST['_wpnonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])), 'passwordless_redirect')) {
-        $is_valid_redirect = true;    } else {
-        // For usability, still allow redirect parameters to internal site URLs
-        // Sanitize first using esc_url_raw since it's a URL
+        $is_valid_redirect = true;
+        // Sanitize the redirect URL
         $raw_redirect = esc_url_raw(wp_unslash($_REQUEST['redirect_to']));
+        
+        // Additional validation: only allow internal URLs
         if (strpos($raw_redirect, 'http') !== 0 || strpos($raw_redirect, home_url()) === 0) {
-            $is_valid_redirect = true;
+            $redirect_to = $raw_redirect;
         }
-    }
-      if ($is_valid_redirect) {
-        // We already sanitized the redirect URL, so use that value
-        $redirect_to = $raw_redirect;
     }
 }
 
