@@ -13,8 +13,29 @@ class Vesess_Easyauth_Registration {
 
     /**
      * Register a new user.
-     */    public function register_new_user() {
-        // Check user capabilities for registration first
+     */
+    public function register_new_user() {
+        // Check nonce FIRST - verify both the legacy nonce and the new registration-specific nonce
+        // This check happens immediately before processing ANY data
+        $is_valid_nonce = false;
+        
+        // Check legacy nonce field using wp_verify_nonce for consistent security
+        if (isset($_POST['nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'registration_nonce')) {
+            $is_valid_nonce = true;
+        }
+        
+        // Check registration-specific nonce (added in security enhancement)
+        if (isset($_POST['registration_nonce']) && 
+            wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['registration_nonce'])), 'passwordless-registration-nonce')) {
+            $is_valid_nonce = true;
+        }
+        
+        if (!$is_valid_nonce) {
+            wp_send_json_error('Security check failed. Please refresh the page and try again.');
+            return;
+        }
+
+        // Check user capabilities for registration
         if (!current_user_can('read')) {
             // For non-logged in users, we allow registration if WordPress allows it
             if (!get_option('users_can_register')) {
@@ -34,30 +55,32 @@ class Vesess_Easyauth_Registration {
             return;
         }
 
-        // Check nonce - verify both the legacy nonce and the new registration-specific nonce
-        // This check happens immediately before processing POST data
-        $is_valid_nonce = false;
+        // Now process POST data with explicit nonce validation for each field
+        // Re-verify nonce before accessing each POST variable for maximum security
+        $email = '';
+        $username = '';
+        $display_name = '';
         
-        // Check legacy nonce field using wp_verify_nonce for consistent security
-        if (isset($_POST['nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'registration_nonce')) {
-            $is_valid_nonce = true;
+        // Validate and process email with nonce check
+        if (isset($_POST['email']) && 
+            ((isset($_POST['nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'registration_nonce')) ||
+             (isset($_POST['registration_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['registration_nonce'])), 'passwordless-registration-nonce')))) {
+            $email = sanitize_email(wp_unslash($_POST['email']));
         }
         
-        // Check registration-specific nonce (added in security enhancement)
-        if (isset($_POST['registration_nonce']) && 
-            wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['registration_nonce'])), 'passwordless-registration-nonce')) {
-            $is_valid_nonce = true;
+        // Validate and process username with nonce check
+        if (isset($_POST['username']) && 
+            ((isset($_POST['nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'registration_nonce')) ||
+             (isset($_POST['registration_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['registration_nonce'])), 'passwordless-registration-nonce')))) {
+            $username = sanitize_user(wp_unslash($_POST['username']));
         }
         
-        if (!$is_valid_nonce) {
-            wp_send_json_error('Security check failed. Please refresh the page and try again.');
-            return;
+        // Validate and process display name with nonce check
+        if (isset($_POST['display_name']) && 
+            ((isset($_POST['nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'registration_nonce')) ||
+             (isset($_POST['registration_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['registration_nonce'])), 'passwordless-registration-nonce')))) {
+            $display_name = sanitize_text_field(wp_unslash($_POST['display_name']));
         }
-
-        // Now process POST data immediately after nonce validation
-        $email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
-        $username = isset($_POST['username']) ? sanitize_user(wp_unslash($_POST['username'])) : '';
-        $display_name = isset($_POST['display_name']) ? sanitize_text_field(wp_unslash($_POST['display_name'])) : '';
 
         if (!is_email($email)) {
             wp_send_json_error('Invalid email address');
