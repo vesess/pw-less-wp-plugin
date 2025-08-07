@@ -221,11 +221,22 @@ class VESESS_EASYAUTH
             return;
         }
         
-        // Get user input (could be either username or email)        // Initialize user input variable
+        // Get user input (could be either username or email)
+        // Initialize user input variable
         $user_input = '';
         
+        // Additional explicit nonce verification before POST data access
+        if (!isset($_POST['vesess_easyauth_login_nonce']) || 
+            !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['vesess_easyauth_login_nonce'])), 'passwordless-login-nonce')) {
+            vesess_easyauth_log("Explicit nonce verification failed", 'error');
+            wp_send_json_error('Security check failed. Please refresh the page and try again.');
+            return;
+        }
+        
         // Safely get and process the user input if it exists and is a string
-        if (isset($_POST['user_input']) && is_string($_POST['user_input'])) {
+        if (isset($_POST['user_input']) && is_string($_POST['user_input']) && 
+            isset($_POST['vesess_easyauth_login_nonce']) && 
+            wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['vesess_easyauth_login_nonce'])), 'passwordless-login-nonce')) {
             $user_input = sanitize_text_field(wp_unslash($_POST['user_input']));
         }
         
