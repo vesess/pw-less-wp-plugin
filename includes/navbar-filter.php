@@ -6,7 +6,7 @@
  * 1. Hide login/sign-up items when user is logged in
  * 2. Hide profile items when user is not logged in
  *
- * @package VESESS_EASYAUTH
+ * @package VESESS_AUTH
  */
 
 // If this file is called directly, abort.
@@ -18,7 +18,7 @@ if (!defined('WPINC')) {
  * Menu filter to hide login/sign-up items when user is logged in
  * And hide profile links when user is not logged in
  */
-function vesess_easyauth_navbar_filter($html) {
+function vesess_auth_navbar_filter($html) {
     // Return unchanged content if it's not a string or is empty
     if (!is_string($html) || empty($html)) {
         return $html;
@@ -79,7 +79,7 @@ function vesess_easyauth_navbar_filter($html) {
 /**
  * Add CSS to hide menu items based on login status
  */
-function vesess_easyauth_navbar_css() {
+function vesess_auth_navbar_css() {
     // Check if WordPress function exists
     if (!function_exists('is_user_logged_in')) {
         return;
@@ -87,10 +87,10 @@ function vesess_easyauth_navbar_css() {
     
     // Enqueue navbar filter CSS
     wp_enqueue_style(
-        'vesess_easyauth-navbar-filter',
-        VESESS_EASYAUTH_URL . 'public/css/navbar-filter.css',
+        'vesess_auth-navbar-filter',
+        VESESS_AUTH_URL . 'public/css/navbar-filter.css',
         array(),
-        VESESS_EASYAUTH_VERSION
+        VESESS_AUTH_VERSION
     );
     
     // Add appropriate body class for CSS targeting
@@ -98,16 +98,16 @@ function vesess_easyauth_navbar_css() {
     
     // Enqueue navbar filter JavaScript for additional dynamic handling
     wp_enqueue_script(
-        'vesess_easyauth-navbar-filter',
-        VESESS_EASYAUTH_URL . 'public/js/navbar-filter.js',
+        'vesess_auth-navbar-filter',
+        VESESS_AUTH_URL . 'public/js/navbar-filter.js',
         array(),
-        VESESS_EASYAUTH_VERSION,
+        VESESS_AUTH_VERSION,
         true
     );
     
     // Use inline script to add the body class
     wp_add_inline_script(
-        'vesess_easyauth-navbar-filter',
+        'vesess_auth-navbar-filter',
         'document.addEventListener("DOMContentLoaded", function() { document.body.classList.add("' . esc_js($body_class) . '"); });'
     );
 }
@@ -115,28 +115,28 @@ function vesess_easyauth_navbar_css() {
 /**
  * Initialize menu filters
  */
-function vesess_easyauth_init_navbar_filters() {
+function vesess_auth_init_navbar_filters() {
     // Add CSS and JS to the head
-    add_action('wp_head', 'vesess_easyauth_navbar_css');
+    add_action('wp_head', 'vesess_auth_navbar_css');
     
     // Apply filter to all potential menu outputs
-    add_filter('wp_nav_menu_items', 'vesess_easyauth_navbar_filter', 9999);
-    add_filter('wp_page_menu', 'vesess_easyauth_navbar_filter', 9999);
+    add_filter('wp_nav_menu_items', 'vesess_auth_navbar_filter', 9999);
+    add_filter('wp_page_menu', 'vesess_auth_navbar_filter', 9999);
     add_filter('render_block', function($block_content, $block) {
         if ($block['blockName'] === 'core/navigation') {
-            return vesess_easyauth_navbar_filter($block_content);
+            return vesess_auth_navbar_filter($block_content);
         }
         return $block_content;
     }, 9999, 2);
     
     // Hook into all menu-related filters
-    add_action('wp', 'vesess_easyauth_register_all_navbar_filters');
+    add_action('wp', 'vesess_auth_register_all_navbar_filters');
 }
 
 /**
  * Register filter for all potential navigation hooks
  */
-function vesess_easyauth_register_all_navbar_filters() {
+function vesess_auth_register_all_navbar_filters() {
     global $wp_filter;
     
     // Get all filters
@@ -148,11 +148,11 @@ function vesess_easyauth_register_all_navbar_filters() {
             
             // Don't re-hook into filters we've already added
             if ($tag !== 'wp_nav_menu_items' && $tag !== 'wp_page_menu') {
-                add_filter($tag, 'vesess_easyauth_navbar_filter', 9999);
+                add_filter($tag, 'vesess_auth_navbar_filter', 9999);
             }
         }
     }
 }
 
 // Initialize the navigation filters
-vesess_easyauth_init_navbar_filters();
+vesess_auth_init_navbar_filters();

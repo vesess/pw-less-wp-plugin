@@ -9,7 +9,7 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Registration form script loaded');
-    const form = document.getElementById('vesess_easyauth-registration-form');
+    const form = document.getElementById('vesess_auth-registration-form');
     if(!form) {
         console.error('Registration form not found!');
          return;

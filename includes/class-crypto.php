@@ -7,7 +7,7 @@
 
 defined('ABSPATH') or die('Direct access not allowed');
 
-class Vesess_Easyauth_Crypto {
+class Vesess_Auth_Crypto {
     
     private const CIPHER = 'aes-256-cbc';
     private const KEY_LENGTH = 32; // 256 bits
@@ -57,7 +57,7 @@ class Vesess_Easyauth_Crypto {
             
         } catch (Exception $e) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
-                vesess_easyauth_log('VesessAuth: Encryption failed - ' . $e->getMessage(), 'error');
+                vesess_auth_log('VesessAuth: Encryption failed - ' . $e->getMessage(), 'error');
             }
             return false;
         }
@@ -106,7 +106,7 @@ class Vesess_Easyauth_Crypto {
             
         } catch (Exception $e) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
-                vesess_easyauth_log('VesessAuth: Decryption failed - ' . $e->getMessage(), 'error');
+                vesess_auth_log('VesessAuth: Decryption failed - ' . $e->getMessage(), 'error');
             }
             return false;
         }
@@ -156,7 +156,7 @@ class Vesess_Easyauth_Crypto {
             
         } catch (Exception $e) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
-                vesess_easyauth_log('VesessAuth: URL encryption failed - ' . $e->getMessage(), 'error');
+                vesess_auth_log('VesessAuth: URL encryption failed - ' . $e->getMessage(), 'error');
             }
             return false;
         }
@@ -207,7 +207,7 @@ class Vesess_Easyauth_Crypto {
             
         } catch (Exception $e) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
-                vesess_easyauth_log('VesessAuth: URL decryption failed - ' . $e->getMessage(), 'error');
+                vesess_auth_log('VesessAuth: URL decryption failed - ' . $e->getMessage(), 'error');
             }
             return false;
         }
@@ -225,7 +225,7 @@ class Vesess_Easyauth_Crypto {
         // Use proper key derivation with password stretching
         return hash_pbkdf2(
             'sha256',
-            'vesess_easyauth_storage',
+            'vesess_auth_storage',
             $salt_material,
             self::PBKDF2_ITERATIONS,
             self::KEY_LENGTH,
@@ -245,7 +245,7 @@ class Vesess_Easyauth_Crypto {
         // Use proper key derivation with password stretching
         return hash_pbkdf2(
             'sha256',
-            'vesess_easyauth_url',
+            'vesess_auth_url',
             $salt_material,
             self::PBKDF2_ITERATIONS,
             self::KEY_LENGTH,

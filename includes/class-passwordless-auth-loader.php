@@ -5,7 +5,7 @@
  * A class definition that includes attributes and functions used across both the
  * public-facing side of the site and the admin area.
  */
-class Vesess_Easyauth_Loader {
+class Vesess_Auth_Loader {
 
     /**
      * The array of actions registered with WordPress.

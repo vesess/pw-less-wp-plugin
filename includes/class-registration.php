@@ -2,7 +2,7 @@
 /**
  * Handles user registration functionality.
  */
-class Vesess_Easyauth_Registration {
+class Vesess_Auth_Registration {
     /**
      * Initialize the class and set its hooks.
      */
@@ -45,8 +45,8 @@ class Vesess_Easyauth_Registration {
         }
 
         // Check rate limiting
-        $security = new Vesess_Easyauth_Security();
-        $ip_address = Vesess_Easyauth_Security::get_client_ip();
+        $security = new Vesess_Auth_Security();
+        $ip_address = Vesess_Auth_Security::get_client_ip();
         $block_time = $security->record_registration_attempt($ip_address);
         
         if ($block_time !== false) {
@@ -117,18 +117,18 @@ class Vesess_Easyauth_Registration {
         $verification_code = preg_replace('/[^a-zA-Z0-9]/', '', $verification_code);
         
         // Log the generated code for debugging
-        vesess_easyauth_log("Generated verification code for new user (ID: $user_id): $verification_code");
+        vesess_auth_log("Generated verification code for new user (ID: $user_id): $verification_code");
         
         // Make sure the code is stored exactly as it is
-        vesess_easyauth_log("Storing verification code in user_meta for user ID $user_id: $verification_code", 'info');
-        vesess_easyauth_log("Verification code length: " . strlen($verification_code), 'info');
-        vesess_easyauth_log("Verification code hex: " . bin2hex($verification_code), 'info');
+        vesess_auth_log("Storing verification code in user_meta for user ID $user_id: $verification_code", 'info');
+        vesess_auth_log("Verification code length: " . strlen($verification_code), 'info');
+        vesess_auth_log("Verification code hex: " . bin2hex($verification_code), 'info');
         
         // Store the verification code - make sure it's stored exactly as generated
         update_user_meta($user_id, 'email_verification_code', trim($verification_code));
 
         // Send verification email
-        $email_class = new Vesess_Easyauth_Email();
+        $email_class = new Vesess_Auth_Email();
         $email_sent = $email_class->send_verification_email($user_id, $verification_code);
 
         if ($email_sent) {

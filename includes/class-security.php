@@ -2,7 +2,7 @@
 /**
  * Handles global security functionality.
  */
-class Vesess_Easyauth_Security {
+class Vesess_Auth_Security {
     const MAX_LOGIN_ATTEMPTS = 5; // Maximum login attempts per time window
     const MAX_REGISTRATION_ATTEMPTS = 3; // Maximum registration attempts per time window
     const MAX_LOGIN_REQUESTS = 3; // Maximum login link requests per time window
@@ -25,7 +25,7 @@ class Vesess_Easyauth_Security {
      * @return bool|int Returns false if not blocked, or seconds remaining if blocked
      */
     public function is_ip_blocked($ip_address) {
-        $blocked_ips = get_transient('vesess_easyauth_blocked_ips');
+        $blocked_ips = get_transient('vesess_auth_blocked_ips');
         if (!$blocked_ips || !is_array($blocked_ips)) {
             return false;
         }
@@ -37,7 +37,7 @@ class Vesess_Easyauth_Security {
             }
             // Block expired, remove it
             unset($blocked_ips[$ip_address]);
-            set_transient('vesess_easyauth_blocked_ips', $blocked_ips, DAY_IN_SECONDS);
+            set_transient('vesess_auth_blocked_ips', $blocked_ips, DAY_IN_SECONDS);
         }
 
         return false;
@@ -58,7 +58,7 @@ class Vesess_Easyauth_Security {
             return $block_time;
         }
 
-        $attempts = get_transient('vesess_easyauth_login_attempts');
+        $attempts = get_transient('vesess_auth_login_attempts');
         if (!$attempts) {
             $attempts = array();
         }
@@ -81,7 +81,7 @@ class Vesess_Easyauth_Security {
         // If successful, clear the attempts
         if ($success) {
             unset($attempts[$ip_address]);
-            set_transient('vesess_easyauth_login_attempts', $attempts, self::ATTEMPT_WINDOW);
+            set_transient('vesess_auth_login_attempts', $attempts, self::ATTEMPT_WINDOW);
             return false;
         }
 
@@ -92,7 +92,7 @@ class Vesess_Easyauth_Security {
         }
 
         // Save attempts
-        set_transient('vesess_easyauth_login_attempts', $attempts, self::ATTEMPT_WINDOW);
+        set_transient('vesess_auth_login_attempts', $attempts, self::ATTEMPT_WINDOW);
         return false;
     }
 
@@ -110,7 +110,7 @@ class Vesess_Easyauth_Security {
             return $block_time;
         }
 
-        $requests = get_transient('vesess_easyauth_login_requests');
+        $requests = get_transient('vesess_auth_login_requests');
         if (!$requests) {
             $requests = array();
         }
@@ -137,7 +137,7 @@ class Vesess_Easyauth_Security {
         }
 
         // Save requests
-        set_transient('vesess_easyauth_login_requests', $requests, self::ATTEMPT_WINDOW);
+        set_transient('vesess_auth_login_requests', $requests, self::ATTEMPT_WINDOW);
         return false;
     }
 
@@ -154,7 +154,7 @@ class Vesess_Easyauth_Security {
             return $block_time;
         }
 
-        $attempts = get_transient('vesess_easyauth_registration_attempts');
+        $attempts = get_transient('vesess_auth_registration_attempts');
         if (!$attempts) {
             $attempts = array();
         }
@@ -176,7 +176,7 @@ class Vesess_Easyauth_Security {
         }
 
         // Save attempts
-        set_transient('vesess_easyauth_registration_attempts', $attempts, self::ATTEMPT_WINDOW);
+        set_transient('vesess_auth_registration_attempts', $attempts, self::ATTEMPT_WINDOW);
         return false;
     }
 
@@ -186,15 +186,15 @@ class Vesess_Easyauth_Security {
      * @param string $ip_address The IP address to block
      */
     private function block_ip($ip_address) {
-        $blocked_ips = get_transient('vesess_easyauth_blocked_ips');
+        $blocked_ips = get_transient('vesess_auth_blocked_ips');
         if (!$blocked_ips || !is_array($blocked_ips)) {
             $blocked_ips = array();
         }
 
         $blocked_ips[$ip_address] = time() + self::LOCKOUT_DURATION;
-        set_transient('vesess_easyauth_blocked_ips', $blocked_ips, DAY_IN_SECONDS);
+        set_transient('vesess_auth_blocked_ips', $blocked_ips, DAY_IN_SECONDS);
 
-        vesess_easyauth_log("IP address {$ip_address} has been blocked for " . (self::LOCKOUT_DURATION / 60) . " minutes", 'warning');
+        vesess_auth_log("IP address {$ip_address} has been blocked for " . (self::LOCKOUT_DURATION / 60) . " minutes", 'warning');
     }
 
     /**
@@ -204,47 +204,47 @@ class Vesess_Easyauth_Security {
         $cutoff_time = time() - self::ATTEMPT_WINDOW;
 
         // Clean up login attempts
-        $attempts = get_transient('vesess_easyauth_login_attempts');
+        $attempts = get_transient('vesess_auth_login_attempts');
         if ($attempts) {
             foreach ($attempts as $ip => $data) {
                 if ($data['first_attempt'] < $cutoff_time) {
                     unset($attempts[$ip]);
                 }
             }
-            set_transient('vesess_easyauth_login_attempts', $attempts, self::ATTEMPT_WINDOW);
+            set_transient('vesess_auth_login_attempts', $attempts, self::ATTEMPT_WINDOW);
         }
 
         // Clean up login requests
-        $requests = get_transient('vesess_easyauth_login_requests');
+        $requests = get_transient('vesess_auth_login_requests');
         if ($requests) {
             foreach ($requests as $ip => $data) {
                 if ($data['first_request'] < $cutoff_time) {
                     unset($requests[$ip]);
                 }
             }
-            set_transient('vesess_easyauth_login_requests', $requests, self::ATTEMPT_WINDOW);
+            set_transient('vesess_auth_login_requests', $requests, self::ATTEMPT_WINDOW);
         }
 
         // Clean up registration attempts
-        $reg_attempts = get_transient('vesess_easyauth_registration_attempts');
+        $reg_attempts = get_transient('vesess_auth_registration_attempts');
         if ($reg_attempts) {
             foreach ($reg_attempts as $ip => $data) {
                 if ($data['first_attempt'] < $cutoff_time) {
                     unset($reg_attempts[$ip]);
                 }
             }
-            set_transient('vesess_easyauth_registration_attempts', $reg_attempts, self::ATTEMPT_WINDOW);
+            set_transient('vesess_auth_registration_attempts', $reg_attempts, self::ATTEMPT_WINDOW);
         }
 
         // Clean up expired IP blocks
-        $blocked_ips = get_transient('vesess_easyauth_blocked_ips');
+        $blocked_ips = get_transient('vesess_auth_blocked_ips');
         if ($blocked_ips) {
             foreach ($blocked_ips as $ip => $expiry) {
                 if (time() > $expiry) {
                     unset($blocked_ips[$ip]);
                 }
             }
-            set_transient('vesess_easyauth_blocked_ips', $blocked_ips, DAY_IN_SECONDS);
+            set_transient('vesess_auth_blocked_ips', $blocked_ips, DAY_IN_SECONDS);
         }
     }
 
