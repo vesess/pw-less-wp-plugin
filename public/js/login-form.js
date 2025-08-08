@@ -26,7 +26,7 @@
         const formData = new FormData(form);
         
         // Add the specific login nonce to the form data
-        formData.append('vesess_easyauth_login_nonce', passwordlessAuth.login_nonce);
+        formData.append('vesess_auth_login_nonce', passwordlessAuth.login_nonce);
         
         const data = new URLSearchParams();
         for (const pair of formData) {

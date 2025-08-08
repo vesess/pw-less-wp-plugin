@@ -2,7 +2,7 @@
 /**
  * Handles admin functionality.
  */
-class Vesess_Easyauth_Admin {
+class Vesess_Auth_Admin {
     public function init() {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
@@ -17,7 +17,7 @@ class Vesess_Easyauth_Admin {
             'Passwordless Authentication',
             'Passwordless Auth',
             'manage_options',
-            'vesess_easyauth',
+            'vesess_auth',
             array($this, 'render_settings_page')
         );
     }
@@ -26,85 +26,85 @@ class Vesess_Easyauth_Admin {
      * Enqueue admin styles.
      */
     public function enqueue_styles($hook) {
-        if ('settings_page_vesess_easyauth' !== $hook) {
+        if ('settings_page_vesess_auth' !== $hook) {
             return;
         }
         
         wp_enqueue_style(
-            'vesess_easyauth-admin',
-            VESESS_EASYAUTH_URL . 'assets/css/admin.css',
+            'vesess_auth-admin',
+            VESESS_AUTH_URL . 'assets/css/admin.css',
             array(),
-            VESESS_EASYAUTH_VERSION
+            VESESS_AUTH_VERSION
         );
     }    /**
      * Register plugin settings.
      */
     public function register_settings() {
         register_setting(
-            'vesess_easyauth_options', 
-            'vesess_easyauth_options',
+            'vesess_auth_options', 
+            'vesess_auth_options',
             array($this, 'sanitize_options')
         );
         
         add_settings_section(
-            'vesess_easyauth_general',
+            'vesess_auth_general',
             'General Settings',
             array($this, 'settings_section_callback_general'),
-            'vesess_easyauth'
+            'vesess_auth'
         );
         
         add_settings_field(
             'login_redirect',
             'Redirect After Login',
             array($this, 'render_login_redirect_field'),
-            'vesess_easyauth',
-            'vesess_easyauth_general'
+            'vesess_auth',
+            'vesess_auth_general'
         );
 
         add_settings_field(
             'user_home_url',
             'User Home URL',
             array($this, 'render_user_home_url_field'),
-            'vesess_easyauth',
-            'vesess_easyauth_general'
+            'vesess_auth',
+            'vesess_auth_general'
         );
         
         add_settings_field(
             'email_subject',
             'Email Subject',
             array($this, 'render_email_subject_field'),
-            'vesess_easyauth',
-            'vesess_easyauth_general'
+            'vesess_auth',
+            'vesess_auth_general'
         );
         
         add_settings_field(
             'email_template',
             'Email Template',
             array($this, 'render_email_template_field'),
-            'vesess_easyauth',
-            'vesess_easyauth_general'
+            'vesess_auth',
+            'vesess_auth_general'
         );
         add_settings_section(
-            'vesess_easyauth_main',
+            'vesess_auth_main',
             'Main Settings',
             array($this, 'settings_section_callback_main'),
-            'vesess_easyauth'
+            'vesess_auth'
         );
         
         add_settings_field(
             'email_from_name',
             'Email From Name',
             array($this, 'email_from_name_callback'),
-            'vesess_easyauth',
-            'vesess_easyauth_main'
+            'vesess_auth',
+            'vesess_auth_main'
         );
         
           add_settings_field(
             'code_expiration',
             'Login Code Expiration (minutes)',
             array($this, 'code_expiration_callback'),
-            'vesess_easyauth',
-            'vesess_easyauth_main'
+            'vesess_auth',
+            'vesess_auth_main'
         );
         
         // Theme compatibility setting
@@ -112,8 +112,8 @@ class Vesess_Easyauth_Admin {
             'use_theme_styles',
             'Use Theme Styling',
             array($this, 'render_theme_styles_field'),
-            'vesess_easyauth',
-            'vesess_easyauth_general'
+            'vesess_auth',
+            'vesess_auth_general'
         );
         
         // Auth Logs menu visibility setting
@@ -121,8 +121,8 @@ class Vesess_Easyauth_Admin {
             'show_auth_logs_menu',
             'Show Auth Logs Menu',
             array($this, 'render_show_auth_logs_field'),
-            'vesess_easyauth',
-            'vesess_easyauth_general'
+            'vesess_auth',
+            'vesess_auth_general'
         );
     }
 
@@ -138,9 +138,9 @@ class Vesess_Easyauth_Admin {
      * Email From Name field callback.
      */
     public function email_from_name_callback() {
-        $options = get_option('vesess_easyauth_options');
+        $options = get_option('vesess_auth_options');
         $value = isset($options['email_from_name']) ? $options['email_from_name'] : get_bloginfo('name');
-        echo '<input type="text" name="vesess_easyauth_options[email_from_name]" value="' . esc_attr($value) . '" class="regular-text">';
+        echo '<input type="text" name="vesess_auth_options[email_from_name]" value="' . esc_attr($value) . '" class="regular-text">';
     }
 
     /**
@@ -148,18 +148,18 @@ class Vesess_Easyauth_Admin {
      *  To be added in the future
      */
     public function email_from_address_callback() {
-        $options = get_option('vesess_easyauth_options');
+        $options = get_option('vesess_auth_options');
         $value = isset($options['email_from_address']) ? $options['email_from_address'] : get_bloginfo('admin_email');
-        echo '<input type="email" name="vesess_easyauth_options[email_from_address]" value="' . esc_attr($value) . '" class="regular-text">';
+        echo '<input type="email" name="vesess_auth_options[email_from_address]" value="' . esc_attr($value) . '" class="regular-text">';
     }
 
     /**
      * Code Expiration field callback.
      */
     public function code_expiration_callback() {
-        $options = get_option('vesess_easyauth_options');
+        $options = get_option('vesess_auth_options');
         $value = isset($options['code_expiration']) ? $options['code_expiration'] : 15;
-        echo '<input type="number" name="vesess_easyauth_options[code_expiration]" value="' . esc_attr($value) . '" min="1" max="60" step="1" class="small-text">';
+        echo '<input type="number" name="vesess_auth_options[code_expiration]" value="' . esc_attr($value) . '" min="1" max="60" step="1" class="small-text">';
     }
     
     /**
@@ -170,7 +170,7 @@ class Vesess_Easyauth_Admin {
         }
 
         // Check security status
-        $security_status = vesess_easyauth_validate_security();
+        $security_status = vesess_auth_validate_security();
         ?>
         <div class="wrap">
             <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
@@ -190,8 +190,8 @@ class Vesess_Easyauth_Admin {
             
             <form action="options.php" method="post">
                 <?php
-                settings_fields('vesess_easyauth_options');
-                do_settings_sections('vesess_easyauth');
+                settings_fields('vesess_auth_options');
+                do_settings_sections('vesess_auth');
                 submit_button();
                 ?>
             </form>
@@ -199,10 +199,10 @@ class Vesess_Easyauth_Admin {
             
             <h2>How to Use</h2>
             <p>Add the login form to any page or post using this shortcode:</p>
-            <p><code>[vesess_easyauth_login_form]</code></p>
+            <p><code>[vesess_auth_login_form]</code></p>
             
             <p>To specify a custom redirect after login:</p>
-            <p><code>[vesess_easyauth_login_form redirect="/dashboard/"]</code></p>
+            <p><code>[vesess_auth_login_form redirect="/dashboard/"]</code></p>
         </div>
         <?php
     }
@@ -211,10 +211,10 @@ class Vesess_Easyauth_Admin {
      * Render login redirect field
      */
     public function render_login_redirect_field() {
-        $options = get_option('vesess_easyauth_options');
+        $options = get_option('vesess_auth_options');
         $redirect = isset($options['login_redirect']) ? $options['login_redirect'] : admin_url();
         ?>
-        <input type="text" name="vesess_easyauth_options[login_redirect]" value="<?php echo esc_attr($redirect); ?>" class="regular-text" />
+        <input type="text" name="vesess_auth_options[login_redirect]" value="<?php echo esc_attr($redirect); ?>" class="regular-text" />
         <p class="description">URL to redirect users after successful login.</p>
         <?php
     }
@@ -223,20 +223,20 @@ class Vesess_Easyauth_Admin {
      * Render user home URL field
      */
     public function render_user_home_url_field() {
-        $options = get_option('vesess_easyauth_options');
+        $options = get_option('vesess_auth_options');
         $home_url = isset($options['user_home_url']) ? $options['user_home_url'] : home_url();
         ?>
-        <input type="text" name="vesess_easyauth_options[user_home_url]" value="<?php echo esc_attr($home_url); ?>" class="regular-text" />
+        <input type="text" name="vesess_auth_options[user_home_url]" value="<?php echo esc_attr($home_url); ?>" class="regular-text" />
         <p class="description">URL for the user's home page.</p>
         <?php
     }    /**
      * Render email subject field
      */    public function render_email_subject_field() {
-        $options = get_option('vesess_easyauth_options');
+        $options = get_option('vesess_auth_options');
         $default_subject = 'Login link for ' . get_bloginfo('name');
         $subject = isset($options['email_subject']) ? sanitize_text_field($options['email_subject']) : $default_subject;
         ?>
-        <input type="text" name="vesess_easyauth_options[email_subject]" value="<?php echo esc_attr($subject); ?>" class="regular-text" />
+        <input type="text" name="vesess_auth_options[email_subject]" value="<?php echo esc_attr($subject); ?>" class="regular-text" />
         <p class="description">Subject line for the login link email.</p>
         <?php
     }
@@ -245,11 +245,11 @@ class Vesess_Easyauth_Admin {
      * Render email template field
      */
     public function render_email_template_field() {
-        $options = get_option('vesess_easyauth_options');
+        $options = get_option('vesess_auth_options');
         $expiration_minutes = isset($options['code_expiration']) ? (int)$options['code_expiration'] : 15;        $default_template = "Hello {display_name},\n\nClick the link below to log in:\n\n{login_link}\n\nThis link will expire in {expiration_minutes} minutes.\n\nIf you did not request this login link, please ignore this email.\n\nRegards,\n{site_name}";
         $template = isset($options['email_template']) ? $options['email_template'] : $default_template;
         ?>
-        <textarea name="vesess_easyauth_options[email_template]" rows="10" class="large-text code"><?php echo esc_textarea($template); ?></textarea>
+        <textarea name="vesess_auth_options[email_template]" rows="10" class="large-text code"><?php echo esc_textarea($template); ?></textarea>
         <p class="description">
             Available placeholders:<br>
             <code>{display_name}</code> - User's display name<br>
@@ -269,7 +269,7 @@ class Vesess_Easyauth_Admin {
      */
     public function sanitize_options($input) {
         // Get the existing options
-        $existing_options = get_option('vesess_easyauth_options', array());
+        $existing_options = get_option('vesess_auth_options', array());
         
         // Process the checkbox options that might be missing when unchecked
         $checkbox_options = array(
@@ -300,10 +300,10 @@ class Vesess_Easyauth_Admin {
      * Render theme styles toggle field
      */
     public function render_theme_styles_field() {
-        $options = get_option('vesess_easyauth_options');
+        $options = get_option('vesess_auth_options');
         $checked = isset($options['use_theme_styles']) && $options['use_theme_styles'] === 'yes';
         ?>
-        <input type="checkbox" name="vesess_easyauth_options[use_theme_styles]" value="yes" <?php checked($checked); ?> />
+        <input type="checkbox" name="vesess_auth_options[use_theme_styles]" value="yes" <?php checked($checked); ?> />
         <p class="description">Enable this to use your theme's styling instead of plugin default styles.</p>
         <?php
     }
@@ -312,10 +312,10 @@ class Vesess_Easyauth_Admin {
      * Render show auth logs menu toggle field
      */
     public function render_show_auth_logs_field() {
-        $options = get_option('vesess_easyauth_options');
+        $options = get_option('vesess_auth_options');
         $checked = isset($options['show_auth_logs_menu']) && $options['show_auth_logs_menu'] === 'yes';
         ?>
-        <input type="checkbox" name="vesess_easyauth_options[show_auth_logs_menu]" value="yes" <?php checked($checked); ?> />
+        <input type="checkbox" name="vesess_auth_options[show_auth_logs_menu]" value="yes" <?php checked($checked); ?> />
         <p class="description">Enable this to show the Auth Logs menu in the settings. When disabled, authentication logging is also disabled.</p>
         <?php
     }

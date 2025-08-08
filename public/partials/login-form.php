@@ -14,7 +14,7 @@ $success_message = '';
 if (isset($_GET['sent'])) {
     // Verify nonce if provided, otherwise only allow safe "sent" parameter
     $is_valid_request = false;
-    if (isset($_GET['_wpnonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'vesess_easyauth_login_feedback')) {
+    if (isset($_GET['_wpnonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'vesess_auth_login_feedback')) {
         $is_valid_request = true;
         $sent_value = sanitize_text_field(wp_unslash($_GET['sent']));
     } else {
@@ -37,20 +37,17 @@ $redirect_to = '';
 
 // Get and validate redirect URL with nonce verification when provided
 if (isset($_REQUEST['redirect_to'])) {
-    // If nonce is provided, verify it
+    // Always require nonce verification for redirect URL processing
     $is_valid_redirect = false;
     if (isset($_REQUEST['_wpnonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_REQUEST['_wpnonce'])), 'passwordless_redirect')) {
-        $is_valid_redirect = true;    } else {
-        // For usability, still allow redirect parameters to internal site URLs
-        // Sanitize first using esc_url_raw since it's a URL
+        $is_valid_redirect = true;
+        // Sanitize the redirect URL
         $raw_redirect = esc_url_raw(wp_unslash($_REQUEST['redirect_to']));
+        
+        // Additional validation: only allow internal URLs
         if (strpos($raw_redirect, 'http') !== 0 || strpos($raw_redirect, home_url()) === 0) {
-            $is_valid_redirect = true;
+            $redirect_to = $raw_redirect;
         }
-    }
-      if ($is_valid_redirect) {
-        // We already sanitized the redirect URL, so use that value
-        $redirect_to = $raw_redirect;
     }
 }
 
@@ -60,7 +57,7 @@ if (empty($redirect_to)) {
 }
 
 // Define theme compatibility class at the beginning where it's needed
-$options = get_option('vesess_easyauth_options', []);
+$options = get_option('vesess_auth_options', []);
 $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme_styles'] === 'yes' ? 'theme-compat' : '';
 
 ?>
@@ -76,7 +73,7 @@ $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme
             <input type="hidden" name="redirect_to" value="<?php echo esc_attr($redirect_to); ?>" />
             <input type="hidden" name="action" value="process_login" />
             <input type="hidden" name="redirect_nonce" value="<?php echo esc_attr(wp_create_nonce('passwordless_redirect')); ?>" />
-            <?php wp_nonce_field('passwordless-login-nonce', 'vesess_easyauth_login_nonce'); ?>
+            <?php wp_nonce_field('passwordless-login-nonce', 'vesess_auth_login_nonce'); ?>
             <button type="submit" name="wp-submit" id="wp-submit" class="button-primary">
                 Send Login Link
             </button>

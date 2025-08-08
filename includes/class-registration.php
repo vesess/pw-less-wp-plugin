@@ -2,7 +2,7 @@
 /**
  * Handles user registration functionality.
  */
-class Vesess_Easyauth_Registration {
+class Vesess_Auth_Registration {
     /**
      * Initialize the class and set its hooks.
      */
@@ -13,29 +13,10 @@ class Vesess_Easyauth_Registration {
 
     /**
      * Register a new user.
-     */    public function register_new_user() {
-        // Check user capabilities for registration first
-        if (!current_user_can('read')) {
-            // For non-logged in users, we allow registration if WordPress allows it
-            if (!get_option('users_can_register')) {
-                wp_send_json_error('Registration is currently disabled.');
-                return;
-            }
-        }
-
-        // Check rate limiting
-        $security = new Vesess_Easyauth_Security();
-        $ip_address = Vesess_Easyauth_Security::get_client_ip();
-        $block_time = $security->record_registration_attempt($ip_address);
-        
-        if ($block_time !== false) {
-            $minutes = ceil($block_time / 60);
-            wp_send_json_error(sprintf('Too many registration attempts. Please try again in %d minutes.', $minutes));
-            return;
-        }
-
-        // Check nonce - verify both the legacy nonce and the new registration-specific nonce
-        // This check happens immediately before processing POST data
+     */
+    public function register_new_user() {
+        // Check nonce FIRST - verify both the legacy nonce and the new registration-specific nonce
+        // This check happens immediately before processing ANY data
         $is_valid_nonce = false;
         
         // Check legacy nonce field using wp_verify_nonce for consistent security
@@ -54,10 +35,52 @@ class Vesess_Easyauth_Registration {
             return;
         }
 
-        // Now process POST data immediately after nonce validation
-        $email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
-        $username = isset($_POST['username']) ? sanitize_user(wp_unslash($_POST['username'])) : '';
-        $display_name = isset($_POST['display_name']) ? sanitize_text_field(wp_unslash($_POST['display_name'])) : '';
+        // Check user capabilities for registration
+        if (!current_user_can('read')) {
+            // For non-logged in users, we allow registration if WordPress allows it
+            if (!get_option('users_can_register')) {
+                wp_send_json_error('Registration is currently disabled.');
+                return;
+            }
+        }
+
+        // Check rate limiting
+        $security = new Vesess_Auth_Security();
+        $ip_address = Vesess_Auth_Security::get_client_ip();
+        $block_time = $security->record_registration_attempt($ip_address);
+        
+        if ($block_time !== false) {
+            $minutes = ceil($block_time / 60);
+            wp_send_json_error(sprintf('Too many registration attempts. Please try again in %d minutes.', $minutes));
+            return;
+        }
+
+        // Now process POST data with explicit nonce validation for each field
+        // Re-verify nonce before accessing each POST variable for maximum security
+        $email = '';
+        $username = '';
+        $display_name = '';
+        
+        // Validate and process email with nonce check
+        if (isset($_POST['email']) && 
+            ((isset($_POST['nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'registration_nonce')) ||
+             (isset($_POST['registration_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['registration_nonce'])), 'passwordless-registration-nonce')))) {
+            $email = sanitize_email(wp_unslash($_POST['email']));
+        }
+        
+        // Validate and process username with nonce check
+        if (isset($_POST['username']) && 
+            ((isset($_POST['nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'registration_nonce')) ||
+             (isset($_POST['registration_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['registration_nonce'])), 'passwordless-registration-nonce')))) {
+            $username = sanitize_user(wp_unslash($_POST['username']));
+        }
+        
+        // Validate and process display name with nonce check
+        if (isset($_POST['display_name']) && 
+            ((isset($_POST['nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'registration_nonce')) ||
+             (isset($_POST['registration_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['registration_nonce'])), 'passwordless-registration-nonce')))) {
+            $display_name = sanitize_text_field(wp_unslash($_POST['display_name']));
+        }
 
         if (!is_email($email)) {
             wp_send_json_error('Invalid email address');
@@ -94,18 +117,18 @@ class Vesess_Easyauth_Registration {
         $verification_code = preg_replace('/[^a-zA-Z0-9]/', '', $verification_code);
         
         // Log the generated code for debugging
-        vesess_easyauth_log("Generated verification code for new user (ID: $user_id): $verification_code");
+        vesess_auth_log("Generated verification code for new user (ID: $user_id): $verification_code");
         
         // Make sure the code is stored exactly as it is
-        vesess_easyauth_log("Storing verification code in user_meta for user ID $user_id: $verification_code", 'info');
-        vesess_easyauth_log("Verification code length: " . strlen($verification_code), 'info');
-        vesess_easyauth_log("Verification code hex: " . bin2hex($verification_code), 'info');
+        vesess_auth_log("Storing verification code in user_meta for user ID $user_id: $verification_code", 'info');
+        vesess_auth_log("Verification code length: " . strlen($verification_code), 'info');
+        vesess_auth_log("Verification code hex: " . bin2hex($verification_code), 'info');
         
         // Store the verification code - make sure it's stored exactly as generated
         update_user_meta($user_id, 'email_verification_code', trim($verification_code));
 
         // Send verification email
-        $email_class = new Vesess_Easyauth_Email();
+        $email_class = new Vesess_Auth_Email();
         $email_sent = $email_class->send_verification_email($user_id, $verification_code);
 
         if ($email_sent) {
