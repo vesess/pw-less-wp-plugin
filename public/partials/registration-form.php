@@ -18,7 +18,7 @@ $raw_registered = '';
 if (isset($_GET['registered'])) {
     // Verify nonce if provided, otherwise only allow safe parameter
     $is_valid_request = false;
-    if (isset($_GET['_wpnonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'vesess_auth_registration_feedback')) {
+    if (isset($_GET['_wpnonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'vesesslabs_vesessauth_registration_feedback')) {
         $is_valid_request = true;
         $raw_registered = sanitize_text_field(wp_unslash($_GET['registered']));
     } else {
@@ -35,7 +35,7 @@ if (isset($_GET['registered'])) {
     }
 }
 
-$options = get_option('vesess_auth_options', []);
+$options = get_option('vesesslabs_vesessauth_options', []);
 $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme_styles'] === 'yes' ? 'theme-compat' : '';
 ?>
 <div class="passwordless-container registration-form-container <?php echo esc_attr($theme_compat_class); ?>">
@@ -45,7 +45,7 @@ $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme
     <div class="message success-message"><?php echo esc_html($success_message); ?></div>
     <?php endif; ?>
     
-    <form id="vesess_auth-registration-form" class="passwordless-form <?php echo esc_attr($theme_compat_class); ?>">
+    <form id="vesesslabs_vesessauth-registration-form" class="passwordless-form <?php echo esc_attr($theme_compat_class); ?>">
         <div class="messages"></div>
           <div class="form-row">
             <label for="email">Email Address <span class="required">*</span></label>
@@ -68,7 +68,7 @@ $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme
             <input type="submit" value="<?php echo esc_attr('Sign Up'); ?>" class="button-primary" />
         </div>
         
-        <input type="hidden" name="action" value="register_new_user" />
+        <input type="hidden" name="action" value="vesesslabs_vesessauth_register_new_user" />
         <?php wp_nonce_field('registration_nonce', 'nonce'); ?>
     </form>    <p class="login-link">
         Already have an account?

@@ -10,16 +10,16 @@ if (!defined('WPINC')) {
 /**
  * Class to handle integration with the standard WordPress login form
  */
-class Vesess_Auth_Login_Integration {
+class Vesesslabs_Vesessauth_Login_Integration {
     /**
      * Initialize the class and set its hooks
      */
     public function init() {
         // Add passwordless login button to login form
-        add_action('login_form', array($this, 'add_vesess_auth_login_button'));
+        add_action('login_form', array($this, 'add_vesesslabs_vesessauth_login_button'));
         
         // Add passwordless login option to lost password form
-        add_action('lostpassword_form', array($this, 'add_vesess_auth_login_button_lostpw'));
+        add_action('lostpassword_form', array($this, 'add_vesesslabs_vesessauth_login_button_lostpw'));
         
         // Add inline login form with AJAX functionality to the login page
         add_action('login_footer', array($this, 'add_inline_login_form'));
@@ -31,8 +31,8 @@ class Vesess_Auth_Login_Integration {
         add_action('admin_init', array($this, 'add_admin_settings'));
         
         // Handle the AJAX request for passwordless login
-        add_action('wp_ajax_nopriv_process_vesess_auth_login', array($this, 'handle_vesess_auth_login_ajax'));
-        add_action('wp_ajax_process_vesess_auth_login', array($this, 'handle_vesess_auth_login_ajax'));
+        add_action('wp_ajax_nopriv_process_vesesslabs_vesessauth_login', array($this, 'handle_vesesslabs_vesessauth_login_ajax'));
+        add_action('wp_ajax_process_vesesslabs_vesessauth_login', array($this, 'handle_vesesslabs_vesessauth_login_ajax'));
     }
 
     /**
@@ -43,8 +43,8 @@ class Vesess_Auth_Login_Integration {
             'enable_wp_login_integration',
             'Enable Admin Login Integration',
             array($this, 'render_wp_login_integration_field'),
-            'vesess_auth',
-            'vesess_auth_general'
+            'vesesslabs_vesessauth',
+            'vesesslabs_vesessauth_general'
         );
     }
 
@@ -52,10 +52,10 @@ class Vesess_Auth_Login_Integration {
      * Render the admin setting field
      */
     public function render_wp_login_integration_field() {
-        $options = get_option('vesess_auth_options');
+        $options = get_option('vesesslabs_vesessauth_options');
         $checked = isset($options['enable_wp_login_integration']) ? $options['enable_wp_login_integration'] === 'yes' : true;
         ?>
-        <input type="checkbox" name="vesess_auth_options[enable_wp_login_integration]" value="yes" <?php checked($checked); ?> />
+        <input type="checkbox" name="vesesslabs_vesessauth_options[enable_wp_login_integration]" value="yes" <?php checked($checked); ?> />
         <p class="description">Add passwordless login option to the WordPress login screen (wp-login.php)</p>
         <?php
     }
@@ -64,7 +64,7 @@ class Vesess_Auth_Login_Integration {
      * Check if admin login integration is enabled
      */
     public function is_integration_enabled() {
-        $options = get_option('vesess_auth_options', []);
+        $options = get_option('vesesslabs_vesessauth_options', []);
         
         // If the option doesn't exist yet (first installation), default to true
         if (!isset($options['enable_wp_login_integration'])) {
@@ -77,13 +77,13 @@ class Vesess_Auth_Login_Integration {
     /**
      * Add passwordless login button to the login form
      */
-    public function add_vesess_auth_login_button() {
+    public function add_vesesslabs_vesessauth_login_button() {
         if (!$this->is_integration_enabled()) {
             return;
         }
         
         // Create a nonce for security
-        $nonce = wp_create_nonce('passwordless-login-nonce');
+        $nonce = wp_create_nonce('vesesslabs_vesessauth_passwordless-login-nonce');
         ?>
         <div class="pwless-login-container" style="text-align: center; margin: 15px 0;">
             <p>or</p>
@@ -92,7 +92,7 @@ class Vesess_Auth_Login_Integration {
             </button>
             
             <!-- Hidden form fields for the passwordless login -->
-            <input type="hidden" name="vesess_auth_login_nonce" id="vesess_auth_login_nonce" value="<?php echo esc_attr($nonce); ?>">
+            <input type="hidden" name="vesesslabs_vesessauth_login_nonce" id="vesesslabs_vesessauth_login_nonce" value="<?php echo esc_attr($nonce); ?>">
             <div id="pwless-messages" style="margin-top: 10px;"></div>
         </div>
         <?php
@@ -101,20 +101,20 @@ class Vesess_Auth_Login_Integration {
     /**
      * Add passwordless login option to the lost password form
      */
-    public function add_vesess_auth_login_button_lostpw() {
+    public function add_vesesslabs_vesessauth_login_button_lostpw() {
         if (!$this->is_integration_enabled()) {
             return;
         }
         
         // Create a nonce for security
-        $nonce = wp_create_nonce('passwordless-login-nonce');
+        $nonce = wp_create_nonce('vesesslabs_vesessauth_passwordless-login-nonce');
         ?>
         <div class="pwless-login-container" style="text-align: center; margin: 15px 0;">
             <p>or</p>
             <button type="button" id="pwless-login-btn-lost" class="button button-primary" style="display: block; width: 100%; text-align: center; padding: 10px 0;">
                 Use Passwordless Login Instead
             </button>
-            <input type="hidden" name="vesess_auth_login_nonce_lost" id="vesess_auth_login_nonce_lost" value="<?php echo esc_attr($nonce); ?>">
+            <input type="hidden" name="vesesslabs_vesessauth_login_nonce_lost" id="vesesslabs_vesessauth_login_nonce_lost" value="<?php echo esc_attr($nonce); ?>">
             <div id="pwless-messages-lost" style="margin-top: 10px;"></div>
         </div>
         <?php
@@ -130,20 +130,20 @@ class Vesess_Auth_Login_Integration {
         
         // Enqueue the login form integration script
         wp_enqueue_script(
-            'vesess_auth-login-integration',
-            VESESS_AUTH_URL . 'public/js/login-form-integration.js',
+            'vesesslabs_vesessauth-login-integration',
+            VESESSLABS_VESESSAUTH_URL . 'public/js/login-form-integration.js',
             array('jquery'),
-            VESESS_AUTH_VERSION,
+            VESESSLABS_VESESSAUTH_VERSION,
             true
         );
         
         // Localize script with AJAX data
         wp_localize_script(
-            'vesess_auth-login-integration',
-            'passwordlessLoginIntegration',
+            'vesesslabs_vesessauth-login-integration',
+            'vesesslabs_vesessauth_passwordlessLoginIntegration',
             array(
                 'ajax_url' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('passwordless-login-nonce')
+                'nonce' => wp_create_nonce('vesesslabs_vesessauth_passwordless-login-nonce')
             )
         );
     }
@@ -159,19 +159,19 @@ class Vesess_Auth_Login_Integration {
         
         // Enqueue login form integration styles
         wp_enqueue_style(
-            'vesess_auth-login-integration',
-            VESESS_AUTH_URL . 'public/css/login-form-integration.css',
+            'vesesslabs_vesessauth-login-integration',
+            VESESSLABS_VESESSAUTH_URL . 'public/css/login-form-integration.css',
             array(),
-            VESESS_AUTH_VERSION
+            VESESSLABS_VESESSAUTH_VERSION
         );
     }
 
     /**
      * Handle AJAX request for passwordless login
      */
-    public function handle_vesess_auth_login_ajax() {
+    public function handle_vesesslabs_vesessauth_login_ajax() {
         // Verify nonce
-        if (!isset($_POST['vesess_auth_login_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['vesess_auth_login_nonce'])), 'passwordless-login-nonce')) {
+        if (!isset($_POST['vesesslabs_vesessauth_login_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['vesesslabs_vesessauth_login_nonce'])), 'vesesslabs_vesessauth_passwordless-login-nonce')) {
             wp_send_json_error('Invalid security token');
             return;
         }
@@ -196,7 +196,7 @@ class Vesess_Auth_Login_Integration {
         }
 
         // Generate and send login link
-        $login_link = vesess_auth_create_login_link($user->user_email);
+        $login_link = vesesslabs_vesessauth_create_login_link($user->user_email);
         
         if ($login_link) {
             // Send email with login link

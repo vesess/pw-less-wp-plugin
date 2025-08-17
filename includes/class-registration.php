@@ -2,19 +2,19 @@
 /**
  * Handles user registration functionality.
  */
-class Vesess_Auth_Registration {
+class Vesesslabs_Vesessauth_Registration {
     /**
      * Initialize the class and set its hooks.
      */
     public function init() {
         // Only register the AJAX handler for user registration
-        add_action('wp_ajax_nopriv_register_new_user', array($this, 'register_new_user'));
+        add_action('wp_ajax_nopriv_vesesslabs_vesessauth_register_new_user', array($this, 'vesesslabs_vesessauth_register_new_user'));
     }
 
     /**
      * Register a new user.
      */
-    public function register_new_user() {
+    public function vesesslabs_vesessauth_register_new_user() {
         // Check nonce FIRST - verify both the legacy nonce and the new registration-specific nonce
         // This check happens immediately before processing ANY data
         $is_valid_nonce = false;
@@ -45,8 +45,8 @@ class Vesess_Auth_Registration {
         }
 
         // Check rate limiting
-        $security = new Vesess_Auth_Security();
-        $ip_address = Vesess_Auth_Security::get_client_ip();
+        $security = new Vesesslabs_Vesessauth_Security();
+        $ip_address = Vesesslabs_Vesessauth_Security::get_client_ip();
         $block_time = $security->record_registration_attempt($ip_address);
         
         if ($block_time !== false) {
@@ -117,18 +117,18 @@ class Vesess_Auth_Registration {
         $verification_code = preg_replace('/[^a-zA-Z0-9]/', '', $verification_code);
         
         // Log the generated code for debugging
-        vesess_auth_log("Generated verification code for new user (ID: $user_id): $verification_code");
+        vesesslabs_vesessauth_log("Generated verification code for new user (ID: $user_id): $verification_code");
         
         // Make sure the code is stored exactly as it is
-        vesess_auth_log("Storing verification code in user_meta for user ID $user_id: $verification_code", 'info');
-        vesess_auth_log("Verification code length: " . strlen($verification_code), 'info');
-        vesess_auth_log("Verification code hex: " . bin2hex($verification_code), 'info');
+        vesesslabs_vesessauth_log("Storing verification code in user_meta for user ID $user_id: $verification_code", 'info');
+        vesesslabs_vesessauth_log("Verification code length: " . strlen($verification_code), 'info');
+        vesesslabs_vesessauth_log("Verification code hex: " . bin2hex($verification_code), 'info');
         
         // Store the verification code - make sure it's stored exactly as generated
         update_user_meta($user_id, 'email_verification_code', trim($verification_code));
 
         // Send verification email
-        $email_class = new Vesess_Auth_Email();
+        $email_class = new Vesesslabs_Vesessauth_Email();
         $email_sent = $email_class->send_verification_email($user_id, $verification_code);
 
         if ($email_sent) {

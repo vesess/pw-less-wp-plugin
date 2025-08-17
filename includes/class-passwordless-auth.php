@@ -11,14 +11,14 @@ if (!defined('WPINC')) {
     die;
 }
 
-class VESESS_AUTH
+class VESESSLABS_VESESSAUTH
 {
 
     /**
      * The loader that's responsible for maintaining and registering all hooks that power
      * the plugin.
      *
-     * @var Vesess_Auth_Loader
+     * @var Vesesslabs_Vesessauth_Loader
      */
     protected $loader;
 
@@ -33,7 +33,7 @@ class VESESS_AUTH
      * Define the core functionality of the plugin.
      */    public function __construct()
     {
-        $this->version = VESESS_AUTH_VERSION;
+        $this->version = VESESSLABS_VESESSAUTH_VERSION;
         $this->load_dependencies();
         $this->define_security_hooks();
         $this->define_registration_hooks();
@@ -53,18 +53,18 @@ class VESESS_AUTH
          * The class responsible for orchestrating the actions and filters of the
          * core plugin.
          */
-        require_once VESESS_AUTH_PATH . 'includes/class-passwordless-auth-loader.php';
+        require_once VESESSLABS_VESESSAUTH_PATH . 'includes/class-passwordless-auth-loader.php';
 
-        require_once VESESS_AUTH_PATH . 'includes/class-registration.php';
-        require_once VESESS_AUTH_PATH . 'includes/class-profile.php';
-        require_once VESESS_AUTH_PATH . 'includes/class-frontend.php';
-        require_once VESESS_AUTH_PATH . 'includes/class-admin.php';
-        require_once VESESS_AUTH_PATH . 'includes/class-email.php';
-        require_once VESESS_AUTH_PATH . 'includes/class-url-blocker.php'; // Include URL blocker class
-        require_once VESESS_AUTH_PATH . 'includes/helpers.php';
-        require_once VESESS_AUTH_PATH . 'includes/class-security.php'; // Include Security class
+        require_once VESESSLABS_VESESSAUTH_PATH . 'includes/class-registration.php';
+        require_once VESESSLABS_VESESSAUTH_PATH . 'includes/class-profile.php';
+        require_once VESESSLABS_VESESSAUTH_PATH . 'includes/class-frontend.php';
+        require_once VESESSLABS_VESESSAUTH_PATH . 'includes/class-admin.php';
+        require_once VESESSLABS_VESESSAUTH_PATH . 'includes/class-email.php';
+        require_once VESESSLABS_VESESSAUTH_PATH . 'includes/class-url-blocker.php'; // Include URL blocker class
+        require_once VESESSLABS_VESESSAUTH_PATH . 'includes/helpers.php';
+        require_once VESESSLABS_VESESSAUTH_PATH . 'includes/class-security.php'; // Include Security class
 
-        $this->loader = new Vesess_Auth_Loader();
+        $this->loader = new Vesesslabs_Vesessauth_Loader();
     }
 
 
@@ -74,7 +74,7 @@ class VESESS_AUTH
      */
     private function define_security_hooks()
     {
-        $security = new Vesess_Auth_Security();
+        $security = new Vesesslabs_Vesessauth_Security();
         $this->loader->add_action('init', $security, 'init');
     }
 
@@ -83,7 +83,7 @@ class VESESS_AUTH
      */
     private function define_registration_hooks()
     {
-        $registration = new Vesess_Auth_Registration();
+        $registration = new Vesesslabs_Vesessauth_Registration();
 
         $this->loader->add_action('init', $registration, 'init');
     }    /**
@@ -94,7 +94,7 @@ class VESESS_AUTH
     private function define_profile_hooks()
     {
         // Profile functionality has been removed
-        $profile = new Vesess_Auth_Profile();
+        $profile = new Vesesslabs_Vesessauth_Profile();
         $this->loader->add_action('init', $profile, 'init');
     }
 
@@ -103,11 +103,11 @@ class VESESS_AUTH
      */
     private function define_frontend_hooks()
     {
-        $frontend = new Vesess_Auth_Frontend();
+        $frontend = new Vesesslabs_Vesessauth_Frontend();
 
         $this->loader->add_action('init', $frontend, 'init');        // Register shortcodes through the loader
-        $this->loader->add_shortcode('vesess_auth_login', $frontend, 'login_form_shortcode');
-        $this->loader->add_shortcode('vesess_auth_registration', $frontend, 'registration_form_shortcode');
+        $this->loader->add_shortcode('vesesslabs_vesessauth_login', $frontend, 'login_form_shortcode');
+        $this->loader->add_shortcode('vesesslabs_vesessauth_registration', $frontend, 'registration_form_shortcode');
     }
 
     /**
@@ -115,7 +115,7 @@ class VESESS_AUTH
      */
     private function define_admin_hooks()
     {
-        $admin = new Vesess_Auth_Admin();
+        $admin = new Vesesslabs_Vesessauth_Admin();
 
         $this->loader->add_action('init', $admin, 'init');
     }
@@ -126,7 +126,7 @@ class VESESS_AUTH
      */
     private function define_url_blocker_hooks()
     {
-        $url_blocker = new Vesess_Auth_URL_Blocker();
+        $url_blocker = new Vesesslabs_Vesessauth_URL_Blocker();
 
         $this->loader->add_action('init', $url_blocker, 'init');
     }
@@ -136,8 +136,8 @@ class VESESS_AUTH
      */
     private function define_login_integration_hooks()
     {
-        if (class_exists('Vesess_Auth_Login_Integration')) {
-            $login_integration = new Vesess_Auth_Login_Integration();
+        if (class_exists('Vesesslabs_Vesessauth_Login_Integration')) {
+            $login_integration = new Vesesslabs_Vesessauth_Login_Integration();
             $this->loader->add_action('init', $login_integration, 'init');
         }
     }
@@ -148,15 +148,15 @@ class VESESS_AUTH
     public function run()
     {
         $this->loader->run();        // Add shortcode for the login form
-        add_shortcode('vesess_auth_login_form', array($this, 'render_login_form'));
+        add_shortcode('vesesslabs_vesessauth_login_form', array($this, 'render_login_form'));
 
         // Handle AJAX form submission for passwordless login (legacy)
-        add_action('wp_ajax_nopriv_process_login', array($this, 'handle_ajax_login'));
-        add_action('wp_ajax_process_login', array($this, 'handle_ajax_login'));
+        add_action('wp_ajax_nopriv_vesesslabs_vesessauth_process_login', array($this, 'handle_ajax_login'));
+        add_action('wp_ajax_vesesslabs_vesessauth_process_login', array($this, 'handle_ajax_login'));
         
         // Handle AJAX form submission for passwordless login (new implementation)
-        add_action('wp_ajax_nopriv_process_vesess_auth_login', array($this, 'handle_vesess_auth_login'));
-        add_action('wp_ajax_process_vesess_auth_login', array($this, 'handle_vesess_auth_login'));
+        add_action('wp_ajax_nopriv_process_vesesslabs_vesessauth_login', array($this, 'handle_vesesslabs_vesessauth_login'));
+        add_action('wp_ajax_process_vesesslabs_vesessauth_login', array($this, 'handle_vesesslabs_vesessauth_login'));
 
         // Handle magic login links
         add_action('init', array($this, 'process_magic_login'));
@@ -170,7 +170,7 @@ class VESESS_AUTH
      */    public function handle_ajax_login() 
     {
         // Verify the primary login nonce
-        check_ajax_referer('passwordless-login-nonce', 'vesess_auth_login_nonce');
+        check_ajax_referer('vesesslabs_vesessauth_passwordless-login-nonce', 'vesesslabs_vesessauth_login_nonce');
         
         // Also verify the redirect nonce if it's provided
         if (isset($_POST['redirect_to']) && isset($_POST['redirect_nonce'])) {
@@ -194,7 +194,7 @@ class VESESS_AUTH
         $user = get_user_by('email', $user_email);
         if (!$user) {
             // Log this attempt for monitoring, but provide a generic error to the user.
-            vesess_auth_log("Login attempt failed: No user found for email: $user_email", 'info');
+            vesesslabs_vesessauth_log("Login attempt failed: No user found for email: $user_email", 'info');
             wp_send_json_error('No user found with that email address.');
         }
 
@@ -208,15 +208,15 @@ class VESESS_AUTH
      * and triggers the magic link sending process.
      *
      * @since 1.1.0
-     */    public function handle_vesess_auth_login() 
+     */    public function handle_vesesslabs_vesessauth_login() 
     {
         // Add error logging to debug
-        vesess_auth_log("handle_vesess_auth_login called", 'info');
+        vesesslabs_vesessauth_log("handle_vesesslabs_vesessauth_login called", 'info');
         
         try {
-            check_ajax_referer('passwordless-login-nonce', 'vesess_auth_login_nonce');
+            check_ajax_referer('vesesslabs_vesessauth_passwordless-login-nonce', 'vesesslabs_vesessauth_login_nonce');
         } catch (Exception $e) {
-            vesess_auth_log("Nonce verification failed: " . $e->getMessage(), 'error');
+            vesesslabs_vesessauth_log("Nonce verification failed: " . $e->getMessage(), 'error');
             wp_send_json_error('Security check failed. Please refresh the page and try again.');
             return;
         }
@@ -226,25 +226,25 @@ class VESESS_AUTH
         $user_input = '';
         
         // Additional explicit nonce verification before POST data access
-        if (!isset($_POST['vesess_auth_login_nonce']) || 
-            !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['vesess_auth_login_nonce'])), 'passwordless-login-nonce')) {
-            vesess_auth_log("Explicit nonce verification failed", 'error');
+        if (!isset($_POST['vesesslabs_vesessauth_login_nonce']) || 
+            !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['vesesslabs_vesessauth_login_nonce'])), 'vesesslabs_vesessauth_passwordless-login-nonce')) {
+            vesesslabs_vesessauth_log("Explicit nonce verification failed", 'error');
             wp_send_json_error('Security check failed. Please refresh the page and try again.');
             return;
         }
         
         // Safely get and process the user input if it exists and is a string
         if (isset($_POST['user_input']) && is_string($_POST['user_input']) && 
-            isset($_POST['vesess_auth_login_nonce']) && 
-            wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['vesess_auth_login_nonce'])), 'passwordless-login-nonce')) {
+            isset($_POST['vesesslabs_vesessauth_login_nonce']) && 
+            wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['vesesslabs_vesessauth_login_nonce'])), 'vesesslabs_vesessauth_passwordless-login-nonce')) {
             $user_input = sanitize_text_field(wp_unslash($_POST['user_input']));
         }
         
-        vesess_auth_log("User input received: " . $user_input, 'info');
+        vesesslabs_vesessauth_log("User input received: " . $user_input, 'info');
         
         // Check if we received user input
         if (empty($user_input)) {
-            vesess_auth_log("Empty user input provided", 'error');
+            vesesslabs_vesessauth_log("Empty user input provided", 'error');
             wp_send_json_error('Please enter your username or email address.');
             return;
         }
@@ -258,31 +258,31 @@ class VESESS_AUTH
             // Input is an email, use it directly
             $user_email = sanitize_email($user_input);
             $user = get_user_by('email', $user_email);
-            vesess_auth_log("Input is email: " . $user_email, 'info');
+            vesesslabs_vesessauth_log("Input is email: " . $user_email, 'info');
         } else {
             // Input is potentially a username
             $username = sanitize_user($user_input, true);
             $user = get_user_by('login', $username);
             if ($user) {
                 $user_email = $user->user_email;
-                vesess_auth_log("Input is username: " . $username . ", email: " . $user_email, 'info');
+                vesesslabs_vesessauth_log("Input is username: " . $username . ", email: " . $user_email, 'info');
             }
         }
 
         // Verify that we found a user
         if (!$user || empty($user_email)) {
             // Log this attempt for monitoring, but provide a generic error to the user.
-            vesess_auth_log("Login attempt failed: No user found for input: $user_input", 'info');
+            vesesslabs_vesessauth_log("Login attempt failed: No user found for input: $user_input", 'info');
             wp_send_json_error('No user found with that username or email address.');
             return;
         }        
-        vesess_auth_log("User found, proceeding to send magic link", 'info');
+        vesesslabs_vesessauth_log("User found, proceeding to send magic link", 'info');
         
         // Delegate to shared magic link handling
         try {
             $this->handle_magic_link_sending($user, $user_email);
         } catch (Exception $e) {
-            vesess_auth_log("Error in handle_magic_link_sending: " . $e->getMessage(), 'error');
+            vesesslabs_vesessauth_log("Error in handle_magic_link_sending: " . $e->getMessage(), 'error');
             wp_send_json_error('An error occurred while sending the login link: ' . $e->getMessage());
             return;
         }
@@ -290,7 +290,7 @@ class VESESS_AUTH
 
     /**
      * Handles the shared logic for sending magic links and rate limiting.
-     * This is a private helper method used by handle_ajax_login and handle_vesess_auth_login.
+     * This is a private helper method used by handle_ajax_login and handle_vesesslabs_vesessauth_login.
      *
      * @since 1.2.0
      * @param WP_User $user The WordPress user object
@@ -299,8 +299,8 @@ class VESESS_AUTH
     private function handle_magic_link_sending($user, $user_email) 
     {
         // Check rate limiting for login requests
-        $security = new Vesess_Auth_Security();
-        $ip_address = Vesess_Auth_Security::get_client_ip();
+        $security = new Vesesslabs_Vesessauth_Security();
+        $ip_address = Vesesslabs_Vesessauth_Security::get_client_ip();
         $block_time = $security->record_login_request($ip_address, $user_email);
         
         if ($block_time !== false) {
@@ -312,21 +312,21 @@ class VESESS_AUTH
         }
 
         // Generate and send magic login link
-        $email_class = new Vesess_Auth_Email();
+        $email_class = new Vesesslabs_Vesessauth_Email();
         $sent = $email_class->send_magic_link($user_email);
 
         if ($sent === false) {
-            vesess_auth_log("Failed to send login link to user email: $user_email (User ID: {$user->ID})", 'error');
+            vesesslabs_vesessauth_log("Failed to send login link to user email: $user_email (User ID: {$user->ID})", 'error');
             wp_send_json_error('Failed to send the login link. Please try again later.');
         } elseif ($sent === 'unverified') {
             wp_send_json_error('Your email address has not been verified yet. Please check your inbox for a verification email or register again.');        } elseif ($sent !== true) {
             // Use more appropriate error logging without var_export
             $error_value = is_string($sent) ? $sent : json_encode($sent);
-            vesess_auth_log("Unknown error sending login link to user email: $user_email (User ID: {$user->ID}). Return value: " . $error_value, 'error');
+            vesesslabs_vesessauth_log("Unknown error sending login link to user email: $user_email (User ID: {$user->ID}). Return value: " . $error_value, 'error');
             wp_send_json_error('An unknown error occurred while trying to send the login link. Please try again later.');
         }
 
-        vesess_auth_log("Login link successfully sent to user email: $user_email (User ID: {$user->ID})", 'info');
+        vesesslabs_vesessauth_log("Login link successfully sent to user email: $user_email (User ID: {$user->ID})", 'info');
         wp_send_json_success('Login link sent! Please check your email.');
     }    /**
      * Process magic login requests
@@ -347,7 +347,7 @@ class VESESS_AUTH
 
         // Verify nonce for security - only for our magic_login action
         if (!isset($_GET['_wpnonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'magic_login_nonce')) {
-            vesess_auth_log("Magic login failed - invalid nonce", 'error');
+            vesesslabs_vesessauth_log("Magic login failed - invalid nonce", 'error');
             wp_die(
                 esc_html('Security check failed. Please request a new login link.'),
                 'Login Failed',
@@ -356,11 +356,11 @@ class VESESS_AUTH
             return;
         }
 
-        vesess_auth_log("Magic login process initiated from class-passwordless-auth.php");
+        vesesslabs_vesessauth_log("Magic login process initiated from class-passwordless-auth.php");
 
         // Check rate limiting for magic login attempts
-        $security = new Vesess_Auth_Security();
-        $ip_address = Vesess_Auth_Security::get_client_ip();
+        $security = new Vesesslabs_Vesessauth_Security();
+        $ip_address = Vesesslabs_Vesessauth_Security::get_client_ip();
         $block_time = $security->is_ip_blocked($ip_address);
           if ($block_time !== false) {            $minutes = ceil($block_time / 60);            $error_message = sprintf('Too many login attempts. Please try again in %d minutes.', $minutes);
             wp_die(
@@ -371,27 +371,27 @@ class VESESS_AUTH
             return;
         }        // Process the magic login directly instead of calling an external function
         if (!isset($_GET['uid']) || !isset($_GET['token'])) {
-            vesess_auth_log("Magic login failed - missing uid or token parameters", 'error');
+            vesesslabs_vesessauth_log("Magic login failed - missing uid or token parameters", 'error');
             return false;
         }
 
-        vesess_auth_log("=== MAGIC LOGIN DEBUG START ===", 'info');
-        vesess_auth_log("Processing magic login request with uid: " . sanitize_text_field(wp_unslash($_GET['uid'])), 'info');
+        vesesslabs_vesessauth_log("=== MAGIC LOGIN DEBUG START ===", 'info');
+        vesesslabs_vesessauth_log("Processing magic login request with uid: " . sanitize_text_field(wp_unslash($_GET['uid'])), 'info');
 
         $uid = sanitize_text_field(wp_unslash($_GET['uid']));
         $token_param = sanitize_text_field(wp_unslash($_GET['token']));
         
-        vesess_auth_log("Raw UID parameter: $uid", 'info');
-        vesess_auth_log("Raw token parameter: $token_param", 'info');
+        vesesslabs_vesessauth_log("Raw UID parameter: $uid", 'info');
+        vesesslabs_vesessauth_log("Raw token parameter: $token_param", 'info');
         
-        $user_id = vesess_auth_decrypt_user_id($uid);
+        $user_id = vesesslabs_vesessauth_decrypt_user_id($uid);
         
-        vesess_auth_log("User ID decryption result: " . ($user_id === false ? 'FAILED' : $user_id), 'info');if ($user_id === false) {
+        vesesslabs_vesessauth_log("User ID decryption result: " . ($user_id === false ? 'FAILED' : $user_id), 'info');if ($user_id === false) {
             if (isset($_SESSION)) {
-                $_SESSION['vesess_auth_failed_attempts'] = isset($_SESSION['vesess_auth_failed_attempts']) ? (int) $_SESSION['vesess_auth_failed_attempts'] + 1 : 1;
+                $_SESSION['vesesslabs_vesessauth_failed_attempts'] = isset($_SESSION['vesesslabs_vesessauth_failed_attempts']) ? (int) $_SESSION['vesesslabs_vesessauth_failed_attempts'] + 1 : 1;
             }
             
-            vesess_auth_log("Magic login failed - could not decrypt user ID from: $uid", 'error');
+            vesesslabs_vesessauth_log("Magic login failed - could not decrypt user ID from: $uid", 'error');
             $error = new WP_Error('invalid_user', 'Invalid login link. Please request a new one.');
             wp_die(
                 esc_html($error->get_error_message()),
@@ -400,17 +400,17 @@ class VESESS_AUTH
             );
             return;
         }        
-        vesess_auth_log("Successfully decrypted user ID: $user_id");
+        vesesslabs_vesessauth_log("Successfully decrypted user ID: $user_id");
 
         // Get stored token data for this user
-        $stored_data = get_user_meta($user_id, 'vesess_auth_login_token', true);
+        $stored_data = get_user_meta($user_id, 'vesesslabs_vesessauth_login_token', true);
 
         if (!$stored_data || !is_array($stored_data)) {
             if (isset($_SESSION)) {
-                $_SESSION['vesess_auth_failed_attempts'] = isset($_SESSION['vesess_auth_failed_attempts']) ? (int) $_SESSION['vesess_auth_failed_attempts'] + 1 : 1;
+                $_SESSION['vesesslabs_vesessauth_failed_attempts'] = isset($_SESSION['vesesslabs_vesessauth_failed_attempts']) ? (int) $_SESSION['vesesslabs_vesessauth_failed_attempts'] + 1 : 1;
             }
             
-            vesess_auth_log("Magic login failed - no token stored for user ID: $user_id", 'error');
+            vesesslabs_vesessauth_log("Magic login failed - no token stored for user ID: $user_id", 'error');
             $error = new WP_Error('invalid_token', 'Invalid login link. Please request a new one.');
             wp_die(
                 esc_html($error->get_error_message()),
@@ -422,17 +422,17 @@ class VESESS_AUTH
         $token_param = sanitize_text_field(wp_unslash($_GET['token']));
         
         
-        $token = vesess_auth_decrypt_token_from_url($token_param);
+        $token = vesesslabs_vesessauth_decrypt_token_from_url($token_param);
         
        
         if ($token !== false) {
-            vesess_auth_log("Decrypted token preview: " . substr($token, 0, 20) . '...', 'info');
+            vesesslabs_vesessauth_log("Decrypted token preview: " . substr($token, 0, 20) . '...', 'info');
         }if (!$token) {
             if (isset($_SESSION)) {
-                $_SESSION['vesess_auth_failed_attempts'] = isset($_SESSION['vesess_auth_failed_attempts']) ? (int) $_SESSION['vesess_auth_failed_attempts'] + 1 : 1;
+                $_SESSION['vesesslabs_vesessauth_failed_attempts'] = isset($_SESSION['vesesslabs_vesessauth_failed_attempts']) ? (int) $_SESSION['vesesslabs_vesessauth_failed_attempts'] + 1 : 1;
             }
             
-            vesess_auth_log("Magic login failed - could not decrypt token from URL", 'error');
+            vesesslabs_vesessauth_log("Magic login failed - could not decrypt token from URL", 'error');
             $error = new WP_Error('invalid_token', 'Invalid login link. Please request a new one.');
             wp_die(
                 esc_html($error->get_error_message()),
@@ -443,7 +443,7 @@ class VESESS_AUTH
         }        // Check if token data is properly formatted
         if (!isset($stored_data['token']) || !isset($stored_data['expiration'])) {
             if (isset($_SESSION)) {
-                $_SESSION['vesess_auth_failed_attempts'] = isset($_SESSION['vesess_auth_failed_attempts']) ? (int) $_SESSION['vesess_auth_failed_attempts'] + 1 : 1;
+                $_SESSION['vesesslabs_vesessauth_failed_attempts'] = isset($_SESSION['vesesslabs_vesessauth_failed_attempts']) ? (int) $_SESSION['vesesslabs_vesessauth_failed_attempts'] + 1 : 1;
             }
             
             $error = new WP_Error('invalid_token', 'Invalid login link. Please request a new one.');
@@ -454,7 +454,7 @@ class VESESS_AUTH
             );
             return;
         }        // Decrypt the stored token for comparison
-        $stored_token = vesess_auth_decrypt_token_from_storage($stored_data['token']);
+        $stored_token = vesesslabs_vesessauth_decrypt_token_from_storage($stored_data['token']);
         
        
 
@@ -469,9 +469,9 @@ class VESESS_AUTH
             return;
         }        // Check if token has expired
         if (time() > $stored_data['expiration']) {
-            vesess_auth_log("Magic login failed - token expired for user", 'error');
-            vesess_auth_log("Current time: " . time() . ", Token expiration: " . $stored_data['expiration'], 'info');
-            delete_user_meta($user_id, 'vesess_auth_login_token');
+            vesesslabs_vesessauth_log("Magic login failed - token expired for user", 'error');
+            vesesslabs_vesessauth_log("Current time: " . time() . ", Token expiration: " . $stored_data['expiration'], 'info');
+            delete_user_meta($user_id, 'vesesslabs_vesessauth_login_token');
             $error = new WP_Error('expired_token', 'This login link has expired. Please request a new one.');
             wp_die(
                 esc_html($error->get_error_message()),
@@ -484,7 +484,7 @@ class VESESS_AUTH
         // Get the user
         $user = get_user_by('id', $user_id);
         if (!$user) {
-            vesess_auth_log("Magic login failed - user ID $user_id not found", 'error');
+            vesesslabs_vesessauth_log("Magic login failed - user ID $user_id not found", 'error');
             $error = new WP_Error('invalid_user', 'User not found. Please try again.');
             wp_die(
                 esc_html($error->get_error_message()),
@@ -495,24 +495,24 @@ class VESESS_AUTH
         }
 
         // Delete the token as it's no longer needed
-        delete_user_meta($user_id, 'vesess_auth_login_token');
+        delete_user_meta($user_id, 'vesesslabs_vesessauth_login_token');
 
         // Log the user in
         wp_clear_auth_cookie();
         wp_set_current_user($user_id);
         wp_set_auth_cookie($user_id);
 
-        vesess_auth_log("User ID: $user_id successfully logged in via magic link");
+        vesesslabs_vesessauth_log("User ID: $user_id successfully logged in via magic link");
 
         // Fire action for other plugins
-        do_action('vesess_auth_after_magic_login', $user);        // Success! Redirect to requested page or default
+        do_action('vesesslabs_vesessauth_after_magic_login', $user);        // Success! Redirect to requested page or default
         $redirect_to = isset($_GET['redirect_to']) ? esc_url_raw(wp_unslash($_GET['redirect_to'])) : '';
         if (empty($redirect_to)) {
-            $redirect_to = vesess_auth_get_option('login_redirect', home_url());
+            $redirect_to = vesesslabs_vesessauth_get_option('login_redirect', home_url());
         }
 
-        $redirect_to = apply_filters('vesess_auth_login_redirect', $redirect_to);
-        vesess_auth_log("Redirecting to: $redirect_to after successful login");
+        $redirect_to = apply_filters('vesesslabs_vesessauth_login_redirect', $redirect_to);
+        vesesslabs_vesessauth_log("Redirecting to: $redirect_to after successful login");
         wp_redirect($redirect_to);
         exit;
     }
@@ -521,9 +521,9 @@ class VESESS_AUTH
     /**
      * The reference to the class that orchestrates the hooks with the plugin.
      *
-     * @return Vesess_Auth_Loader Orchestrates the hooks of the plugin.
+     * @return Vesesslabs_Vesessauth_Loader Orchestrates the hooks of the plugin.
      */
-    public function get_loader(): Vesess_Auth_Loader
+    public function get_loader(): Vesesslabs_Vesessauth_Loader
     {
         return $this->loader;
     }
