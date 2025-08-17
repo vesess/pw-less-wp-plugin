@@ -76,8 +76,8 @@ class Vesesslabs_Vesessauth_Frontend {
                 'vesesslabs_vesessauth_passwordlessAuth',
                 array(
                     'ajax_url' => admin_url('admin-ajax.php'),
-                    'nonce' => wp_create_nonce('passwordless-auth-nonce'),
-                    'login_nonce' => wp_create_nonce('passwordless-login-nonce'),
+                    'nonce' => wp_create_nonce('vesesslabs_vesessauth_passwordless-auth-nonce'),
+                    'login_nonce' => wp_create_nonce('vesesslabs_vesessauth_passwordless-login-nonce'),
                     'redirect_nonce' => wp_create_nonce('passwordless_redirect'),
                     'feedback_nonce' => wp_create_nonce('vesesslabs_vesessauth_login_feedback')
                 )
@@ -100,8 +100,8 @@ class Vesesslabs_Vesessauth_Frontend {
                 'vesesslabs_vesessauth_passwordlessAuth',
                 array(
                     'ajax_url' => admin_url('admin-ajax.php'),
-                    'nonce' => wp_create_nonce('passwordless-auth-nonce'),
-                    'registration_nonce' => wp_create_nonce('passwordless-registration-nonce'),
+                    'nonce' => wp_create_nonce('vesesslabs_vesessauth_passwordless-auth-nonce'),
+                    'registration_nonce' => wp_create_nonce('vesesslabs_vesessauth_passwordless-registration-nonce'),
                     'registration_feedback_nonce' => wp_create_nonce('vesesslabs_vesessauth_registration_feedback')
                 )
             );

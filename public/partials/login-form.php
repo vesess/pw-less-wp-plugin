@@ -71,9 +71,9 @@ $theme_compat_class = isset($options['use_theme_styles']) && $options['use_theme
             <input type="email" name="user_email" id="user_email" required />
         </div>          <div class="form-row passwordless-submit">
             <input type="hidden" name="redirect_to" value="<?php echo esc_attr($redirect_to); ?>" />
-            <input type="hidden" name="action" value="process_login" />
+            <input type="hidden" name="action" value="vesesslabs_vesessauth_process_login" />
             <input type="hidden" name="redirect_nonce" value="<?php echo esc_attr(wp_create_nonce('passwordless_redirect')); ?>" />
-            <?php wp_nonce_field('passwordless-login-nonce', 'vesesslabs_vesessauth_login_nonce'); ?>
+            <?php wp_nonce_field('vesesslabs_vesessauth_passwordless-login-nonce', 'vesesslabs_vesessauth_login_nonce'); ?>
             <button type="submit" name="wp-submit" id="wp-submit" class="button-primary">
                 Send Login Link
             </button>

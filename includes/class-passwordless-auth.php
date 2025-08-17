@@ -151,8 +151,8 @@ class VESESSLABS_VESESSAUTH
         add_shortcode('vesesslabs_vesessauth_login_form', array($this, 'render_login_form'));
 
         // Handle AJAX form submission for passwordless login (legacy)
-        add_action('wp_ajax_nopriv_process_login', array($this, 'handle_ajax_login'));
-        add_action('wp_ajax_process_login', array($this, 'handle_ajax_login'));
+        add_action('wp_ajax_nopriv_vesesslabs_vesessauth_process_login', array($this, 'handle_ajax_login'));
+        add_action('wp_ajax_vesesslabs_vesessauth_process_login', array($this, 'handle_ajax_login'));
         
         // Handle AJAX form submission for passwordless login (new implementation)
         add_action('wp_ajax_nopriv_process_vesesslabs_vesessauth_login', array($this, 'handle_vesesslabs_vesessauth_login'));
@@ -170,7 +170,7 @@ class VESESSLABS_VESESSAUTH
      */    public function handle_ajax_login() 
     {
         // Verify the primary login nonce
-        check_ajax_referer('passwordless-login-nonce', 'vesesslabs_vesessauth_login_nonce');
+        check_ajax_referer('vesesslabs_vesessauth_passwordless-login-nonce', 'vesesslabs_vesessauth_login_nonce');
         
         // Also verify the redirect nonce if it's provided
         if (isset($_POST['redirect_to']) && isset($_POST['redirect_nonce'])) {
@@ -214,7 +214,7 @@ class VESESSLABS_VESESSAUTH
         vesesslabs_vesessauth_log("handle_vesesslabs_vesessauth_login called", 'info');
         
         try {
-            check_ajax_referer('passwordless-login-nonce', 'vesesslabs_vesessauth_login_nonce');
+            check_ajax_referer('vesesslabs_vesessauth_passwordless-login-nonce', 'vesesslabs_vesessauth_login_nonce');
         } catch (Exception $e) {
             vesesslabs_vesessauth_log("Nonce verification failed: " . $e->getMessage(), 'error');
             wp_send_json_error('Security check failed. Please refresh the page and try again.');
@@ -227,7 +227,7 @@ class VESESSLABS_VESESSAUTH
         
         // Additional explicit nonce verification before POST data access
         if (!isset($_POST['vesesslabs_vesessauth_login_nonce']) || 
-            !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['vesesslabs_vesessauth_login_nonce'])), 'passwordless-login-nonce')) {
+            !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['vesesslabs_vesessauth_login_nonce'])), 'vesesslabs_vesessauth_passwordless-login-nonce')) {
             vesesslabs_vesessauth_log("Explicit nonce verification failed", 'error');
             wp_send_json_error('Security check failed. Please refresh the page and try again.');
             return;
@@ -236,7 +236,7 @@ class VESESSLABS_VESESSAUTH
         // Safely get and process the user input if it exists and is a string
         if (isset($_POST['user_input']) && is_string($_POST['user_input']) && 
             isset($_POST['vesesslabs_vesessauth_login_nonce']) && 
-            wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['vesesslabs_vesessauth_login_nonce'])), 'passwordless-login-nonce')) {
+            wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['vesesslabs_vesessauth_login_nonce'])), 'vesesslabs_vesessauth_passwordless-login-nonce')) {
             $user_input = sanitize_text_field(wp_unslash($_POST['user_input']));
         }
         

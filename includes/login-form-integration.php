@@ -83,7 +83,7 @@ class Vesesslabs_Vesessauth_Login_Integration {
         }
         
         // Create a nonce for security
-        $nonce = wp_create_nonce('passwordless-login-nonce');
+        $nonce = wp_create_nonce('vesesslabs_vesessauth_passwordless-login-nonce');
         ?>
         <div class="pwless-login-container" style="text-align: center; margin: 15px 0;">
             <p>or</p>
@@ -107,7 +107,7 @@ class Vesesslabs_Vesessauth_Login_Integration {
         }
         
         // Create a nonce for security
-        $nonce = wp_create_nonce('passwordless-login-nonce');
+        $nonce = wp_create_nonce('vesesslabs_vesessauth_passwordless-login-nonce');
         ?>
         <div class="pwless-login-container" style="text-align: center; margin: 15px 0;">
             <p>or</p>
@@ -143,7 +143,7 @@ class Vesesslabs_Vesessauth_Login_Integration {
             'vesesslabs_vesessauth_passwordlessLoginIntegration',
             array(
                 'ajax_url' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('passwordless-login-nonce')
+                'nonce' => wp_create_nonce('vesesslabs_vesessauth_passwordless-login-nonce')
             )
         );
     }
@@ -171,7 +171,7 @@ class Vesesslabs_Vesessauth_Login_Integration {
      */
     public function handle_vesesslabs_vesessauth_login_ajax() {
         // Verify nonce
-        if (!isset($_POST['vesesslabs_vesessauth_login_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['vesesslabs_vesessauth_login_nonce'])), 'passwordless-login-nonce')) {
+        if (!isset($_POST['vesesslabs_vesessauth_login_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['vesesslabs_vesessauth_login_nonce'])), 'vesesslabs_vesessauth_passwordless-login-nonce')) {
             wp_send_json_error('Invalid security token');
             return;
         }
