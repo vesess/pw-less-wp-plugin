@@ -26,18 +26,18 @@
         const formData = new FormData(form);
         
         // Add the specific login nonce to the form data
-        formData.append('vesess_auth_login_nonce', passwordlessAuth.login_nonce);
+        formData.append('vesesslabs_vesessauth_login_nonce', vesesslabs_vesessauth_passwordlessAuth.login_nonce);
         
         const data = new URLSearchParams();
         for (const pair of formData) {
             data.append(pair[0], pair[1]);
         }
         
-        fetch(passwordlessAuth.ajax_url, {
+        fetch(vesesslabs_vesessauth_passwordlessAuth.ajax_url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'X-WP-Nonce': passwordlessAuth.nonce
+                'X-WP-Nonce': vesesslabs_vesessauth_passwordlessAuth.nonce
             },
             body: data
         })
@@ -53,7 +53,7 @@
                 // Update URL with sent parameter and nonce for visual feedback
                 const currentUrl = new URL(window.location.href);
                 currentUrl.searchParams.set('sent', '1');
-                currentUrl.searchParams.set('_wpnonce', passwordlessAuth.feedback_nonce);
+                currentUrl.searchParams.set('_wpnonce', vesesslabs_vesessauth_passwordlessAuth.feedback_nonce);
                 
                 // Update URL without refreshing the page
                 window.history.replaceState({}, '', currentUrl.toString());

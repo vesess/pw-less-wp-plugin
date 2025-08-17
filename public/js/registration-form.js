@@ -9,7 +9,7 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Registration form script loaded');
-    const form = document.getElementById('vesess_auth-registration-form');
+    const form = document.getElementById('vesesslabs_vesessauth-registration-form');
     if(!form) {
         console.error('Registration form not found!');
          return;
@@ -37,17 +37,17 @@ document.addEventListener('DOMContentLoaded', function() {
         // Send AJAX request
         const formData = new FormData(form);
         // Add the specific registration nonce to the form data
-        formData.append('registration_nonce', passwordlessAuth.registration_nonce);
+        formData.append('registration_nonce', vesesslabs_vesessauth_passwordlessAuth.registration_nonce);
         
         const data = new URLSearchParams();
         for (const pair of formData) {
             data.append(pair[0], pair[1]);
         }
-          fetch(passwordlessAuth.ajax_url, {
+          fetch(vesesslabs_vesessauth_passwordlessAuth.ajax_url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'X-WP-Nonce': passwordlessAuth.nonce
+                'X-WP-Nonce': vesesslabs_vesessauth_passwordlessAuth.nonce
             },
             body: data
         })
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Update URL with registration success parameter and nonce for visual feedback
                 const currentUrl = new URL(window.location.href);
                 currentUrl.searchParams.set('registered', '1');
-                currentUrl.searchParams.set('_wpnonce', passwordlessAuth.registration_feedback_nonce);
+                currentUrl.searchParams.set('_wpnonce', vesesslabs_vesessauth_passwordlessAuth.registration_feedback_nonce);
                 
                 // Update URL without refreshing the page
                 window.history.replaceState({}, '', currentUrl.toString());

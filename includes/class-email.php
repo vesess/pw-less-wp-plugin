@@ -2,7 +2,7 @@
 /**
  * Handles email functionality.
  */
-class Vesess_Auth_Email {
+class Vesesslabs_Vesessauth_Email {
     /**
      * Send a login code via email.
      *
@@ -17,7 +17,7 @@ class Vesess_Auth_Email {
         }
 
         // Get configured expiration time
-        $expiration_minutes = (int) vesess_auth_get_option('code_expiration', 15);        $to = $user->user_email;
+        $expiration_minutes = (int) vesesslabs_vesessauth_get_option('code_expiration', 15);        $to = $user->user_email;
         $subject = '[' . esc_html(get_bloginfo('name')) . '] Your Login Code';
           $message = sprintf(
             "Hello %s,\n\nYour login code is: %s\n\nThis code will expire in %d minutes.\n\nBest regards,\n%s",
@@ -48,11 +48,11 @@ class Vesess_Auth_Email {
         }        
        
         $base_url = home_url();        
-        $encrypted_user_id = vesess_auth_encrypt_user_id($user_id);
+        $encrypted_user_id = vesesslabs_vesessauth_encrypt_user_id($user_id);
         
         // Log full details for debugging
-        vesess_auth_log("Generating verification link - User ID: $user_id", 'info');
-        vesess_auth_log("Encrypted user ID: $encrypted_user_id", 'info');
+        vesesslabs_vesessauth_log("Generating verification link - User ID: $user_id", 'info');
+        vesesslabs_vesessauth_log("Encrypted user ID: $encrypted_user_id", 'info');
         $base_url = rtrim($base_url, '/');
         
         // Start with the action parameter
@@ -98,7 +98,7 @@ class Vesess_Auth_Email {
         }
 
         // Get configured expiration time
-        $expiration_minutes = (int) vesess_auth_get_option('code_expiration', 15);        // Send to the current email address, not the new one
+        $expiration_minutes = (int) vesesslabs_vesessauth_get_option('code_expiration', 15);        // Send to the current email address, not the new one
         $to = $user->user_email;
         $subject = '[' . esc_html(get_bloginfo('name')) . '] Verify Your Email Change';
           $message = sprintf(
@@ -126,36 +126,36 @@ class Vesess_Auth_Email {
      * @param string $user_email The user's email address.
      * @return bool|string Whether the email was sent successfully.
      */    public function send_magic_link($user_email) {
-        vesess_auth_log("Attempting to send magic link to email: $user_email", 'info');
+        vesesslabs_vesessauth_log("Attempting to send magic link to email: $user_email", 'info');
         
         $user = get_user_by('email', $user_email);
         if (!$user) {
-            vesess_auth_log("Failed to send magic link: User with email $user_email not found", 'error');
+            vesesslabs_vesessauth_log("Failed to send magic link: User with email $user_email not found", 'error');
             return false;
         }
         
-        vesess_auth_log("Found user with ID: {$user->ID}", 'info');
+        vesesslabs_vesessauth_log("Found user with ID: {$user->ID}", 'info');
         
         // Check if email is verified (use the helper function to respect admin bypass)
-        if (!vesess_auth_is_email_verified($user->ID)) {
-            vesess_auth_log("Cannot send login link: Email not verified for user ID {$user->ID}", 'error');
+        if (!vesesslabs_vesessauth_is_email_verified($user->ID)) {
+            vesesslabs_vesessauth_log("Cannot send login link: Email not verified for user ID {$user->ID}", 'error');
             return 'unverified';
         }
         
-        vesess_auth_log("Email is verified, proceeding to create login link", 'info');
-          $login_link = vesess_auth_create_login_link($user_email);
+        vesesslabs_vesessauth_log("Email is verified, proceeding to create login link", 'info');
+          $login_link = vesesslabs_vesessauth_create_login_link($user_email);
         
         if (!$login_link) {
-            vesess_auth_log("Failed to create login link for user email: $user_email", 'error');
+            vesesslabs_vesessauth_log("Failed to create login link for user email: $user_email", 'error');
             return false;
         }
         
-        vesess_auth_log("Login link created successfully: " . substr($login_link, 0, 50) . "...", 'info');
+        vesesslabs_vesessauth_log("Login link created successfully: " . substr($login_link, 0, 50) . "...", 'info');
 
         // Get configured expiration time
-        $expiration_minutes = (int) vesess_auth_get_option('code_expiration', 15);        
+        $expiration_minutes = (int) vesesslabs_vesessauth_get_option('code_expiration', 15);        
         // Get email subject from options or use default
-        $options = get_option('vesess_auth_options', []);
+        $options = get_option('vesesslabs_vesessauth_options', []);
         $subject = isset($options['email_subject']) ? sanitize_text_field($options['email_subject']) : '';
         if (empty($subject)) {
             $subject = 'Login link for ' . esc_html(get_bloginfo('name'));
@@ -189,9 +189,9 @@ class Vesess_Auth_Email {
         );
         
         // Apply filters to allow customization
-        $subject = apply_filters('vesess_auth_email_subject', $subject, $user);
-        $message = apply_filters('vesess_auth_email_message', $message, $user, $login_link);
-        $headers = apply_filters('vesess_auth_email_headers', $headers, $user);
+        $subject = apply_filters('vesesslabs_vesessauth_email_subject', $subject, $user);
+        $message = apply_filters('vesesslabs_vesessauth_email_message', $message, $user, $login_link);
+        $headers = apply_filters('vesesslabs_vesessauth_email_headers', $headers, $user);
         
         // Convert line breaks to <br> for HTML emails
         $message = nl2br($message);
@@ -217,12 +217,12 @@ class Vesess_Auth_Email {
             sanitize_email($to)
         );
         
-        vesess_auth_log($log_message);
+        vesesslabs_vesessauth_log($log_message);
         
         // Debugging: Log the full email content
-        vesess_auth_log("Email headers: " . json_encode($headers));
-        vesess_auth_log("Email subject: " . $subject);
-        vesess_auth_log("Email message: " . substr($message, 0, 100) . "..."); // Log first 100 chars
+        vesesslabs_vesessauth_log("Email headers: " . json_encode($headers));
+        vesesslabs_vesessauth_log("Email subject: " . $subject);
+        vesesslabs_vesessauth_log("Email message: " . substr($message, 0, 100) . "..."); // Log first 100 chars
         
         try {
             // Send the email using wp_mail
@@ -230,22 +230,22 @@ class Vesess_Auth_Email {
             
             // Log the result
             if ($result) {
-                vesess_auth_log(sprintf('Email send successful for %s email to %s', sanitize_text_field($type), sanitize_email($to)));
+                vesesslabs_vesessauth_log(sprintf('Email send successful for %s email to %s', sanitize_text_field($type), sanitize_email($to)));
             } else {
-                vesess_auth_log(sprintf('Email send failed for %s email to %s', sanitize_text_field($type), sanitize_email($to)), 'error');
+                vesesslabs_vesessauth_log(sprintf('Email send failed for %s email to %s', sanitize_text_field($type), sanitize_email($to)), 'error');
                 
                 // Try to get any error information
                 global $phpmailer;
                 if (isset($phpmailer) && $phpmailer->ErrorInfo) {
-                    vesess_auth_log('Email error: ' . $phpmailer->ErrorInfo, 'error');
+                    vesesslabs_vesessauth_log('Email error: ' . $phpmailer->ErrorInfo, 'error');
                 } else {
-                    vesess_auth_log('Email send failed but no error information available', 'error');
+                    vesesslabs_vesessauth_log('Email send failed but no error information available', 'error');
                 }
             }
             
             return $result;
         } catch (Exception $e) {
-            vesess_auth_log('Exception when sending email: ' . $e->getMessage(), 'error');
+            vesesslabs_vesessauth_log('Exception when sending email: ' . $e->getMessage(), 'error');
             return false;
         }
     }
@@ -256,7 +256,7 @@ class Vesess_Auth_Email {
      * @return string
      */
     private function get_from_name() {
-        $options = get_option('vesess_auth_options');
+        $options = get_option('vesesslabs_vesessauth_options');
         return isset($options['email_from_name']) ? esc_html($options['email_from_name']) : esc_html(get_bloginfo('name'));
     }
 
@@ -266,7 +266,7 @@ class Vesess_Auth_Email {
      * @return string
      */
     private function get_from_email() {
-        $options = get_option('vesess_auth_options');
+        $options = get_option('vesesslabs_vesessauth_options');
         return isset($options['email_from_address']) ? sanitize_email($options['email_from_address']) : sanitize_email(get_bloginfo('admin_email'));
     }
 }

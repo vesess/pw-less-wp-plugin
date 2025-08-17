@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Get username or email from the username field
             var userInput = usernameField.value.trim();
-            var nonce = document.querySelector('#vesess_auth_login_nonce').value;
+            var nonce = document.querySelector('#vesesslabs_vesessauth_login_nonce').value;
             
             if (!userInput) {
                 // Show error if field is empty
@@ -37,13 +37,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Create form data
             var data = new URLSearchParams({
-                'action': 'process_vesess_auth_login',
-                'vesess_auth_login_nonce': nonce,
+                'action': 'process_vesesslabs_vesessauth_login',
+                'vesesslabs_vesessauth_login_nonce': nonce,
                 'user_input': userInput
             }).toString();
             
             // Send AJAX request
-            fetch(passwordlessLoginIntegration.ajax_url, {
+            fetch(vesesslabs_vesessauth_passwordlessLoginIntegration.ajax_url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Get username or email from the username field
             var userInput = usernameLostField.value.trim();
-            var nonce = document.querySelector('#vesess_auth_login_nonce_lost').value;
+            var nonce = document.querySelector('#vesesslabs_vesessauth_login_nonce_lost').value;
             
             if (!userInput) {
                 // Show error if field is empty
@@ -116,13 +116,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Create form data
             var data = new URLSearchParams({
-                'action': 'process_vesess_auth_login',
-                'vesess_auth_login_nonce': nonce,
+                'action': 'process_vesesslabs_vesessauth_login',
+                'vesesslabs_vesessauth_login_nonce': nonce,
                 'user_input': userInput
             }).toString();
             
             // Send AJAX request
-            fetch(passwordlessLoginIntegration.ajax_url, {
+            fetch(vesesslabs_vesessauth_passwordlessLoginIntegration.ajax_url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'

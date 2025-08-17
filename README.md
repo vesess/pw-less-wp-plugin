@@ -26,7 +26,7 @@ VesessAuth offers a modern, secure way to log in to WordPress sites without usin
 
 ## Installation
 
-1. Upload the plugin files to the `/wp-content/plugins/vesess_auth` directory, or install through the WordPress plugins screen
+1. Upload the plugin files to the `/wp-content/plugins/vesesslabs_vesessauth` directory, or install through the WordPress plugins screen
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Go to Settings → Passwordless Auth to configure the plugin:
    * Set up the "User Home URL" to match your site's base URL structure
@@ -42,8 +42,8 @@ VesessAuth offers a modern, secure way to log in to WordPress sites without usin
 
 ### Available Shortcodes
 
-* `[vesess_auth_login]` - Displays the login form
-* `[vesess_auth_registration]` - Displays the registration form
+* `[vesesslabs_vesessauth_login]` - Displays the login form
+* `[vesesslabs_vesessauth_registration]` - Displays the registration form
 
 ## Security Benefits
 

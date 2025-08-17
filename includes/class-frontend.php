@@ -2,7 +2,7 @@
 /**
  * Handles frontend UI integration.
  */
-class Vesess_Auth_Frontend {
+class Vesesslabs_Vesessauth_Frontend {
     public function init()
     {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_styles'));
@@ -20,32 +20,32 @@ class Vesess_Auth_Frontend {
     
     // Common styles for all shortcodes (variables and shared styles)
     wp_register_style(
-        'vesess_auth-common-style',
-        VESESS_AUTH_URL . 'public/css/common.css',
+        'vesesslabs_vesessauth-common-style',
+        VESESSLABS_VESESSAUTH_URL . 'public/css/common.css',
         array(),
-        VESESS_AUTH_VERSION . '.' . time()
+        VESESSLABS_VESESSAUTH_VERSION . '.' . time()
     );
 
     // Check for login form shortcode
-    if (has_shortcode($content, 'vesess_auth_login')) {
+    if (has_shortcode($content, 'vesesslabs_vesessauth_login')) {
         wp_enqueue_style(
-            'vesess_auth-login-style',
-            VESESS_AUTH_URL . 'public/css/login-form.css',
-            array('vesess_auth-common-style'),
-            VESESS_AUTH_VERSION . '.' . time()
+            'vesesslabs_vesessauth-login-style',
+            VESESSLABS_VESESSAUTH_URL . 'public/css/login-form.css',
+            array('vesesslabs_vesessauth-common-style'),
+            VESESSLABS_VESESSAUTH_VERSION . '.' . time()
         );
-        wp_enqueue_style('vesess_auth-common-style');
+        wp_enqueue_style('vesesslabs_vesessauth-common-style');
     }
 
     // Check for registration form shortcode
-    if (has_shortcode($content, 'vesess_auth_registration')) {
+    if (has_shortcode($content, 'vesesslabs_vesessauth_registration')) {
         wp_enqueue_style(
-            'vesess_auth-registration-style',
-            VESESS_AUTH_URL . 'public/css/registration-form.css',
-            array('vesess_auth-common-style'),
-            VESESS_AUTH_VERSION . '.' . time()
+            'vesesslabs_vesessauth-registration-style',
+            VESESSLABS_VESESSAUTH_URL . 'public/css/registration-form.css',
+            array('vesesslabs_vesessauth-common-style'),
+            VESESSLABS_VESESSAUTH_VERSION . '.' . time()
         );
-        wp_enqueue_style('vesess_auth-common-style');
+        wp_enqueue_style('vesesslabs_vesessauth-common-style');
     }
 }
 
@@ -62,47 +62,47 @@ class Vesess_Auth_Frontend {
         $content = $post->post_content;
         
         // Check for login form shortcode
-        if (has_shortcode($content, 'vesess_auth_login')) {
+        if (has_shortcode($content, 'vesesslabs_vesessauth_login')) {
             wp_enqueue_script(
-                'vesess_auth-login-script',
-                VESESS_AUTH_URL . 'public/js/login-form.js',
+                'vesesslabs_vesessauth-login-script',
+                VESESSLABS_VESESSAUTH_URL . 'public/js/login-form.js',
                 array('jquery'),
-                VESESS_AUTH_VERSION . '.' . time(),
+                VESESSLABS_VESESSAUTH_VERSION . '.' . time(),
                 true
             );
               // Pass AJAX URL and nonces to script
             wp_localize_script(
-                'vesess_auth-login-script',
-                'passwordlessAuth',
+                'vesesslabs_vesessauth-login-script',
+                'vesesslabs_vesessauth_passwordlessAuth',
                 array(
                     'ajax_url' => admin_url('admin-ajax.php'),
                     'nonce' => wp_create_nonce('passwordless-auth-nonce'),
                     'login_nonce' => wp_create_nonce('passwordless-login-nonce'),
                     'redirect_nonce' => wp_create_nonce('passwordless_redirect'),
-                    'feedback_nonce' => wp_create_nonce('vesess_auth_login_feedback')
+                    'feedback_nonce' => wp_create_nonce('vesesslabs_vesessauth_login_feedback')
                 )
             );
         }
 
         // Check for registration form shortcode
-        if (has_shortcode($content, 'vesess_auth_registration')) {
+        if (has_shortcode($content, 'vesesslabs_vesessauth_registration')) {
             wp_enqueue_script(
-                'vesess_auth-registration-script',
-                VESESS_AUTH_URL . 'public/js/registration-form.js',
+                'vesesslabs_vesessauth-registration-script',
+                VESESSLABS_VESESSAUTH_URL . 'public/js/registration-form.js',
                 array('jquery'),
-                VESESS_AUTH_VERSION . '.' . time(),
+                VESESSLABS_VESESSAUTH_VERSION . '.' . time(),
                 true
             );
             
             // Pass AJAX URL and nonce to script
             wp_localize_script(
-                'vesess_auth-registration-script',
-                'passwordlessAuth',
+                'vesesslabs_vesessauth-registration-script',
+                'vesesslabs_vesessauth_passwordlessAuth',
                 array(
                     'ajax_url' => admin_url('admin-ajax.php'),
                     'nonce' => wp_create_nonce('passwordless-auth-nonce'),
                     'registration_nonce' => wp_create_nonce('passwordless-registration-nonce'),
-                    'registration_feedback_nonce' => wp_create_nonce('vesess_auth_registration_feedback')
+                    'registration_feedback_nonce' => wp_create_nonce('vesesslabs_vesessauth_registration_feedback')
                 )
             );
         }
@@ -116,7 +116,7 @@ class Vesess_Auth_Frontend {
         // CSS and JS are now handled by the enqueue methods
         
         ob_start();
-        include VESESS_AUTH_PATH . 'public/partials/login-form.php';
+        include VESESSLABS_VESESSAUTH_PATH . 'public/partials/login-form.php';
         return ob_get_clean();
     }
       /**
@@ -129,7 +129,7 @@ class Vesess_Auth_Frontend {
         // CSS and JS are now handled by the enqueue methods
         
         ob_start();
-        include VESESS_AUTH_PATH . 'public/partials/registration-form.php';
+        include VESESSLABS_VESESSAUTH_PATH . 'public/partials/registration-form.php';
         return ob_get_clean();
     }
 }
