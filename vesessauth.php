@@ -322,7 +322,7 @@ function vesesslabs_vesessauth_add_admin_page() {
     
     add_submenu_page(
         'options-general.php',       // Parent slug (Settings menu)
-        'Passwordless Auth Logs',    // Page title
+        'Vesesslabs Vesessauth Passwordless Auth Logs',    // Page title
         'Auth Logs',                 // Menu title
         'manage_options',            // Capability required
         'vesesslabs_vesessauth-auth-logs', // Menu slug
@@ -345,7 +345,7 @@ function vesesslabs_vesessauth_logs_page() {
     $logs = get_transient('vesesslabs_vesessauth_logs') ?: [];
     ?>
     <div class="wrap">
-        <h1>Passwordless Authentication Logs</h1>
+        <h1>Vesesslabs Vesessauth Passwordless Authentication Logs</h1>
         
         <?php if (empty($logs)): ?>
             <p>No logs found.</p>
