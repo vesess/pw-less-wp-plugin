@@ -402,10 +402,10 @@ function vesesslabs_vesessauth_add_login_debug() {
         $status = sanitize_text_field(wp_unslash($_GET['verification']));
           // Check for nonce - only display debug info if nonce is valid
         // Maintain backward compatibility by allowing admin users to see debug info without nonce
-        $nonce_valid = false;
-        if (isset($_GET['_wpnonce'])) {
-            $nonce_valid = wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['_wpnonce'])), 'verification_debug_nonce');
-        }
+        $nonce_valid = isset($_GET['_wpnonce']) && wp_verify_nonce(
+            sanitize_text_field(wp_unslash($_GET['_wpnonce'])),
+            'verification_debug_nonce'
+        );
         
         // Only show debug info if:
         // 1. Nonce is valid, OR
