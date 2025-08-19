@@ -39,12 +39,21 @@ All collected data is stored exclusively in your WordPress database and is not s
 
 1. Upload the plugin files to the `/wp-content/plugins` directory, or install the plugin through the WordPress plugins screen.
 2. Activate the plugin through the 'Plugins' screen in WordPress.
-3. IMPORTANT: This plugin sends secure login links via email. To ensure emails are delivered reliably (and don’t end up in spam), you must configure a mailer service such as:
-   - WP Mail SMTP (recommended)
+3. Create pages for login and sign up and add the corresponding shortcodes:
+
+    - Create a login page with the slug "login"
+       * `[vesesslabs_vesessauth_login]` - Displays the login form
+
+    - Create a sign up page with the slug "sign-up"
+       * `[vesesslabs_vesessauth_registration]` - Displays the registration form
+
+4. IMPORTANT: This plugin sends secure login links via email. To ensure emails are delivered reliably (and don’t end up in spam), you must configure a mailer service such as:
+   - WP Mail SMTP
    - An external SMTP service (e.g., Gmail, Outlook, SendGrid, Amazon SES, Mailgun, Zoho, etc.)
-4. To enable the Sign Up form, go to  **Settings -> General -> Membership** and check the "Anyone can register" checkbox.
-4. Once email delivery is working, go to **Settings -> VesessAuth** to configure the plugin.
-5. The passwordless login option will now appear on your login page.
+5. To enable the Sign Up form, go to  **Settings -> General -> Membership** and check the "Anyone can register" checkbox.
+6. Once email delivery is working, go to **Settings -> VesessAuth** to configure the plugin.
+
+7. The passwordless login option will now appear on your login page.
 
 
 == Frequently Asked Questions ==

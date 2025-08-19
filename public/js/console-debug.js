@@ -14,7 +14,7 @@
     
     // Log verification status if present
     if (typeof vesessauth !== 'undefined') {
-        console.group('Passwordless Auth - Verification Process');
+        console.group('VesessAuth - Verification Process');
         console.log('Verification status: ' + vesessauth.status);
         
         switch(vesessauth.status) {

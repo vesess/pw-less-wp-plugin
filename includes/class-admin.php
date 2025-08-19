@@ -14,8 +14,8 @@ class Vesesslabs_Vesessauth_Admin {
      */
     public function add_admin_menu() {
         add_options_page(
-            'Passwordless Authentication',
-            'Passwordless Auth',
+            'VesessAuth Passwordless Authentication',
+            'VesessAuth',
             'manage_options',
             'vesesslabs_vesessauth',
             array($this, 'render_settings_page')
@@ -198,11 +198,37 @@ class Vesesslabs_Vesessauth_Admin {
             <hr>
             
             <h2>How to Use</h2>
-            <p>Add the login form to any page or post using this shortcode:</p>
-            <p><code>[vesesslabs_vesessauth_login_form]</code></p>
-            
-            <p>To specify a custom redirect after login:</p>
-            <p><code>[vesesslabs_vesessauth_login_form redirect="/dashboard/"]</code></p>
+            <ol>
+                <li>
+                    Create pages for login and sign up and add the corresponding shortcodes:
+                    <ul>
+                        <li>
+                            Create a login page with the slug "login"<br />
+                            <code>[vesesslabs_vesessauth_login]</code> - Displays the login form
+                        </li>
+                        <li>
+                            Create a sign up page with the slug "sign-up"<br />
+                            <code>[vesesslabs_vesessauth_registration]</code> - Displays the registration form
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    IMPORTANT: This plugin sends secure login links via email. To ensure emails are delivered reliably (and don’t end up in spam), you must configure a mailer service such as:
+                    <ul>
+                        <li>WP Mail SMTP</li>
+                        <li>An external SMTP service (e.g., Gmail, Outlook, SendGrid, Amazon SES, Mailgun, Zoho, etc.)</li>
+                    </ul>
+                </li>
+                <li>
+                    To enable the Sign Up form, go to <strong>Settings → General → Membership</strong> and check the "Anyone can register" checkbox.
+                </li>
+                <li>
+                    Once email delivery is working, go to <strong>Settings → VesessAuth</strong> to configure the plugin.
+                </li>
+                <li>
+                    The passwordless login option will now appear on your login page.
+                </li>
+            </ol>
         </div>
         <?php
     }

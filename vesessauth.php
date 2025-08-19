@@ -74,7 +74,7 @@ add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'vesesslabs_veses
 vesesslabs_vesessauth_run();
 
 /**
- * Core functionality for Passwordless Authentication plugin
+ * Core functionality for VesessAuth plugin
  */
 
 /**
@@ -322,7 +322,7 @@ function vesesslabs_vesessauth_add_admin_page() {
     
     add_submenu_page(
         'options-general.php',       // Parent slug (Settings menu)
-        'Vesesslabs Vesessauth Passwordless Auth Logs',    // Page title
+        'Vesesslabs Vesessauth Logs',    // Page title
         'Auth Logs',                 // Menu title
         'manage_options',            // Capability required
         'vesesslabs_vesessauth-auth-logs', // Menu slug
