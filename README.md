@@ -79,6 +79,35 @@ You can customize the following email settings in the admin panel:
 * WordPress 5.0 or higher
 * PHP 7.2 or higher
 
+## For Developers
+
+This section helps contributors and maintainers get the plugin running locally and understand where to make changes.
+
+- Quick setup
+   - Use a local WordPress environment (Local by Flywheel, MAMP, XAMPP, Docker, etc.).
+   - Install the plugin into `/wp-content/plugins/pw-less-wp-plugin` and activate it.
+   - Enable debugging: set `WP_DEBUG` and `WP_DEBUG_LOG` to `true` in `wp-config.php` to capture errors.
+
+- Recommended tooling
+   - PHP 7.4+ for development parity (plugin supports PHP 7.2+ in production).
+   - A code linter / formatter that follows WordPress PHP Coding Standards (phpcs with WordPress rules recommended).
+   - Editor with PHP and JS support.
+
+- Project layout pointers
+   - PHP classes: `includes/` contains the core plugin classes.
+   - Public assets and templates: `public/` contains CSS, JS and partials used by shortcodes and forms.
+   - Entry file: `vesessauth.php` bootstraps the plugin.
+
+- Hooks, filters and shortcodes
+   - The plugin exposes actions and filters for extension — search the `includes/` files to find available hooks.
+   - Shortcodes: `[vesesslabs_vesessauth_login]` and `[vesesslabs_vesessauth_registration]` render the public forms.
+
+- Testing & debugging
+   - There is no test harness in this repo by default. Recommended approach:
+      1. Install and configure PHPUnit and the WP PHPUnit scaffold if you want automated tests.
+      2. Use a disposable local WP site for manual testing of flows (login, registration, email code delivery).
+   - Use `error_log()` or the debug log for quick traces; watch emails via a mail-capture tool (MailHog, Mailtrap) in local setups.
+
 ## License
 
 This plugin is licensed under the GPL v2 or later.
