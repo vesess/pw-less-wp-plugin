@@ -15,8 +15,6 @@ VesessAuth offers a modern, secure way to log in to WordPress sites without usin
 
 * **Passwordless Login**: Users log in using their email address and a one-time verification code
 * **Custom Registration**: Includes custom registration form with email verification
-* **User Profile Management**: Users can update their information through the WordPress admin profile
-* **Email Notifications**: Customizable email notifications for various user actions
 * **Shortcodes**: Easy implementation with ready-to-use shortcodes
 * **Developer Friendly**: Hooks and filters for extending functionality
 * **Enhanced Security**: Environment variable support for encryption keys
@@ -26,7 +24,7 @@ VesessAuth offers a modern, secure way to log in to WordPress sites without usin
 
 ## Installation
 
-1. Upload the plugin files to the `/wp-content/plugins/vesesslabs_vesessauth` directory, or install through the WordPress plugins screen
+1. Upload the plugin folder to the `/wp-content/plugins` directory, or install through the WordPress plugins screen
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Go to Settings → Passwordless Auth to configure the plugin:
    * Set up the "User Home URL" to match your site's base URL structure
@@ -57,7 +55,6 @@ Passwordless authentication eliminates many security issues related to password-
 * Strict input validation and sanitization throughout the plugin
 * Rate limiting to prevent brute force attacks
 
-For more details about the security enhancements, please see [security-enhancements.md](security-enhancements.md).
 
 ## How It Works
 
@@ -106,7 +103,7 @@ All collected data is stored exclusively in your WordPress database and is not s
 
 - Email addresses are retained as long as the user account exists in your WordPress installation.
 - IP addresses and authentication tokens are stored temporarily and purged after successful authentication or expiration (typically 24 hours).
-- Login timestamps are retained in logs for security monitoring purposes.
+- Login timestamps are retained in logs for monitoring purposes.
 
 ### Third-Party Services
 
